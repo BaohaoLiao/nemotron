@@ -30,6 +30,20 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+# When launched via torchrun, pin EACH process to a single GPU *before* torch
+# initialises CUDA. Otherwise unsloth/HF `from_pretrained` loads every rank's
+# full 30B model copy onto cuda:0, OOMing GPU 0 even at micro_batch_size=1.
+# After this, each process sees exactly one GPU, exposed as index 0.
+if "LOCAL_RANK" in os.environ:
+    _local_rank = int(os.environ["LOCAL_RANK"])
+    _visible = os.environ.get("CUDA_VISIBLE_DEVICES")
+    if _visible:
+        _devices = [d for d in _visible.split(",") if d != ""]
+        if _local_rank < len(_devices):
+            os.environ["CUDA_VISIBLE_DEVICES"] = _devices[_local_rank]
+    else:
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(_local_rank)
+
 import torch
 import torch.distributed as dist
 
@@ -176,7 +190,9 @@ def setup_distributed() -> DistInfo:
         local_rank = int(os.environ.get("LOCAL_RANK", 0))
         if world_size > 1:
             dist.init_process_group(backend="nccl")
-            torch.cuda.set_device(local_rank)
+            # Each process was pinned to a single GPU at import time via
+            # CUDA_VISIBLE_DEVICES, so its one visible GPU is index 0.
+            torch.cuda.set_device(0)
             return DistInfo(rank, world_size, local_rank, True)
     torch.cuda.set_device(0)
     return DistInfo(0, 1, 0, False)
@@ -524,7 +540,9 @@ def build_moe_tying(cfg: argparse.Namespace, model, log):
 # Training
 # ─────────────────────────────────────────────────────────────────────────────
 def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
-    device = torch.device(f"cuda:{dist_info.local_rank}")
+    # After the per-rank CUDA_VISIBLE_DEVICES pin, each process sees exactly one
+    # GPU as cuda:0 (true for both single- and multi-GPU launches).
+    device = torch.device("cuda:0")
     training_log: list[str] = []
 
     def log(msg: str) -> None:
