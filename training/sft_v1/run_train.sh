@@ -15,6 +15,12 @@
 #     ./run_train.sh --learning_rate 1e-4 --num_steps 500 --original_problems_only
 set -euo pipefail
 
+# Reduce allocator fragmentation. On 80GB H100s the 30B model sits near the
+# memory ceiling; multi-GPU adds NCCL comm buffers that can tip it into OOM.
+# expandable_segments reclaims the "reserved but unallocated" fragmentation that
+# the OOM message flags. Override by exporting before calling this script.
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+
 # ── Resolve paths ────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"

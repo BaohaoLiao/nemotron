@@ -163,6 +163,13 @@ def parse_args() -> argparse.Namespace:
         "--output_dir",
         default=str(Path(__file__).resolve().parent / "output" / "weights"),
     )
+    g.add_argument(
+        "--save_every_steps",
+        type=int,
+        default=0,
+        help="Also save the adapter every N optimizer steps to "
+        "<output_dir>/step_<N> (0 = only save once at the end).",
+    )
 
     return p.parse_args()
 
@@ -692,6 +699,14 @@ def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
             f"grad_norm={grad_norm:.4f}, lr={lr:.2e}"
         )
 
+        # ── Periodic checkpoint ─────────────────────────────────────
+        if cfg.save_every_steps > 0 and step % cfg.save_every_steps == 0:
+            if dist_info.is_main:
+                ckpt_dir = os.path.join(cfg.output_dir, f"step_{step}")
+                save_adapter(cfg, model, training_log, log, save_dir=ckpt_dir)
+            if dist_info.distributed:
+                dist.barrier()
+
     log(
         f"Training complete. Peak VRAM: {torch.cuda.max_memory_allocated() / 1e9:.1f} GB"
     )
@@ -700,11 +715,17 @@ def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
         save_adapter(cfg, model, training_log, log)
 
 
-def save_adapter(cfg: argparse.Namespace, model, training_log: list[str], log) -> None:
+def save_adapter(
+    cfg: argparse.Namespace,
+    model,
+    training_log: list[str],
+    log,
+    save_dir: str | None = None,
+) -> None:
     """Save the LoRA adapter, renaming lm_head keys to the submission convention."""
     from safetensors.torch import load_file, save_file
 
-    save_dir = cfg.output_dir
+    save_dir = save_dir if save_dir is not None else cfg.output_dir
     os.makedirs(save_dir, exist_ok=True)
     for _f in os.listdir(save_dir):
         if _f.startswith("adapter"):
