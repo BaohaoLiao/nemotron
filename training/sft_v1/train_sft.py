@@ -118,7 +118,20 @@ def parse_args() -> argparse.Namespace:
     # ── Optimization ─────────────────────────────────────────────────
     g = p.add_argument_group("optimization")
     g.add_argument("--max_seq_len", type=int, default=8192)
-    g.add_argument("--num_steps", type=int, default=1000)
+    g.add_argument(
+        "--num_epochs",
+        type=int,
+        default=1,
+        help="Number of passes over the dataset (reshuffled each epoch when "
+        "--shuffle_dataset).",
+    )
+    g.add_argument(
+        "--num_steps",
+        type=int,
+        default=0,
+        help="Optional hard cap on optimizer steps. 0 = run all --num_epochs "
+        "fully; >0 stops early at whichever limit is reached first.",
+    )
     g.add_argument(
         "--batch_size",
         type=int,
@@ -575,21 +588,26 @@ def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
     torch.cuda.empty_cache()
 
     indices = list(range(len(examples)))
-    if cfg.shuffle_dataset:
-        random.Random(cfg.seed).shuffle(indices)
-        log(f"shuffle_dataset=True: shuffled {len(indices)} examples (seed={cfg.seed})")
-    else:
-        log(f"shuffle_dataset=False: keeping corpus order ({len(indices)} examples)")
-
-    max_steps = len(examples) // cfg.batch_size
-    num_steps = min(cfg.num_steps, max_steps)
-    if num_steps < cfg.num_steps:
-        log(
-            f"WARNING: num_steps={cfg.num_steps} exceeds max_steps={max_steps}; "
-            f"clamping to {num_steps}."
-        )
     log(
-        f"Training: {num_steps} steps, global batch_size={cfg.batch_size}, "
+        f"shuffle_dataset={cfg.shuffle_dataset}: "
+        f"{'reshuffling each epoch' if cfg.shuffle_dataset else 'keeping corpus order'} "
+        f"({len(indices)} examples)"
+    )
+
+    steps_per_epoch = len(examples) // cfg.batch_size
+    epoch_cap = cfg.num_epochs * steps_per_epoch
+    if cfg.num_steps > 0:
+        num_steps = min(cfg.num_steps, epoch_cap)
+        if cfg.num_steps > epoch_cap:
+            log(
+                f"WARNING: num_steps={cfg.num_steps} exceeds "
+                f"num_epochs*steps_per_epoch={epoch_cap}; clamping to {num_steps}."
+            )
+    else:
+        num_steps = epoch_cap
+    log(
+        f"Training: {num_steps} steps ({steps_per_epoch} steps/epoch x "
+        f"{cfg.num_epochs} epochs), global batch_size={cfg.batch_size}, "
         f"micro_batch_size={cfg.micro_batch_size}/GPU, lr={cfg.learning_rate}"
     )
 
@@ -603,109 +621,123 @@ def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
     )
 
     step = 0
-    for batch_start in range(0, len(indices), cfg.batch_size):
-        if step >= num_steps:
+    stop = False
+    for epoch in range(cfg.num_epochs):
+        if stop:
             break
-        global_batch = indices[batch_start : batch_start + cfg.batch_size]
-        # Shard the global batch across GPUs (strided). With world_size=1 this
-        # is exactly the full batch, so single-GPU behaviour is unchanged.
-        local_batch = global_batch[dist_info.rank :: dist_info.world_size]
-        batch = [examples[i] for i in local_batch]
-
-        n = len(batch)
-        n_accum = max(1, math.ceil(n / cfg.micro_batch_size))
-        local_loss_sum = 0.0
-        local_weight_sum = 0.0
-
-        for mb_start in range(0, n, cfg.micro_batch_size):
-            mb = batch[mb_start : mb_start + cfg.micro_batch_size]
-            n_micro = len(mb)
-            max_len = max(len(e["tokens"]) for e in mb)
-
-            padded_input = torch.zeros(
-                n_micro, max_len, dtype=torch.long, device=device
+        if cfg.shuffle_dataset:
+            random.Random(cfg.seed + epoch).shuffle(indices)
+            log(
+                f"epoch {epoch + 1}/{cfg.num_epochs}: reshuffled (seed={cfg.seed + epoch})"
             )
-            padded_targets = torch.zeros(
-                n_micro, max_len, dtype=torch.long, device=device
-            )
-            padded_weights = torch.zeros(
-                n_micro, max_len, dtype=torch.float32, device=device
-            )
-            attention_mask = torch.zeros(
-                n_micro, max_len, dtype=torch.long, device=device
-            )
-            for i, e in enumerate(mb):
-                seq_len = len(e["tokens"])
-                padded_input[i, :seq_len] = torch.tensor(e["tokens"], dtype=torch.long)
-                padded_targets[i, :seq_len] = torch.tensor(
-                    e["targets"], dtype=torch.long
+        for batch_start in range(0, len(indices), cfg.batch_size):
+            if step >= num_steps:
+                stop = True
+                break
+            global_batch = indices[batch_start : batch_start + cfg.batch_size]
+            # Shard the global batch across GPUs (strided). With world_size=1
+            # this is exactly the full batch, so single-GPU is unchanged.
+            local_batch = global_batch[dist_info.rank :: dist_info.world_size]
+            batch = [examples[i] for i in local_batch]
+
+            n = len(batch)
+            n_accum = max(1, math.ceil(n / cfg.micro_batch_size))
+            local_loss_sum = 0.0
+            local_weight_sum = 0.0
+
+            for mb_start in range(0, n, cfg.micro_batch_size):
+                mb = batch[mb_start : mb_start + cfg.micro_batch_size]
+                n_micro = len(mb)
+                max_len = max(len(e["tokens"]) for e in mb)
+
+                padded_input = torch.zeros(
+                    n_micro, max_len, dtype=torch.long, device=device
                 )
-                padded_weights[i, :seq_len] = torch.tensor(
-                    e["weights"], dtype=torch.float32
+                padded_targets = torch.zeros(
+                    n_micro, max_len, dtype=torch.long, device=device
                 )
-                attention_mask[i, :seq_len] = 1
-
-            with torch.amp.autocast("cuda", dtype=torch.bfloat16):
-                model(
-                    input_ids=padded_input,
-                    attention_mask=attention_mask,
-                    labels=padded_targets,
-                    use_cache=False,
+                padded_weights = torch.zeros(
+                    n_micro, max_len, dtype=torch.float32, device=device
                 )
-                per_token_ce = model._cached_per_token_ce  # type: ignore[attr-defined]
-                weighted_loss = per_token_ce * padded_weights
-                weight_sum_t = padded_weights.sum()
-                loss_sum_t = weighted_loss.sum()
-                loss = (
-                    loss_sum_t / weight_sum_t if weight_sum_t > 0 else loss_sum_t * 0.0
+                attention_mask = torch.zeros(
+                    n_micro, max_len, dtype=torch.long, device=device
                 )
+                for i, e in enumerate(mb):
+                    seq_len = len(e["tokens"])
+                    padded_input[i, :seq_len] = torch.tensor(
+                        e["tokens"], dtype=torch.long
+                    )
+                    padded_targets[i, :seq_len] = torch.tensor(
+                        e["targets"], dtype=torch.long
+                    )
+                    padded_weights[i, :seq_len] = torch.tensor(
+                        e["weights"], dtype=torch.float32
+                    )
+                    attention_mask[i, :seq_len] = 1
 
-            (loss / n_accum).backward()
-            local_loss_sum += loss_sum_t.item()
-            local_weight_sum += weight_sum_t.item()
-            del loss, per_token_ce, weighted_loss
+                with torch.amp.autocast("cuda", dtype=torch.bfloat16):
+                    model(
+                        input_ids=padded_input,
+                        attention_mask=attention_mask,
+                        labels=padded_targets,
+                        use_cache=False,
+                    )
+                    per_token_ce = model._cached_per_token_ce  # type: ignore[attr-defined]
+                    weighted_loss = per_token_ce * padded_weights
+                    weight_sum_t = padded_weights.sum()
+                    loss_sum_t = weighted_loss.sum()
+                    loss = (
+                        loss_sum_t / weight_sum_t
+                        if weight_sum_t > 0
+                        else loss_sum_t * 0.0
+                    )
 
-        # ── Average gradients across GPUs (no-op when single-GPU) ────
-        if dist_info.distributed:
-            for p in trainable:
-                if p.grad is None:
-                    p.grad = torch.zeros_like(p)
-                dist.all_reduce(p.grad, op=dist.ReduceOp.SUM)
-                p.grad /= dist_info.world_size
+                (loss / n_accum).backward()
+                local_loss_sum += loss_sum_t.item()
+                local_weight_sum += weight_sum_t.item()
+                del loss, per_token_ce, weighted_loss
 
-        # ── Optimizer step ──────────────────────────────────────────
-        lr = cfg.learning_rate * (1 - step / num_steps)
-        for pg in optimizer.param_groups:
-            pg["lr"] = lr
-        tie_grads()  # keep MoE expert grads identical before clip+step
-        grad_norm = torch.nn.utils.clip_grad_norm_(
-            trainable, max_norm=cfg.grad_clip_norm
-        )
-        optimizer.step()
-        optimizer.zero_grad()
-
-        # ── Global loss for logging ─────────────────────────────────
-        if dist_info.distributed:
-            stat = torch.tensor([local_loss_sum, local_weight_sum], device=device)
-            dist.all_reduce(stat, op=dist.ReduceOp.SUM)
-            loss_sum, weight_sum = stat[0].item(), stat[1].item()
-        else:
-            loss_sum, weight_sum = local_loss_sum, local_weight_sum
-        loss_mean = loss_sum / weight_sum if weight_sum > 0 else 0.0
-
-        step += 1
-        log(
-            f"  step {step}/{num_steps}: loss:mean={loss_mean:.6f}, "
-            f"grad_norm={grad_norm:.4f}, lr={lr:.2e}"
-        )
-
-        # ── Periodic checkpoint ─────────────────────────────────────
-        if cfg.save_every_steps > 0 and step % cfg.save_every_steps == 0:
-            if dist_info.is_main:
-                ckpt_dir = os.path.join(cfg.output_dir, f"step_{step}")
-                save_adapter(cfg, model, training_log, log, save_dir=ckpt_dir)
+            # ── Average gradients across GPUs (no-op when single-GPU) ────
             if dist_info.distributed:
-                dist.barrier()
+                for p in trainable:
+                    if p.grad is None:
+                        p.grad = torch.zeros_like(p)
+                    dist.all_reduce(p.grad, op=dist.ReduceOp.SUM)
+                    p.grad /= dist_info.world_size
+
+            # ── Optimizer step ──────────────────────────────────────────
+            lr = cfg.learning_rate * (1 - step / num_steps)
+            for pg in optimizer.param_groups:
+                pg["lr"] = lr
+            tie_grads()  # keep MoE expert grads identical before clip+step
+            grad_norm = torch.nn.utils.clip_grad_norm_(
+                trainable, max_norm=cfg.grad_clip_norm
+            )
+            optimizer.step()
+            optimizer.zero_grad()
+
+            # ── Global loss for logging ─────────────────────────────────
+            if dist_info.distributed:
+                stat = torch.tensor([local_loss_sum, local_weight_sum], device=device)
+                dist.all_reduce(stat, op=dist.ReduceOp.SUM)
+                loss_sum, weight_sum = stat[0].item(), stat[1].item()
+            else:
+                loss_sum, weight_sum = local_loss_sum, local_weight_sum
+            loss_mean = loss_sum / weight_sum if weight_sum > 0 else 0.0
+
+            step += 1
+            log(
+                f"  epoch {epoch + 1}/{cfg.num_epochs} step {step}/{num_steps}: "
+                f"loss:mean={loss_mean:.6f}, grad_norm={grad_norm:.4f}, lr={lr:.2e}"
+            )
+
+            # ── Periodic checkpoint ─────────────────────────────────────
+            if cfg.save_every_steps > 0 and step % cfg.save_every_steps == 0:
+                if dist_info.is_main:
+                    ckpt_dir = os.path.join(cfg.output_dir, f"step_{step}")
+                    save_adapter(cfg, model, training_log, log, save_dir=ckpt_dir)
+                if dist_info.distributed:
+                    dist.barrier()
 
     log(
         f"Training complete. Peak VRAM: {torch.cuda.max_memory_allocated() / 1e9:.1f} GB"

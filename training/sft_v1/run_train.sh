@@ -32,7 +32,8 @@ OUTPUT_DIR="${SCRIPT_DIR}/output/weights"
 
 # ── Hyperparameters (override via env) ───────────────────────────────
 NUM_GPUS="${NUM_GPUS:-1}"
-NUM_STEPS="${NUM_STEPS:-1000}"
+NUM_EPOCHS="${NUM_EPOCHS:-1}"
+NUM_STEPS="${NUM_STEPS:-0}"
 BATCH_SIZE="${BATCH_SIZE:-32}"
 MICRO_BATCH_SIZE="${MICRO_BATCH_SIZE:-4}"
 LEARNING_RATE="${LEARNING_RATE:-2e-4}"
@@ -47,6 +48,7 @@ COMMON_ARGS=(
   --corpus_dir "${CORPUS_DIR}"
   --train_csv "${TRAIN_CSV}"
   --output_dir "${OUTPUT_DIR}"
+  --num_epochs "${NUM_EPOCHS}"
   --num_steps "${NUM_STEPS}"
   --batch_size "${BATCH_SIZE}"
   --micro_batch_size "${MICRO_BATCH_SIZE}"
