@@ -20,7 +20,7 @@ The original Modal/Kaggle orchestration has been removed.
 - Linux with NVIDIA GPU(s) and a matching CUDA toolkit (CUDA 12.x).
 - A C/C++ build toolchain (`build-essential`, `clang`, `git`) — needed to
   compile `mamba_ssm` and `causal_conv1d`.
-- Python 3.12.
+- [conda](https://docs.conda.io/) (Miniconda or Anaconda) on your `PATH`.
 - Enough VRAM to hold the 30B (A3B) base model in bf16 plus LoRA + activations.
   With data-parallel multi-GPU, **each** GPU holds a full copy of the model.
 
@@ -32,31 +32,36 @@ sudo apt-get update && sudo apt-get install -y git build-essential clang
 
 ## 2. Install the Python environment
 
-Create and activate a fresh environment, then run the installer:
+`install.sh` creates (or reuses) a conda environment and installs everything
+into it. Just set your GPU compute capability and CUDA wheel index, then run it:
 
 ```sh
-python3.12 -m venv .venv
-source .venv/bin/activate
-
 # Set your GPU compute capability and CUDA wheel index, then install.
 #   RTX PRO 6000 -> 12.0     H100 -> 9.0     A100 -> 8.0     L40S -> 8.9
 export TORCH_CUDA_ARCH_LIST=12.0
 export TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
+
+# Optional: customize the env name / Python version (defaults shown).
+export CONDA_ENV_NAME=nemotron-sft
+export PYTHON_VERSION=3.12
 
 bash install.sh
 ```
 
 `install.sh` performs, in order:
 
+0. Creates conda env `$CONDA_ENV_NAME` (Python `$PYTHON_VERSION`) if missing,
+   then activates it.
 1. Installs `torch==2.10.0` from `TORCH_INDEX_URL`.
 2. Installs the pinned stack from `requirements.txt`.
 3. Builds `mamba_ssm==2.3.1` and `causal_conv1d==1.6.1` from source for your
    `TORCH_CUDA_ARCH_LIST`.
 4. Installs `unsloth` + `unsloth_zoo` from git (`--no-deps`).
 
-Verify the install:
+Activate the env and verify the install:
 
 ```sh
+conda activate nemotron-sft
 python -c "import torch, unsloth, mamba_ssm, causal_conv1d, cut_cross_entropy; print('ok')"
 ```
 
