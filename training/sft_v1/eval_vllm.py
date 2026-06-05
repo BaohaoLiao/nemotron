@@ -401,18 +401,29 @@ def main() -> None:
 
     # Per-category accuracy table.
     total = len(rows)
-    print()
-    print("=" * 56)
-    print(f"{'Category':<26}{'Correct':>8}{'Total':>7}{'Accuracy':>13}")
-    print("-" * 56)
+    result_path = out_path.parent / "result.txt"
+    result_lines = [
+        "",
+        "=" * 56,
+        f"{'Category':<26}{'Correct':>8}{'Total':>7}{'Accuracy':>13}",
+        "-" * 56,
+    ]
     for cat in sorted(by_cat):
         results = by_cat[cat]
         c, t = sum(results), len(results)
-        print(f"{cat:<26}{c:>8}{t:>7}{c / t * 100:>12.1f}%")
-    print("-" * 56)
-    print(f"{'TOTAL':<26}{n_correct:>8}{total:>7}{n_correct / total * 100:>12.1f}%")
-    print("=" * 56)
+        result_lines.append(f"{cat:<26}{c:>8}{t:>7}{c / t * 100:>12.1f}%")
+    result_lines.extend(
+        [
+            "-" * 56,
+            f"{'TOTAL':<26}{n_correct:>8}{total:>7}{n_correct / total * 100:>12.1f}%",
+            "=" * 56,
+        ]
+    )
+    result_text = "\n".join(result_lines)
+    print(result_text)
+    result_path.write_text(result_text + "\n")
     print(f"\nWrote per-problem results to {out_path}")
+    print(f"Wrote accuracy summary to {result_path}")
 
 
 if __name__ == "__main__":
