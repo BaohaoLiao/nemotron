@@ -712,7 +712,8 @@ def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
     )
 
     if dist_info.is_main:
-        save_adapter(cfg, model, training_log, log)
+        final_dir = os.path.join(cfg.output_dir, f"step_{step}")
+        save_adapter(cfg, model, training_log, log, save_dir=final_dir)
 
 
 def save_adapter(
