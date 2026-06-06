@@ -23,7 +23,7 @@ from pathlib import Path
 
 from reasoners.bit_manipulation_v2 import reasoning_bit_manipulation
 from reasoners.cipher import reasoning_cipher
-from reasoners.equation_numeric import reasoning_equation_numeric
+from reasoners.equation_numeric_v2 import reasoning_equation_numeric
 from reasoners.cryptarithm import reasoning_cryptarithm
 from reasoners.gravity import reasoning_gravity
 from reasoners.numeral import reasoning_numeral
