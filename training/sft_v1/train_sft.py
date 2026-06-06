@@ -145,6 +145,12 @@ def parse_args() -> argparse.Namespace:
         help="Per-GPU micro-batch size used for gradient accumulation.",
     )
     g.add_argument("--learning_rate", type=float, default=2e-4)
+    g.add_argument(
+        "--head_embedding_learning_rate",
+        type=float,
+        default=None,
+        help="Learning rate for lm_head and embedding LoRA params. Defaults to --learning_rate.",
+    )
     g.add_argument("--adam_beta1", type=float, default=0.9)
     g.add_argument("--adam_beta2", type=float, default=0.95)
     g.add_argument("--adam_eps", type=float, default=1e-8)
@@ -566,6 +572,56 @@ def build_moe_tying(cfg: argparse.Namespace, model, log):
     return tie_init, tie_grads
 
 
+def build_optimizer_param_groups(cfg: argparse.Namespace, model, log) -> list[dict]:
+    """Split trainable params so head / embedding LoRAs can use a custom LR."""
+    main_lr = cfg.learning_rate
+    head_embedding_lr = (
+        cfg.head_embedding_learning_rate
+        if cfg.head_embedding_learning_rate is not None
+        else main_lr
+    )
+
+    main_params = []
+    head_embedding_params = []
+    main_count = 0
+    head_embedding_count = 0
+
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue
+        n_params = param.numel()
+        is_lm_head_lora = "lm_head" in name and ".lora_" in name
+        is_embedding_lora = "lora_embedding_" in name or (
+            "embed_tokens" in name and ".lora_" in name
+        )
+        if is_lm_head_lora or is_embedding_lora:
+            head_embedding_params.append(param)
+            head_embedding_count += n_params
+        else:
+            main_params.append(param)
+            main_count += n_params
+
+    groups = []
+    if main_params:
+        groups.append({"params": main_params, "lr": main_lr, "initial_lr": main_lr})
+    if head_embedding_params:
+        groups.append(
+            {
+                "params": head_embedding_params,
+                "lr": head_embedding_lr,
+                "initial_lr": head_embedding_lr,
+            }
+        )
+
+    log(
+        "Optimizer groups: "
+        f"main={main_count:,} params lr={main_lr:.2e}; "
+        f"head_embedding_lora={head_embedding_count:,} params "
+        f"lr={head_embedding_lr:.2e}"
+    )
+    return groups
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Training
 # ─────────────────────────────────────────────────────────────────────────────
@@ -622,9 +678,9 @@ def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
     )
 
     trainable = [p for p in model.parameters() if p.requires_grad]
+    param_groups = build_optimizer_param_groups(cfg, model, log)
     optimizer = torch.optim.AdamW(
-        trainable,
-        lr=cfg.learning_rate,
+        param_groups,
         betas=(cfg.adam_beta1, cfg.adam_beta2),
         eps=cfg.adam_eps,
         weight_decay=cfg.weight_decay,
@@ -716,9 +772,9 @@ def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
                     p.grad /= dist_info.world_size
 
             # ── Optimizer step ──────────────────────────────────────────
-            lr = cfg.learning_rate * (1 - step / num_steps)
+            lr_factor = 1 - step / num_steps
             for pg in optimizer.param_groups:
-                pg["lr"] = lr
+                pg["lr"] = pg["initial_lr"] * lr_factor
             tie_grads()  # keep MoE expert grads identical before clip+step
             grad_norm = torch.nn.utils.clip_grad_norm_(
                 trainable, max_norm=cfg.grad_clip_norm
@@ -738,7 +794,8 @@ def train(cfg: argparse.Namespace, dist_info: DistInfo) -> None:
             step += 1
             log(
                 f"  epoch {epoch + 1}/{cfg.num_epochs} step {step}/{num_steps}: "
-                f"loss:mean={loss_mean:.6f}, grad_norm={grad_norm:.4f}, lr={lr:.2e}"
+                f"loss:mean={loss_mean:.6f}, grad_norm={grad_norm:.4f}, "
+                f"lr={optimizer.param_groups[0]['lr']:.2e}"
             )
 
             # ── Periodic checkpoint ─────────────────────────────────────
