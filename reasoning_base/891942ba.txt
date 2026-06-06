@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  72+29 = 2972
+  91-11 = 8
+  66*11 = 627
+  88+19 = 1988
+
+The inputs are 72, 29, 91, 11, 66, 11, 88, 19
+
+The outputs are 2972, 8, 627, 1988
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+72+29 -> +
+91-11 -> -
+66*11 -> *
+88+19 -> +
+
+The operators
++
+-
+*
+
+Looking at the question
+85-88 -> -
+The question operator is found in the examples.
+
+Looking at operator 【-】 [91-11 = 8]:
+  Trying common operations reversed operands [91->19 11->11] and reversed result [expected (19,11)->8]:
+    concatenation f(19, 11) = 19 || 11 = 1911 -rev-> 1191 wrong
+    reverse concatenation f(19, 11) = 11 || 19 = 1119 -rev-> 9111 wrong
+    addition f(19, 11) = 19 + 11 = 30 -rev-> 03 wrong
+    absolute difference f(19, 11) = |19 - 11| = 8 -rev-> 8 match, correct, actions: reversed operands, reversed result, absolute difference
+    negated absolute difference f(19, 11) = -|19 - 11| = -8 -rev-> -8 wrong
+    subtraction (a-b) f(19, 11) = 19 - 11 = 8 -rev-> 8 match, correct, but skipping
+    reverse subtraction (b-a) f(19, 11) = 11 - 19 = -8 -rev-> -8 wrong
+    multiplication f(19, 11) = (10 + 9) * 11 = 10 * 11 + 9 * 11 = 110 + 99 = 209 -rev-> 902 wrong
+  Trying common operations on identity [91 11] [expected (91,11)->8]:
+    concatenation f(91, 11) = 91 || 11 = 9111 wrong
+    reverse concatenation f(91, 11) = 11 || 91 = 1191 wrong
+    addition f(91, 11) = 91 + 11 = 102 wrong
+    absolute difference f(91, 11) = |91 - 11| = 80 wrong
+    negated absolute difference f(91, 11) = -|91 - 11| = -80 wrong
+    subtraction (a-b) f(91, 11) = 91 - 11 = 80 wrong
+    reverse subtraction (b-a) f(91, 11) = 11 - 91 = -80 wrong
+    multiplication f(91, 11) = (90 + 1) * 11 = 90 * 11 + 1 * 11 = 990 + 11 = 1001 wrong
+  Trying common operations reversed operands [91->19 11->11] [expected (19,11)->8]:
+    concatenation f(19, 11) = 19 || 11 = 1911 wrong
+    reverse concatenation f(19, 11) = 11 || 19 = 1119 wrong
+    addition f(19, 11) = 19 + 11 = 30 wrong
+    absolute difference f(19, 11) = |19 - 11| = 8 match, correct, but skipping
+    negated absolute difference f(19, 11) = -|19 - 11| = -8 wrong
+    subtraction (a-b) f(19, 11) = 19 - 11 = 8 match, correct, but skipping
+    reverse subtraction (b-a) f(19, 11) = 11 - 19 = -8 wrong
+    multiplication f(19, 11) = (10 + 9) * 11 = 10 * 11 + 9 * 11 = 110 + 99 = 209 wrong
+  Trying common operations identity operands [91 11] reversed result [expected (91,11)->8]:
+    concatenation f(91, 11) = 91 || 11 = 9111 -rev-> 1119 wrong
+    reverse concatenation f(91, 11) = 11 || 91 = 1191 -rev-> 1911 wrong
+    addition f(91, 11) = 91 + 11 = 102 -rev-> 201 wrong
+    absolute difference f(91, 11) = |91 - 11| = 80 -rev-> 08 wrong
+    negated absolute difference f(91, 11) = -|91 - 11| = -80 -rev-> -08 wrong
+    subtraction (a-b) f(91, 11) = 91 - 11 = 80 -rev-> 08 wrong
+    reverse subtraction (b-a) f(91, 11) = 11 - 91 = -80 -rev-> -08 wrong
+    multiplication f(91, 11) = (90 + 1) * 11 = 90 * 11 + 1 * 11 = 990 + 11 = 1001 -rev-> 1001 wrong
+  Trying rare operations reversed operands [91->19 11->11] and reversed result [expected (19,11)->8]:
+    multiply+1 f(19, 11) = (10 + 9) * 11 + 1 = 10 * 11 + 9 * 11 + 1 = 110 + 99 + 1 = 209 + 1 = 210 -rev-> 012 wrong
+    multiply-1 f(19, 11) = (10 + 9) * 11 - 1 = 10 * 11 + 9 * 11 - 1 = 110 + 99 - 1 = 209 - 1 = 208 -rev-> 802 wrong
+    add+1 f(19, 11) = 19 + 11 + 1 = 31 -rev-> 13 wrong
+    add-1 f(19, 11) = 19 + 11 - 1 = 29 -rev-> 92 wrong
+    sub+1 f(19, 11) = 19 - 11 + 1 = 9 -rev-> 9 wrong
+    sub-1 f(19, 11) = 19 - 11 - 1 = 7 -rev-> 7 wrong
+    max mod min f(19, 11) = max(19,11) mod min(19,11) = 19 mod 11 = 8 -rev-> 8 match, correct, but skipping
+    integer division (a/b) f(19, 11) = 19 / 11 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(19, 11) = 19 mod 11 = 8 -rev-> 8 match, correct, but skipping
+    reverse division (b/a) f(19, 11) = 11 / 19 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(19, 11) = 11 mod 19 = 11 -rev-> 11 wrong
+    digit absolute diff f(19, 11) = |1-1| || |9-1| = 08 -rev-> 80 wrong
+    digit add mod10 f(19, 11) = (1+1)%10 || (9+1)%10 = 20 -rev-> 02 wrong
+    digit sub mod10 f(19, 11) = (1-1)%10 || (9-1)%10 = 08 -rev-> 80 wrong
+    cross multiply f(19, 11) = 1*1 + 9*1 = 1 + 9 = 10 -rev-> 01 wrong
+    cross multiply rev f(19, 11) = 1*1 + 9*1 = 1 + 9 = 10 -rev-> 01 wrong
+    digit multiply f(19, 11) = 1*1 || 9*1 = 1 || 9 = 19 -rev-> 91 wrong
+    digit multiply rev f(19, 11) = 1*1 || 9*1 = 1 || 9 = 19 -rev-> 91 wrong
+    digit sum diff f(19, 11) = (1+9) - (1+1) = 8 -rev-> 8 match, correct, but skipping
+    digit sum sum f(19, 11) = (1+9) + (1+1) = 12 -rev-> 21 wrong
+    digit product diff f(19, 11) = 1*9 - 1*1 = 9 - 1 = 8 -rev-> 8 match, correct, but skipping
+    digit product sum f(19, 11) = 1*9 + 1*1 = 9 + 1 = 10 -rev-> 01 wrong
+    determinant f(19, 11) = 1*1 - 9*1 = 1 - 9 = -8 -rev-> -8 wrong
+    abs determinant f(19, 11) = |1*1 - 9*1| = |1 - 9| = 8 -rev-> 8 match, correct, but skipping
+  Trying rare operations on identity [91 11] [expected (91,11)->8]:
+    multiply+1 f(91, 11) = (90 + 1) * 11 + 1 = 90 * 11 + 1 * 11 + 1 = 990 + 11 + 1 = 1001 + 1 = 1002 wrong
+    multiply-1 f(91, 11) = (90 + 1) * 11 - 1 = 90 * 11 + 1 * 11 - 1 = 990 + 11 - 1 = 1001 - 1 = 1000 wrong
+    add+1 f(91, 11) = 91 + 11 + 1 = 103 wrong
+    add-1 f(91, 11) = 91 + 11 - 1 = 101 wrong
+    sub+1 f(91, 11) = 91 - 11 + 1 = 81 wrong
+    sub-1 f(91, 11) = 91 - 11 - 1 = 79 wrong
+    max mod min f(91, 11) = max(91,11) mod min(91,11) = 91 mod 11 = 3 wrong
+    integer division (a/b) f(91, 11) = 91 / 11 = 8 match, correct, but skipping
+    modulo (a mod b) f(91, 11) = 91 mod 11 = 3 wrong
+    reverse division (b/a) f(91, 11) = 11 / 91 = 0 wrong
+    reverse modulo (b mod a) f(91, 11) = 11 mod 91 = 11 wrong
+    digit absolute diff f(91, 11) = |9-1| || |1-1| = 80 wrong
+    digit add mod10 f(91, 11) = (9+1)%10 || (1+1)%10 = 02 wrong
+    digit sub mod10 f(91, 11) = (9-1)%10 || (1-1)%10 = 80 wrong
+    cross multiply f(91, 11) = 9*1 + 1*1 = 9 + 1 = 10 wrong
+    cross multiply rev f(91, 11) = 9*1 + 1*1 = 9 + 1 = 10 wrong
+    digit multiply f(91, 11) = 9*1 || 1*1 = 9 || 1 = 91 wrong
+    digit multiply rev f(91, 11) = 9*1 || 1*1 = 9 || 1 = 91 wrong
+    digit sum diff f(91, 11) = (9+1) - (1+1) = 8 match, correct, but skipping
+    digit sum sum f(91, 11) = (9+1) + (1+1) = 12 wrong
+    digit product diff f(91, 11) = 9*1 - 1*1 = 9 - 1 = 8 match, correct, but skipping
+    digit product sum f(91, 11) = 9*1 + 1*1 = 9 + 1 = 10 wrong
+    determinant f(91, 11) = 9*1 - 1*1 = 9 - 1 = 8 match, correct, but skipping
+    abs determinant f(91, 11) = |9*1 - 1*1| = |9 - 1| = 8 match, correct, but skipping
+  Trying rare operations reversed operands [91->19 11->11] [expected (19,11)->8]:
+    multiply+1 f(19, 11) = (10 + 9) * 11 + 1 = 10 * 11 + 9 * 11 + 1 = 110 + 99 + 1 = 209 + 1 = 210 wrong
+    multiply-1 f(19, 11) = (10 + 9) * 11 - 1 = 10 * 11 + 9 * 11 - 1 = 110 + 99 - 1 = 209 - 1 = 208 wrong
+    add+1 f(19, 11) = 19 + 11 + 1 = 31 wrong
+    add-1 f(19, 11) = 19 + 11 - 1 = 29 wrong
+    sub+1 f(19, 11) = 19 - 11 + 1 = 9 wrong
+    sub-1 f(19, 11) = 19 - 11 - 1 = 7 wrong
+    max mod min f(19, 11) = max(19,11) mod min(19,11) = 19 mod 11 = 8 match, correct, but skipping
+    integer division (a/b) f(19, 11) = 19 / 11 = 1 wrong
+    modulo (a mod b) f(19, 11) = 19 mod 11 = 8 match, correct, but skipping
+    reverse division (b/a) f(19, 11) = 11 / 19 = 0 wrong
+    reverse modulo (b mod a) f(19, 11) = 11 mod 19 = 11 wrong
+    digit absolute diff f(19, 11) = |1-1| || |9-1| = 08 wrong
+    digit add mod10 f(19, 11) = (1+1)%10 || (9+1)%10 = 20 wrong
+    digit sub mod10 f(19, 11) = (1-1)%10 || (9-1)%10 = 08 wrong
+    cross multiply f(19, 11) = 1*1 + 9*1 = 1 + 9 = 10 wrong
+    cross multiply rev f(19, 11) = 1*1 + 9*1 = 1 + 9 = 10 wrong
+    digit multiply f(19, 11) = 1*1 || 9*1 = 1 || 9 = 19 wrong
+    digit multiply rev f(19, 11) = 1*1 || 9*1 = 1 || 9 = 19 wrong
+    digit sum diff f(19, 11) = (1+9) - (1+1) = 8 match, correct, but skipping
+    digit sum sum f(19, 11) = (1+9) + (1+1) = 12 wrong
+    digit product diff f(19, 11) = 1*9 - 1*1 = 9 - 1 = 8 match, correct, but skipping
+    digit product sum f(19, 11) = 1*9 + 1*1 = 9 + 1 = 10 wrong
+    determinant f(19, 11) = 1*1 - 9*1 = 1 - 9 = -8 wrong
+    abs determinant f(19, 11) = |1*1 - 9*1| = |1 - 9| = 8 match, correct, but skipping
+  Trying rare operations identity operands [91 11] reversed result [expected (91,11)->8]:
+    multiply+1 f(91, 11) = (90 + 1) * 11 + 1 = 90 * 11 + 1 * 11 + 1 = 990 + 11 + 1 = 1001 + 1 = 1002 -rev-> 2001 wrong
+    multiply-1 f(91, 11) = (90 + 1) * 11 - 1 = 90 * 11 + 1 * 11 - 1 = 990 + 11 - 1 = 1001 - 1 = 1000 -rev-> 0001 wrong
+    add+1 f(91, 11) = 91 + 11 + 1 = 103 -rev-> 301 wrong
+    add-1 f(91, 11) = 91 + 11 - 1 = 101 -rev-> 101 wrong
+    sub+1 f(91, 11) = 91 - 11 + 1 = 81 -rev-> 18 wrong
+    sub-1 f(91, 11) = 91 - 11 - 1 = 79 -rev-> 97 wrong
+    max mod min f(91, 11) = max(91,11) mod min(91,11) = 91 mod 11 = 3 -rev-> 3 wrong
+    integer division (a/b) f(91, 11) = 91 / 11 = 8 -rev-> 8 match, correct, but skipping
+    modulo (a mod b) f(91, 11) = 91 mod 11 = 3 -rev-> 3 wrong
+    reverse division (b/a) f(91, 11) = 11 / 91 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(91, 11) = 11 mod 91 = 11 -rev-> 11 wrong
+    digit absolute diff f(91, 11) = |9-1| || |1-1| = 80 -rev-> 08 wrong
+    digit add mod10 f(91, 11) = (9+1)%10 || (1+1)%10 = 02 -rev-> 20 wrong
+    digit sub mod10 f(91, 11) = (9-1)%10 || (1-1)%10 = 80 -rev-> 08 wrong
+    cross multiply f(91, 11) = 9*1 + 1*1 = 9 + 1 = 10 -rev-> 01 wrong
+    cross multiply rev f(91, 11) = 9*1 + 1*1 = 9 + 1 = 10 -rev-> 01 wrong
+    digit multiply f(91, 11) = 9*1 || 1*1 = 9 || 1 = 91 -rev-> 19 wrong
+    digit multiply rev f(91, 11) = 9*1 || 1*1 = 9 || 1 = 91 -rev-> 19 wrong
+    digit sum diff f(91, 11) = (9+1) - (1+1) = 8 -rev-> 8 match, correct, but skipping
+    digit sum sum f(91, 11) = (9+1) + (1+1) = 12 -rev-> 21 wrong
+    digit product diff f(91, 11) = 9*1 - 1*1 = 9 - 1 = 8 -rev-> 8 match, correct, but skipping
+    digit product sum f(91, 11) = 9*1 + 1*1 = 9 + 1 = 10 -rev-> 01 wrong
+    determinant f(91, 11) = 9*1 - 1*1 = 9 - 1 = 8 -rev-> 8 match, correct, but skipping
+    abs determinant f(91, 11) = |9*1 - 1*1| = |9 - 1| = 8 -rev-> 8 match, correct, but skipping
+
+Applying to 85-88:
+  reversed operands [85->58, 88->88] and reversed result
+  absolute difference f(58, 88) = |58 - 88| = 30 -rev-> 03
+  Result: 【03】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{03}

@@ -1,0 +1,176 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  72'53 = 124
+  12$15 = 179
+  48/25 = 23
+  32$28 = 895
+  26$57 = 1481
+
+The inputs are 72, 53, 12, 15, 48, 25, 32, 28, 26, 57
+
+The outputs are 124, 179, 23, 895, 1481
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+72'53 -> '
+12$15 -> $
+48/25 -> /
+32$28 -> $
+26$57 -> $
+
+The operators
+'
+$
+/
+
+Looking at the question
+59/73 -> /
+The question operator is found in the examples.
+
+Looking at operator 【/】 [48/25 = 23]:
+  Trying common operations reversed operands [48->84 25->52] and reversed result [expected (84,52)->23]:
+    concatenation f(84, 52) = 84 || 52 = 8452 -rev-> 2548 wrong
+    reverse concatenation f(84, 52) = 52 || 84 = 5284 -rev-> 4825 wrong
+    addition f(84, 52) = 84 + 52 = 136 -rev-> 631 wrong
+    absolute difference f(84, 52) = |84 - 52| = 32 -rev-> 23 match, correct, actions: reversed operands, reversed result, absolute difference
+    negated absolute difference f(84, 52) = -|84 - 52| = -32 -rev-> -23 wrong
+    subtraction (a-b) f(84, 52) = 84 - 52 = 32 -rev-> 23 match, correct, but skipping
+    reverse subtraction (b-a) f(84, 52) = 52 - 84 = -32 -rev-> -23 wrong
+    multiplication f(84, 52) = (80 + 4) * 52 = 80 * 52 + 4 * 52 = 4160 + 208 = 4368 -rev-> 8634 wrong
+  Trying common operations on identity [48 25] [expected (48,25)->23]:
+    concatenation f(48, 25) = 48 || 25 = 4825 wrong
+    reverse concatenation f(48, 25) = 25 || 48 = 2548 wrong
+    addition f(48, 25) = 48 + 25 = 73 wrong
+    absolute difference f(48, 25) = |48 - 25| = 23 match, correct, but skipping
+    negated absolute difference f(48, 25) = -|48 - 25| = -23 wrong
+    subtraction (a-b) f(48, 25) = 48 - 25 = 23 match, correct, but skipping
+    reverse subtraction (b-a) f(48, 25) = 25 - 48 = -23 wrong
+    multiplication f(48, 25) = (40 + 8) * 25 = 40 * 25 + 8 * 25 = 1000 + 200 = 1200 wrong
+  Trying common operations reversed operands [48->84 25->52] [expected (84,52)->23]:
+    concatenation f(84, 52) = 84 || 52 = 8452 wrong
+    reverse concatenation f(84, 52) = 52 || 84 = 5284 wrong
+    addition f(84, 52) = 84 + 52 = 136 wrong
+    absolute difference f(84, 52) = |84 - 52| = 32 wrong
+    negated absolute difference f(84, 52) = -|84 - 52| = -32 wrong
+    subtraction (a-b) f(84, 52) = 84 - 52 = 32 wrong
+    reverse subtraction (b-a) f(84, 52) = 52 - 84 = -32 wrong
+    multiplication f(84, 52) = (80 + 4) * 52 = 80 * 52 + 4 * 52 = 4160 + 208 = 4368 wrong
+  Trying common operations identity operands [48 25] reversed result [expected (48,25)->23]:
+    concatenation f(48, 25) = 48 || 25 = 4825 -rev-> 5284 wrong
+    reverse concatenation f(48, 25) = 25 || 48 = 2548 -rev-> 8452 wrong
+    addition f(48, 25) = 48 + 25 = 73 -rev-> 37 wrong
+    absolute difference f(48, 25) = |48 - 25| = 23 -rev-> 32 wrong
+    negated absolute difference f(48, 25) = -|48 - 25| = -23 -rev-> -32 wrong
+    subtraction (a-b) f(48, 25) = 48 - 25 = 23 -rev-> 32 wrong
+    reverse subtraction (b-a) f(48, 25) = 25 - 48 = -23 -rev-> -32 wrong
+    multiplication f(48, 25) = (40 + 8) * 25 = 40 * 25 + 8 * 25 = 1000 + 200 = 1200 -rev-> 0021 wrong
+  Trying rare operations reversed operands [48->84 25->52] and reversed result [expected (84,52)->23]:
+    multiply+1 f(84, 52) = (80 + 4) * 52 + 1 = 80 * 52 + 4 * 52 + 1 = 4160 + 208 + 1 = 4368 + 1 = 4369 -rev-> 9634 wrong
+    multiply-1 f(84, 52) = (80 + 4) * 52 - 1 = 80 * 52 + 4 * 52 - 1 = 4160 + 208 - 1 = 4368 - 1 = 4367 -rev-> 7634 wrong
+    add+1 f(84, 52) = 84 + 52 + 1 = 137 -rev-> 731 wrong
+    add-1 f(84, 52) = 84 + 52 - 1 = 135 -rev-> 531 wrong
+    sub+1 f(84, 52) = 84 - 52 + 1 = 33 -rev-> 33 wrong
+    sub-1 f(84, 52) = 84 - 52 - 1 = 31 -rev-> 13 wrong
+    max mod min f(84, 52) = max(84,52) mod min(84,52) = 84 mod 52 = 32 -rev-> 23 match, correct, but skipping
+    integer division (a/b) f(84, 52) = 84 / 52 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(84, 52) = 84 mod 52 = 32 -rev-> 23 match, correct, but skipping
+    reverse division (b/a) f(84, 52) = 52 / 84 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(84, 52) = 52 mod 84 = 52 -rev-> 25 wrong
+    digit absolute diff f(84, 52) = |8-5| || |4-2| = 32 -rev-> 23 match, correct, but skipping
+    digit add mod10 f(84, 52) = (8+5)%10 || (4+2)%10 = 36 -rev-> 63 wrong
+    digit sub mod10 f(84, 52) = (8-5)%10 || (4-2)%10 = 32 -rev-> 23 match, correct, but skipping
+    cross multiply f(84, 52) = 8*5 + 4*2 = 40 + 8 = 48 -rev-> 84 wrong
+    cross multiply rev f(84, 52) = 8*2 + 4*5 = 16 + 20 = 36 -rev-> 63 wrong
+    digit multiply f(84, 52) = 8*5 || 4*2 = 40 || 8 = 408 -rev-> 804 wrong
+    digit multiply rev f(84, 52) = 8*2 || 4*5 = 16 || 20 = 1620 -rev-> 0261 wrong
+    digit sum diff f(84, 52) = (8+4) - (5+2) = 5 -rev-> 5 wrong
+    digit sum sum f(84, 52) = (8+4) + (5+2) = 19 -rev-> 91 wrong
+    digit product diff f(84, 52) = 8*4 - 5*2 = 32 - 10 = 22 -rev-> 22 wrong
+    digit product sum f(84, 52) = 8*4 + 5*2 = 32 + 10 = 42 -rev-> 24 wrong
+    determinant f(84, 52) = 8*2 - 4*5 = 16 - 20 = -4 -rev-> -4 wrong
+    abs determinant f(84, 52) = |8*2 - 4*5| = |16 - 20| = 4 -rev-> 4 wrong
+  Trying rare operations on identity [48 25] [expected (48,25)->23]:
+    multiply+1 f(48, 25) = (40 + 8) * 25 + 1 = 40 * 25 + 8 * 25 + 1 = 1000 + 200 + 1 = 1200 + 1 = 1201 wrong
+    multiply-1 f(48, 25) = (40 + 8) * 25 - 1 = 40 * 25 + 8 * 25 - 1 = 1000 + 200 - 1 = 1200 - 1 = 1199 wrong
+    add+1 f(48, 25) = 48 + 25 + 1 = 74 wrong
+    add-1 f(48, 25) = 48 + 25 - 1 = 72 wrong
+    sub+1 f(48, 25) = 48 - 25 + 1 = 24 wrong
+    sub-1 f(48, 25) = 48 - 25 - 1 = 22 wrong
+    max mod min f(48, 25) = max(48,25) mod min(48,25) = 48 mod 25 = 23 match, correct, but skipping
+    integer division (a/b) f(48, 25) = 48 / 25 = 1 wrong
+    modulo (a mod b) f(48, 25) = 48 mod 25 = 23 match, correct, but skipping
+    reverse division (b/a) f(48, 25) = 25 / 48 = 0 wrong
+    reverse modulo (b mod a) f(48, 25) = 25 mod 48 = 25 wrong
+    digit absolute diff f(48, 25) = |4-2| || |8-5| = 23 match, correct, but skipping
+    digit add mod10 f(48, 25) = (4+2)%10 || (8+5)%10 = 63 wrong
+    digit sub mod10 f(48, 25) = (4-2)%10 || (8-5)%10 = 23 match, correct, but skipping
+    cross multiply f(48, 25) = 4*2 + 8*5 = 8 + 40 = 48 wrong
+    cross multiply rev f(48, 25) = 4*5 + 8*2 = 20 + 16 = 36 wrong
+    digit multiply f(48, 25) = 4*2 || 8*5 = 8 || 40 = 840 wrong
+    digit multiply rev f(48, 25) = 4*5 || 8*2 = 20 || 16 = 2016 wrong
+    digit sum diff f(48, 25) = (4+8) - (2+5) = 5 wrong
+    digit sum sum f(48, 25) = (4+8) + (2+5) = 19 wrong
+    digit product diff f(48, 25) = 4*8 - 2*5 = 32 - 10 = 22 wrong
+    digit product sum f(48, 25) = 4*8 + 2*5 = 32 + 10 = 42 wrong
+    determinant f(48, 25) = 4*5 - 8*2 = 20 - 16 = 4 wrong
+    abs determinant f(48, 25) = |4*5 - 8*2| = |20 - 16| = 4 wrong
+  Trying rare operations reversed operands [48->84 25->52] [expected (84,52)->23]:
+    multiply+1 f(84, 52) = (80 + 4) * 52 + 1 = 80 * 52 + 4 * 52 + 1 = 4160 + 208 + 1 = 4368 + 1 = 4369 wrong
+    multiply-1 f(84, 52) = (80 + 4) * 52 - 1 = 80 * 52 + 4 * 52 - 1 = 4160 + 208 - 1 = 4368 - 1 = 4367 wrong
+    add+1 f(84, 52) = 84 + 52 + 1 = 137 wrong
+    add-1 f(84, 52) = 84 + 52 - 1 = 135 wrong
+    sub+1 f(84, 52) = 84 - 52 + 1 = 33 wrong
+    sub-1 f(84, 52) = 84 - 52 - 1 = 31 wrong
+    max mod min f(84, 52) = max(84,52) mod min(84,52) = 84 mod 52 = 32 wrong
+    integer division (a/b) f(84, 52) = 84 / 52 = 1 wrong
+    modulo (a mod b) f(84, 52) = 84 mod 52 = 32 wrong
+    reverse division (b/a) f(84, 52) = 52 / 84 = 0 wrong
+    reverse modulo (b mod a) f(84, 52) = 52 mod 84 = 52 wrong
+    digit absolute diff f(84, 52) = |8-5| || |4-2| = 32 wrong
+    digit add mod10 f(84, 52) = (8+5)%10 || (4+2)%10 = 36 wrong
+    digit sub mod10 f(84, 52) = (8-5)%10 || (4-2)%10 = 32 wrong
+    cross multiply f(84, 52) = 8*5 + 4*2 = 40 + 8 = 48 wrong
+    cross multiply rev f(84, 52) = 8*2 + 4*5 = 16 + 20 = 36 wrong
+    digit multiply f(84, 52) = 8*5 || 4*2 = 40 || 8 = 408 wrong
+    digit multiply rev f(84, 52) = 8*2 || 4*5 = 16 || 20 = 1620 wrong
+    digit sum diff f(84, 52) = (8+4) - (5+2) = 5 wrong
+    digit sum sum f(84, 52) = (8+4) + (5+2) = 19 wrong
+    digit product diff f(84, 52) = 8*4 - 5*2 = 32 - 10 = 22 wrong
+    digit product sum f(84, 52) = 8*4 + 5*2 = 32 + 10 = 42 wrong
+    determinant f(84, 52) = 8*2 - 4*5 = 16 - 20 = -4 wrong
+    abs determinant f(84, 52) = |8*2 - 4*5| = |16 - 20| = 4 wrong
+  Trying rare operations identity operands [48 25] reversed result [expected (48,25)->23]:
+    multiply+1 f(48, 25) = (40 + 8) * 25 + 1 = 40 * 25 + 8 * 25 + 1 = 1000 + 200 + 1 = 1200 + 1 = 1201 -rev-> 1021 wrong
+    multiply-1 f(48, 25) = (40 + 8) * 25 - 1 = 40 * 25 + 8 * 25 - 1 = 1000 + 200 - 1 = 1200 - 1 = 1199 -rev-> 9911 wrong
+    add+1 f(48, 25) = 48 + 25 + 1 = 74 -rev-> 47 wrong
+    add-1 f(48, 25) = 48 + 25 - 1 = 72 -rev-> 27 wrong
+    sub+1 f(48, 25) = 48 - 25 + 1 = 24 -rev-> 42 wrong
+    sub-1 f(48, 25) = 48 - 25 - 1 = 22 -rev-> 22 wrong
+    max mod min f(48, 25) = max(48,25) mod min(48,25) = 48 mod 25 = 23 -rev-> 32 wrong
+    integer division (a/b) f(48, 25) = 48 / 25 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(48, 25) = 48 mod 25 = 23 -rev-> 32 wrong
+    reverse division (b/a) f(48, 25) = 25 / 48 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(48, 25) = 25 mod 48 = 25 -rev-> 52 wrong
+    digit absolute diff f(48, 25) = |4-2| || |8-5| = 23 -rev-> 32 wrong
+    digit add mod10 f(48, 25) = (4+2)%10 || (8+5)%10 = 63 -rev-> 36 wrong
+    digit sub mod10 f(48, 25) = (4-2)%10 || (8-5)%10 = 23 -rev-> 32 wrong
+    cross multiply f(48, 25) = 4*2 + 8*5 = 8 + 40 = 48 -rev-> 84 wrong
+    cross multiply rev f(48, 25) = 4*5 + 8*2 = 20 + 16 = 36 -rev-> 63 wrong
+    digit multiply f(48, 25) = 4*2 || 8*5 = 8 || 40 = 840 -rev-> 048 wrong
+    digit multiply rev f(48, 25) = 4*5 || 8*2 = 20 || 16 = 2016 -rev-> 6102 wrong
+    digit sum diff f(48, 25) = (4+8) - (2+5) = 5 -rev-> 5 wrong
+    digit sum sum f(48, 25) = (4+8) + (2+5) = 19 -rev-> 91 wrong
+    digit product diff f(48, 25) = 4*8 - 2*5 = 32 - 10 = 22 -rev-> 22 wrong
+    digit product sum f(48, 25) = 4*8 + 2*5 = 32 + 10 = 42 -rev-> 24 wrong
+    determinant f(48, 25) = 4*5 - 8*2 = 20 - 16 = 4 -rev-> 4 wrong
+    abs determinant f(48, 25) = |4*5 - 8*2| = |20 - 16| = 4 -rev-> 4 wrong
+
+Applying to 59/73:
+  reversed operands [59->95, 73->37] and reversed result
+  absolute difference f(95, 37) = |95 - 37| = 58 -rev-> 85
+  Result: 【85】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{85}

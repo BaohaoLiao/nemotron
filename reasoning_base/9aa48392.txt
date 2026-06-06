@@ -1,0 +1,178 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  28-08 = -2
+  91*21 = 2191
+  64-82 = -81
+  15*39 = 3915
+  39*36 = 3639
+
+The inputs are 28, 08, 91, 21, 64, 82, 15, 39, 39, 36
+
+The outputs are -2, 2191, -81, 3915, 3639
+Some outputs have the operator symbol as prefix 【-】.
+We now consider the outputs to be -2, 2191, -81, 3915, 3639
+We will add back the operator prefix if our answer is negative.
+
+Looking at the input of the examples
+28-08 -> -
+91*21 -> *
+64-82 -> -
+15*39 -> *
+39*36 -> *
+
+The operators
+-
+*
+
+Looking at the question
+58+66 -> +
+The question operator is not found in the examples. Investigating the most common example operator 【*】 instead. We will use absolute difference for the question operator.
+
+Looking at operator 【*】 [91*21 = 2191, 15*39 = 3915, 39*36 = 3639]:
+  Trying common operations reversed operands [91->19 21->12, 15->51 39->93, 39->93 36->63] and reversed result [expected (19,12)->2191, (51,93)->3915, (93,63)->3639]:
+    concatenation f(19, 12) = 19 || 12 = 1912 -rev-> 2191 match, f(51,93) -> 51 || 93 = 5193 -rev-> 3915 match, f(93,63) -> 93 || 63 = 9363 -rev-> 3639 match, correct, actions: reversed operands, reversed result, concatenation
+    reverse concatenation f(51, 93) = 93 || 51 = 9351 -rev-> 1539 wrong
+    addition f(93, 63) = 93 + 63 = 156 -rev-> 651 wrong
+    absolute difference f(19, 12) = |19 - 12| = 7 -rev-> 7 wrong
+    negated absolute difference f(51, 93) = -|51 - 93| = -42 -rev-> -24 wrong
+    subtraction (a-b) f(93, 63) = 93 - 63 = 30 -rev-> 03 wrong
+    reverse subtraction (b-a) f(19, 12) = 12 - 19 = -7 -rev-> -7 wrong
+    multiplication f(51, 93) = (50 + 1) * 93 = 50 * 93 + 1 * 93 = 4650 + 93 = 4743 -rev-> 3474 wrong
+  Trying common operations on identity [91 21, 15 39, 39 36] [expected (91,21)->2191, (15,39)->3915, (39,36)->3639]:
+    concatenation f(91, 21) = 91 || 21 = 9121 wrong
+    reverse concatenation f(15, 39) = 39 || 15 = 3915 match, f(39,36) -> 36 || 39 = 3639 match, f(91,21) -> 21 || 91 = 2191 match, correct, but skipping
+    addition f(39, 36) = 39 + 36 = 75 wrong
+    absolute difference f(91, 21) = |91 - 21| = 70 wrong
+    negated absolute difference f(15, 39) = -|15 - 39| = -24 wrong
+    subtraction (a-b) f(39, 36) = 39 - 36 = 3 wrong
+    reverse subtraction (b-a) f(91, 21) = 21 - 91 = -70 wrong
+    multiplication f(15, 39) = (10 + 5) * 39 = 10 * 39 + 5 * 39 = 390 + 195 = 585 wrong
+  Trying common operations reversed operands [91->19 21->12, 15->51 39->93, 39->93 36->63] [expected (19,12)->2191, (51,93)->3915, (93,63)->3639]:
+    concatenation f(19, 12) = 19 || 12 = 1912 wrong
+    reverse concatenation f(51, 93) = 93 || 51 = 9351 wrong
+    addition f(93, 63) = 93 + 63 = 156 wrong
+    absolute difference f(19, 12) = |19 - 12| = 7 wrong
+    negated absolute difference f(51, 93) = -|51 - 93| = -42 wrong
+    subtraction (a-b) f(93, 63) = 93 - 63 = 30 wrong
+    reverse subtraction (b-a) f(19, 12) = 12 - 19 = -7 wrong
+    multiplication f(51, 93) = (50 + 1) * 93 = 50 * 93 + 1 * 93 = 4650 + 93 = 4743 wrong
+  Trying common operations identity operands [91 21, 15 39, 39 36] reversed result [expected (91,21)->2191, (15,39)->3915, (39,36)->3639]:
+    concatenation f(91, 21) = 91 || 21 = 9121 -rev-> 1219 wrong
+    reverse concatenation f(15, 39) = 39 || 15 = 3915 -rev-> 5193 wrong
+    addition f(39, 36) = 39 + 36 = 75 -rev-> 57 wrong
+    absolute difference f(91, 21) = |91 - 21| = 70 -rev-> 07 wrong
+    negated absolute difference f(15, 39) = -|15 - 39| = -24 -rev-> -42 wrong
+    subtraction (a-b) f(39, 36) = 39 - 36 = 3 -rev-> 3 wrong
+    reverse subtraction (b-a) f(91, 21) = 21 - 91 = -70 -rev-> -07 wrong
+    multiplication f(15, 39) = (10 + 5) * 39 = 10 * 39 + 5 * 39 = 390 + 195 = 585 -rev-> 585 wrong
+  Trying rare operations reversed operands [91->19 21->12, 15->51 39->93, 39->93 36->63] and reversed result [expected (19,12)->2191, (51,93)->3915, (93,63)->3639]:
+    multiply+1 f(19, 12) = (10 + 9) * 12 + 1 = 10 * 12 + 9 * 12 + 1 = 120 + 108 + 1 = 228 + 1 = 229 -rev-> 922 wrong
+    multiply-1 f(51, 93) = (50 + 1) * 93 - 1 = 50 * 93 + 1 * 93 - 1 = 4650 + 93 - 1 = 4743 - 1 = 4742 -rev-> 2474 wrong
+    add+1 f(93, 63) = 93 + 63 + 1 = 157 -rev-> 751 wrong
+    add-1 f(19, 12) = 19 + 12 - 1 = 30 -rev-> 03 wrong
+    sub+1 f(51, 93) = 51 - 93 + 1 = -41 -rev-> -14 wrong
+    sub-1 f(93, 63) = 93 - 63 - 1 = 29 -rev-> 92 wrong
+    max mod min f(19, 12) = max(19,12) mod min(19,12) = 19 mod 12 = 7 -rev-> 7 wrong
+    integer division (a/b) f(51, 93) = 51 / 93 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(93, 63) = 93 mod 63 = 30 -rev-> 03 wrong
+    reverse division (b/a) f(19, 12) = 12 / 19 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(51, 93) = 93 mod 51 = 42 -rev-> 24 wrong
+    digit absolute diff f(93, 63) = |9-6| || |3-3| = 30 -rev-> 03 wrong
+    digit add mod10 f(19, 12) = (1+1)%10 || (9+2)%10 = 21 -rev-> 12 wrong
+    digit sub mod10 f(51, 93) = (5-9)%10 || (1-3)%10 = 68 -rev-> 86 wrong
+    cross multiply f(93, 63) = 9*6 + 3*3 = 54 + 9 = 63 -rev-> 36 wrong
+    cross multiply rev f(19, 12) = 1*2 + 9*1 = 2 + 9 = 11 -rev-> 11 wrong
+    digit multiply f(51, 93) = 5*9 || 1*3 = 45 || 3 = 453 -rev-> 354 wrong
+    digit multiply rev f(93, 63) = 9*3 || 3*6 = 27 || 18 = 2718 -rev-> 8172 wrong
+    digit sum diff f(19, 12) = (1+9) - (1+2) = 7 -rev-> 7 wrong
+    digit sum sum f(51, 93) = (5+1) + (9+3) = 18 -rev-> 81 wrong
+    digit product diff f(93, 63) = 9*3 - 6*3 = 27 - 18 = 9 -rev-> 9 wrong
+    digit product sum f(19, 12) = 1*9 + 1*2 = 9 + 2 = 11 -rev-> 11 wrong
+    determinant f(51, 93) = 5*3 - 1*9 = 15 - 9 = 6 -rev-> 6 wrong
+    abs determinant f(93, 63) = |9*3 - 3*6| = |27 - 18| = 9 -rev-> 9 wrong
+  Trying rare operations on identity [91 21, 15 39, 39 36] [expected (91,21)->2191, (15,39)->3915, (39,36)->3639]:
+    multiply+1 f(91, 21) = (90 + 1) * 21 + 1 = 90 * 21 + 1 * 21 + 1 = 1890 + 21 + 1 = 1911 + 1 = 1912 wrong
+    multiply-1 f(15, 39) = (10 + 5) * 39 - 1 = 10 * 39 + 5 * 39 - 1 = 390 + 195 - 1 = 585 - 1 = 584 wrong
+    add+1 f(39, 36) = 39 + 36 + 1 = 76 wrong
+    add-1 f(91, 21) = 91 + 21 - 1 = 111 wrong
+    sub+1 f(15, 39) = 15 - 39 + 1 = -23 wrong
+    sub-1 f(39, 36) = 39 - 36 - 1 = 2 wrong
+    max mod min f(91, 21) = max(91,21) mod min(91,21) = 91 mod 21 = 7 wrong
+    integer division (a/b) f(15, 39) = 15 / 39 = 0 wrong
+    modulo (a mod b) f(39, 36) = 39 mod 36 = 3 wrong
+    reverse division (b/a) f(91, 21) = 21 / 91 = 0 wrong
+    reverse modulo (b mod a) f(15, 39) = 39 mod 15 = 9 wrong
+    digit absolute diff f(39, 36) = |3-3| || |9-6| = 03 wrong
+    digit add mod10 f(91, 21) = (9+2)%10 || (1+1)%10 = 12 wrong
+    digit sub mod10 f(15, 39) = (1-3)%10 || (5-9)%10 = 86 wrong
+    cross multiply f(39, 36) = 3*3 + 9*6 = 9 + 54 = 63 wrong
+    cross multiply rev f(91, 21) = 9*1 + 1*2 = 9 + 2 = 11 wrong
+    digit multiply f(15, 39) = 1*3 || 5*9 = 3 || 45 = 345 wrong
+    digit multiply rev f(39, 36) = 3*6 || 9*3 = 18 || 27 = 1827 wrong
+    digit sum diff f(91, 21) = (9+1) - (2+1) = 7 wrong
+    digit sum sum f(15, 39) = (1+5) + (3+9) = 18 wrong
+    digit product diff f(39, 36) = 3*9 - 3*6 = 27 - 18 = 9 wrong
+    digit product sum f(91, 21) = 9*1 + 2*1 = 9 + 2 = 11 wrong
+    determinant f(15, 39) = 1*9 - 5*3 = 9 - 15 = -6 wrong
+    abs determinant f(39, 36) = |3*6 - 9*3| = |18 - 27| = 9 wrong
+  Trying rare operations reversed operands [91->19 21->12, 15->51 39->93, 39->93 36->63] [expected (19,12)->2191, (51,93)->3915, (93,63)->3639]:
+    multiply+1 f(19, 12) = (10 + 9) * 12 + 1 = 10 * 12 + 9 * 12 + 1 = 120 + 108 + 1 = 228 + 1 = 229 wrong
+    multiply-1 f(51, 93) = (50 + 1) * 93 - 1 = 50 * 93 + 1 * 93 - 1 = 4650 + 93 - 1 = 4743 - 1 = 4742 wrong
+    add+1 f(93, 63) = 93 + 63 + 1 = 157 wrong
+    add-1 f(19, 12) = 19 + 12 - 1 = 30 wrong
+    sub+1 f(51, 93) = 51 - 93 + 1 = -41 wrong
+    sub-1 f(93, 63) = 93 - 63 - 1 = 29 wrong
+    max mod min f(19, 12) = max(19,12) mod min(19,12) = 19 mod 12 = 7 wrong
+    integer division (a/b) f(51, 93) = 51 / 93 = 0 wrong
+    modulo (a mod b) f(93, 63) = 93 mod 63 = 30 wrong
+    reverse division (b/a) f(19, 12) = 12 / 19 = 0 wrong
+    reverse modulo (b mod a) f(51, 93) = 93 mod 51 = 42 wrong
+    digit absolute diff f(93, 63) = |9-6| || |3-3| = 30 wrong
+    digit add mod10 f(19, 12) = (1+1)%10 || (9+2)%10 = 21 wrong
+    digit sub mod10 f(51, 93) = (5-9)%10 || (1-3)%10 = 68 wrong
+    cross multiply f(93, 63) = 9*6 + 3*3 = 54 + 9 = 63 wrong
+    cross multiply rev f(19, 12) = 1*2 + 9*1 = 2 + 9 = 11 wrong
+    digit multiply f(51, 93) = 5*9 || 1*3 = 45 || 3 = 453 wrong
+    digit multiply rev f(93, 63) = 9*3 || 3*6 = 27 || 18 = 2718 wrong
+    digit sum diff f(19, 12) = (1+9) - (1+2) = 7 wrong
+    digit sum sum f(51, 93) = (5+1) + (9+3) = 18 wrong
+    digit product diff f(93, 63) = 9*3 - 6*3 = 27 - 18 = 9 wrong
+    digit product sum f(19, 12) = 1*9 + 1*2 = 9 + 2 = 11 wrong
+    determinant f(51, 93) = 5*3 - 1*9 = 15 - 9 = 6 wrong
+    abs determinant f(93, 63) = |9*3 - 3*6| = |27 - 18| = 9 wrong
+  Trying rare operations identity operands [91 21, 15 39, 39 36] reversed result [expected (91,21)->2191, (15,39)->3915, (39,36)->3639]:
+    multiply+1 f(91, 21) = (90 + 1) * 21 + 1 = 90 * 21 + 1 * 21 + 1 = 1890 + 21 + 1 = 1911 + 1 = 1912 -rev-> 2191 match, f(15,39) -> (10 + 5) * 39 + 1 = 10 * 39 + 5 * 39 + 1 = 390 + 195 + 1 = 585 + 1 = 586 -rev-> 685 wrong
+    multiply-1 f(15, 39) = (10 + 5) * 39 - 1 = 10 * 39 + 5 * 39 - 1 = 390 + 195 - 1 = 585 - 1 = 584 -rev-> 485 wrong
+    add+1 f(39, 36) = 39 + 36 + 1 = 76 -rev-> 67 wrong
+    add-1 f(91, 21) = 91 + 21 - 1 = 111 -rev-> 111 wrong
+    sub+1 f(15, 39) = 15 - 39 + 1 = -23 -rev-> -32 wrong
+    sub-1 f(39, 36) = 39 - 36 - 1 = 2 -rev-> 2 wrong
+    max mod min f(91, 21) = max(91,21) mod min(91,21) = 91 mod 21 = 7 -rev-> 7 wrong
+    integer division (a/b) f(15, 39) = 15 / 39 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(39, 36) = 39 mod 36 = 3 -rev-> 3 wrong
+    reverse division (b/a) f(91, 21) = 21 / 91 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(15, 39) = 39 mod 15 = 9 -rev-> 9 wrong
+    digit absolute diff f(39, 36) = |3-3| || |9-6| = 03 -rev-> 30 wrong
+    digit add mod10 f(91, 21) = (9+2)%10 || (1+1)%10 = 12 -rev-> 21 wrong
+    digit sub mod10 f(15, 39) = (1-3)%10 || (5-9)%10 = 86 -rev-> 68 wrong
+    cross multiply f(39, 36) = 3*3 + 9*6 = 9 + 54 = 63 -rev-> 36 wrong
+    cross multiply rev f(91, 21) = 9*1 + 1*2 = 9 + 2 = 11 -rev-> 11 wrong
+    digit multiply f(15, 39) = 1*3 || 5*9 = 3 || 45 = 345 -rev-> 543 wrong
+    digit multiply rev f(39, 36) = 3*6 || 9*3 = 18 || 27 = 1827 -rev-> 7281 wrong
+    digit sum diff f(91, 21) = (9+1) - (2+1) = 7 -rev-> 7 wrong
+    digit sum sum f(15, 39) = (1+5) + (3+9) = 18 -rev-> 81 wrong
+    digit product diff f(39, 36) = 3*9 - 3*6 = 27 - 18 = 9 -rev-> 9 wrong
+    digit product sum f(91, 21) = 9*1 + 2*1 = 9 + 2 = 11 -rev-> 11 wrong
+    determinant f(15, 39) = 1*9 - 5*3 = 9 - 15 = -6 -rev-> -6 wrong
+    abs determinant f(39, 36) = |3*6 - 9*3| = |18 - 27| = 9 -rev-> 9 wrong
+
+Applying to 58+66:
+  We recall that the question operator is not found in the examples. We will use the absolute difference as the operator.
+  identity
+  absolute difference f(58, 66) = |58 - 66| = 8
+  Result: 【8】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{8}

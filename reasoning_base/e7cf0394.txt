@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  88\87 = 7656
+  30]47 = 3047
+  52*15 = *37
+
+The inputs are 88, 87, 30, 47, 52, 15
+
+The outputs are 7656, 3047, *37
+Some outputs have the operator symbol as prefix 【*】.
+We now consider the outputs to be 7656, 3047, -37
+We will add back the operator prefix if our answer is negative.
+
+Looking at the input of the examples
+88\87 -> \
+30]47 -> ]
+52*15 -> *
+
+The operators
+\
+]
+*
+
+Looking at the question
+97]83 -> ]
+The question operator is found in the examples.
+
+Looking at operator 【]】 [30]47 = 3047]:
+  Trying common operations reversed operands [30->03 47->74] and reversed result [expected (03,74)->3047]:
+    concatenation f(03, 74) = 03 || 74 = 0374 -rev-> 4730 wrong
+    reverse concatenation f(03, 74) = 74 || 03 = 7403 -rev-> 3047 match, correct, actions: reversed operands, reversed result, reverse concatenation
+    addition f(03, 74) = 03 + 74 = 77 -rev-> 77 wrong
+    absolute difference f(03, 74) = |03 - 74| = 71 -rev-> 17 wrong
+    negated absolute difference f(03, 74) = -|03 - 74| = -71 -rev-> -17 wrong
+    subtraction (a-b) f(03, 74) = 03 - 74 = -71 -rev-> -17 wrong
+    reverse subtraction (b-a) f(03, 74) = 74 - 03 = 71 -rev-> 17 wrong
+    multiplication f(03, 74) = (0 + 3) * 74 = 0 * 74 + 3 * 74 = 0 + 222 = 222 -rev-> 222 wrong
+  Trying common operations on identity [30 47] [expected (30,47)->3047]:
+    concatenation f(30, 47) = 30 || 47 = 3047 match, correct, but skipping
+    reverse concatenation f(30, 47) = 47 || 30 = 4730 wrong
+    addition f(30, 47) = 30 + 47 = 77 wrong
+    absolute difference f(30, 47) = |30 - 47| = 17 wrong
+    negated absolute difference f(30, 47) = -|30 - 47| = -17 wrong
+    subtraction (a-b) f(30, 47) = 30 - 47 = -17 wrong
+    reverse subtraction (b-a) f(30, 47) = 47 - 30 = 17 wrong
+    multiplication f(30, 47) = (30 + 0) * 47 = 30 * 47 + 0 * 47 = 1410 + 0 = 1410 wrong
+  Trying common operations reversed operands [30->03 47->74] [expected (03,74)->3047]:
+    concatenation f(03, 74) = 03 || 74 = 0374 wrong
+    reverse concatenation f(03, 74) = 74 || 03 = 7403 wrong
+    addition f(03, 74) = 03 + 74 = 77 wrong
+    absolute difference f(03, 74) = |03 - 74| = 71 wrong
+    negated absolute difference f(03, 74) = -|03 - 74| = -71 wrong
+    subtraction (a-b) f(03, 74) = 03 - 74 = -71 wrong
+    reverse subtraction (b-a) f(03, 74) = 74 - 03 = 71 wrong
+    multiplication f(03, 74) = (0 + 3) * 74 = 0 * 74 + 3 * 74 = 0 + 222 = 222 wrong
+  Trying common operations identity operands [30 47] reversed result [expected (30,47)->3047]:
+    concatenation f(30, 47) = 30 || 47 = 3047 -rev-> 7403 wrong
+    reverse concatenation f(30, 47) = 47 || 30 = 4730 -rev-> 0374 wrong
+    addition f(30, 47) = 30 + 47 = 77 -rev-> 77 wrong
+    absolute difference f(30, 47) = |30 - 47| = 17 -rev-> 71 wrong
+    negated absolute difference f(30, 47) = -|30 - 47| = -17 -rev-> -71 wrong
+    subtraction (a-b) f(30, 47) = 30 - 47 = -17 -rev-> -71 wrong
+    reverse subtraction (b-a) f(30, 47) = 47 - 30 = 17 -rev-> 71 wrong
+    multiplication f(30, 47) = (30 + 0) * 47 = 30 * 47 + 0 * 47 = 1410 + 0 = 1410 -rev-> 0141 wrong
+  Trying rare operations reversed operands [30->03 47->74] and reversed result [expected (03,74)->3047]:
+    multiply+1 f(03, 74) = (0 + 3) * 74 + 1 = 0 * 74 + 3 * 74 + 1 = 0 + 222 + 1 = 222 + 1 = 223 -rev-> 322 wrong
+    multiply-1 f(03, 74) = (0 + 3) * 74 - 1 = 0 * 74 + 3 * 74 - 1 = 0 + 222 - 1 = 222 - 1 = 221 -rev-> 122 wrong
+    add+1 f(03, 74) = 03 + 74 + 1 = 78 -rev-> 87 wrong
+    add-1 f(03, 74) = 03 + 74 - 1 = 76 -rev-> 67 wrong
+    sub+1 f(03, 74) = 03 - 74 + 1 = -70 -rev-> -07 wrong
+    sub-1 f(03, 74) = 03 - 74 - 1 = -72 -rev-> -27 wrong
+    max mod min f(03, 74) = max(03,74) mod min(03,74) = 74 mod 03 = 2 -rev-> 2 wrong
+    integer division (a/b) f(03, 74) = 03 / 74 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(03, 74) = 03 mod 74 = 3 -rev-> 3 wrong
+    reverse division (b/a) f(03, 74) = 74 / 03 = 24 -rev-> 42 wrong
+    reverse modulo (b mod a) f(03, 74) = 74 mod 03 = 2 -rev-> 2 wrong
+    digit absolute diff f(03, 74) = |0-7| || |3-4| = 71 -rev-> 17 wrong
+    digit add mod10 f(03, 74) = (0+7)%10 || (3+4)%10 = 77 -rev-> 77 wrong
+    digit sub mod10 f(03, 74) = (0-7)%10 || (3-4)%10 = 39 -rev-> 93 wrong
+    cross multiply f(03, 74) = 0*7 + 3*4 = 0 + 12 = 12 -rev-> 21 wrong
+    cross multiply rev f(03, 74) = 0*4 + 3*7 = 0 + 21 = 21 -rev-> 12 wrong
+    digit multiply f(03, 74) = 0*7 || 3*4 = 0 || 12 = 012 -rev-> 210 wrong
+    digit multiply rev f(03, 74) = 0*4 || 3*7 = 0 || 21 = 021 -rev-> 120 wrong
+    digit sum diff f(03, 74) = (0+3) - (7+4) = -8 -rev-> -8 wrong
+    digit sum sum f(03, 74) = (0+3) + (7+4) = 14 -rev-> 41 wrong
+    digit product diff f(03, 74) = 0*3 - 7*4 = 0 - 28 = -28 -rev-> -82 wrong
+    digit product sum f(03, 74) = 0*3 + 7*4 = 0 + 28 = 28 -rev-> 82 wrong
+    determinant f(03, 74) = 0*4 - 3*7 = 0 - 21 = -21 -rev-> -12 wrong
+    abs determinant f(03, 74) = |0*4 - 3*7| = |0 - 21| = 21 -rev-> 12 wrong
+  Trying rare operations on identity [30 47] [expected (30,47)->3047]:
+    multiply+1 f(30, 47) = (30 + 0) * 47 + 1 = 30 * 47 + 0 * 47 + 1 = 1410 + 0 + 1 = 1410 + 1 = 1411 wrong
+    multiply-1 f(30, 47) = (30 + 0) * 47 - 1 = 30 * 47 + 0 * 47 - 1 = 1410 + 0 - 1 = 1410 - 1 = 1409 wrong
+    add+1 f(30, 47) = 30 + 47 + 1 = 78 wrong
+    add-1 f(30, 47) = 30 + 47 - 1 = 76 wrong
+    sub+1 f(30, 47) = 30 - 47 + 1 = -16 wrong
+    sub-1 f(30, 47) = 30 - 47 - 1 = -18 wrong
+    max mod min f(30, 47) = max(30,47) mod min(30,47) = 47 mod 30 = 17 wrong
+    integer division (a/b) f(30, 47) = 30 / 47 = 0 wrong
+    modulo (a mod b) f(30, 47) = 30 mod 47 = 30 wrong
+    reverse division (b/a) f(30, 47) = 47 / 30 = 1 wrong
+    reverse modulo (b mod a) f(30, 47) = 47 mod 30 = 17 wrong
+    digit absolute diff f(30, 47) = |3-4| || |0-7| = 17 wrong
+    digit add mod10 f(30, 47) = (3+4)%10 || (0+7)%10 = 77 wrong
+    digit sub mod10 f(30, 47) = (3-4)%10 || (0-7)%10 = 93 wrong
+    cross multiply f(30, 47) = 3*4 + 0*7 = 12 + 0 = 12 wrong
+    cross multiply rev f(30, 47) = 3*7 + 0*4 = 21 + 0 = 21 wrong
+    digit multiply f(30, 47) = 3*4 || 0*7 = 12 || 0 = 120 wrong
+    digit multiply rev f(30, 47) = 3*7 || 0*4 = 21 || 0 = 210 wrong
+    digit sum diff f(30, 47) = (3+0) - (4+7) = -8 wrong
+    digit sum sum f(30, 47) = (3+0) + (4+7) = 14 wrong
+    digit product diff f(30, 47) = 3*0 - 4*7 = 0 - 28 = -28 wrong
+    digit product sum f(30, 47) = 3*0 + 4*7 = 0 + 28 = 28 wrong
+    determinant f(30, 47) = 3*7 - 0*4 = 21 - 0 = 21 wrong
+    abs determinant f(30, 47) = |3*7 - 0*4| = |21 - 0| = 21 wrong
+  Trying rare operations reversed operands [30->03 47->74] [expected (03,74)->3047]:
+    multiply+1 f(03, 74) = (0 + 3) * 74 + 1 = 0 * 74 + 3 * 74 + 1 = 0 + 222 + 1 = 222 + 1 = 223 wrong
+    multiply-1 f(03, 74) = (0 + 3) * 74 - 1 = 0 * 74 + 3 * 74 - 1 = 0 + 222 - 1 = 222 - 1 = 221 wrong
+    add+1 f(03, 74) = 03 + 74 + 1 = 78 wrong
+    add-1 f(03, 74) = 03 + 74 - 1 = 76 wrong
+    sub+1 f(03, 74) = 03 - 74 + 1 = -70 wrong
+    sub-1 f(03, 74) = 03 - 74 - 1 = -72 wrong
+    max mod min f(03, 74) = max(03,74) mod min(03,74) = 74 mod 03 = 2 wrong
+    integer division (a/b) f(03, 74) = 03 / 74 = 0 wrong
+    modulo (a mod b) f(03, 74) = 03 mod 74 = 3 wrong
+    reverse division (b/a) f(03, 74) = 74 / 03 = 24 wrong
+    reverse modulo (b mod a) f(03, 74) = 74 mod 03 = 2 wrong
+    digit absolute diff f(03, 74) = |0-7| || |3-4| = 71 wrong
+    digit add mod10 f(03, 74) = (0+7)%10 || (3+4)%10 = 77 wrong
+    digit sub mod10 f(03, 74) = (0-7)%10 || (3-4)%10 = 39 wrong
+    cross multiply f(03, 74) = 0*7 + 3*4 = 0 + 12 = 12 wrong
+    cross multiply rev f(03, 74) = 0*4 + 3*7 = 0 + 21 = 21 wrong
+    digit multiply f(03, 74) = 0*7 || 3*4 = 0 || 12 = 012 wrong
+    digit multiply rev f(03, 74) = 0*4 || 3*7 = 0 || 21 = 021 wrong
+    digit sum diff f(03, 74) = (0+3) - (7+4) = -8 wrong
+    digit sum sum f(03, 74) = (0+3) + (7+4) = 14 wrong
+    digit product diff f(03, 74) = 0*3 - 7*4 = 0 - 28 = -28 wrong
+    digit product sum f(03, 74) = 0*3 + 7*4 = 0 + 28 = 28 wrong
+    determinant f(03, 74) = 0*4 - 3*7 = 0 - 21 = -21 wrong
+    abs determinant f(03, 74) = |0*4 - 3*7| = |0 - 21| = 21 wrong
+  Trying rare operations identity operands [30 47] reversed result [expected (30,47)->3047]:
+    multiply+1 f(30, 47) = (30 + 0) * 47 + 1 = 30 * 47 + 0 * 47 + 1 = 1410 + 0 + 1 = 1410 + 1 = 1411 -rev-> 1141 wrong
+    multiply-1 f(30, 47) = (30 + 0) * 47 - 1 = 30 * 47 + 0 * 47 - 1 = 1410 + 0 - 1 = 1410 - 1 = 1409 -rev-> 9041 wrong
+    add+1 f(30, 47) = 30 + 47 + 1 = 78 -rev-> 87 wrong
+    add-1 f(30, 47) = 30 + 47 - 1 = 76 -rev-> 67 wrong
+    sub+1 f(30, 47) = 30 - 47 + 1 = -16 -rev-> -61 wrong
+    sub-1 f(30, 47) = 30 - 47 - 1 = -18 -rev-> -81 wrong
+    max mod min f(30, 47) = max(30,47) mod min(30,47) = 47 mod 30 = 17 -rev-> 71 wrong
+    integer division (a/b) f(30, 47) = 30 / 47 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(30, 47) = 30 mod 47 = 30 -rev-> 03 wrong
+    reverse division (b/a) f(30, 47) = 47 / 30 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(30, 47) = 47 mod 30 = 17 -rev-> 71 wrong
+    digit absolute diff f(30, 47) = |3-4| || |0-7| = 17 -rev-> 71 wrong
+    digit add mod10 f(30, 47) = (3+4)%10 || (0+7)%10 = 77 -rev-> 77 wrong
+    digit sub mod10 f(30, 47) = (3-4)%10 || (0-7)%10 = 93 -rev-> 39 wrong
+    cross multiply f(30, 47) = 3*4 + 0*7 = 12 + 0 = 12 -rev-> 21 wrong
+    cross multiply rev f(30, 47) = 3*7 + 0*4 = 21 + 0 = 21 -rev-> 12 wrong
+    digit multiply f(30, 47) = 3*4 || 0*7 = 12 || 0 = 120 -rev-> 021 wrong
+    digit multiply rev f(30, 47) = 3*7 || 0*4 = 21 || 0 = 210 -rev-> 012 wrong
+    digit sum diff f(30, 47) = (3+0) - (4+7) = -8 -rev-> -8 wrong
+    digit sum sum f(30, 47) = (3+0) + (4+7) = 14 -rev-> 41 wrong
+    digit product diff f(30, 47) = 3*0 - 4*7 = 0 - 28 = -28 -rev-> -82 wrong
+    digit product sum f(30, 47) = 3*0 + 4*7 = 0 + 28 = 28 -rev-> 82 wrong
+    determinant f(30, 47) = 3*7 - 0*4 = 21 - 0 = 21 -rev-> 12 wrong
+    abs determinant f(30, 47) = |3*7 - 0*4| = |21 - 0| = 21 -rev-> 12 wrong
+
+Applying to 97]83:
+  reversed operands [97->79, 83->38] and reversed result
+  reverse concatenation f(79, 38) = 38 || 79 = 3879 -rev-> 9783
+  Result: 【9783】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{9783}

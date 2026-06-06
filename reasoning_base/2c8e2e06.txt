@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  97>98 = 194
+  53&45 = 8
+  35)79 = 2764
+  12)34 = 407
+
+The inputs are 97, 98, 53, 45, 35, 79, 12, 34
+
+The outputs are 194, 8, 2764, 407
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+97>98 -> >
+53&45 -> &
+35)79 -> )
+12)34 -> )
+
+The operators
+>
+&
+)
+
+Looking at the question
+38&90 -> &
+The question operator is found in the examples.
+
+Looking at operator 【&】 [53&45 = 8]:
+  Trying common operations reversed operands [53->35 45->54] and reversed result [expected (35,54)->8]:
+    concatenation f(35, 54) = 35 || 54 = 3554 -rev-> 4553 wrong
+    reverse concatenation f(35, 54) = 54 || 35 = 5435 -rev-> 5345 wrong
+    addition f(35, 54) = 35 + 54 = 89 -rev-> 98 wrong
+    absolute difference f(35, 54) = |35 - 54| = 19 -rev-> 91 wrong
+    negated absolute difference f(35, 54) = -|35 - 54| = -19 -rev-> -91 wrong
+    subtraction (a-b) f(35, 54) = 35 - 54 = -19 -rev-> -91 wrong
+    reverse subtraction (b-a) f(35, 54) = 54 - 35 = 19 -rev-> 91 wrong
+    multiplication f(35, 54) = (30 + 5) * 54 = 30 * 54 + 5 * 54 = 1620 + 270 = 1890 -rev-> 0981 wrong
+  Trying common operations on identity [53 45] [expected (53,45)->8]:
+    concatenation f(53, 45) = 53 || 45 = 5345 wrong
+    reverse concatenation f(53, 45) = 45 || 53 = 4553 wrong
+    addition f(53, 45) = 53 + 45 = 98 wrong
+    absolute difference f(53, 45) = |53 - 45| = 8 match, correct, actions: absolute difference
+    negated absolute difference f(53, 45) = -|53 - 45| = -8 wrong
+    subtraction (a-b) f(53, 45) = 53 - 45 = 8 match, correct, but skipping
+    reverse subtraction (b-a) f(53, 45) = 45 - 53 = -8 wrong
+    multiplication f(53, 45) = (50 + 3) * 45 = 50 * 45 + 3 * 45 = 2250 + 135 = 2385 wrong
+  Trying common operations reversed operands [53->35 45->54] [expected (35,54)->8]:
+    concatenation f(35, 54) = 35 || 54 = 3554 wrong
+    reverse concatenation f(35, 54) = 54 || 35 = 5435 wrong
+    addition f(35, 54) = 35 + 54 = 89 wrong
+    absolute difference f(35, 54) = |35 - 54| = 19 wrong
+    negated absolute difference f(35, 54) = -|35 - 54| = -19 wrong
+    subtraction (a-b) f(35, 54) = 35 - 54 = -19 wrong
+    reverse subtraction (b-a) f(35, 54) = 54 - 35 = 19 wrong
+    multiplication f(35, 54) = (30 + 5) * 54 = 30 * 54 + 5 * 54 = 1620 + 270 = 1890 wrong
+  Trying common operations identity operands [53 45] reversed result [expected (53,45)->8]:
+    concatenation f(53, 45) = 53 || 45 = 5345 -rev-> 5435 wrong
+    reverse concatenation f(53, 45) = 45 || 53 = 4553 -rev-> 3554 wrong
+    addition f(53, 45) = 53 + 45 = 98 -rev-> 89 wrong
+    absolute difference f(53, 45) = |53 - 45| = 8 -rev-> 8 match, correct, but skipping
+    negated absolute difference f(53, 45) = -|53 - 45| = -8 -rev-> -8 wrong
+    subtraction (a-b) f(53, 45) = 53 - 45 = 8 -rev-> 8 match, correct, but skipping
+    reverse subtraction (b-a) f(53, 45) = 45 - 53 = -8 -rev-> -8 wrong
+    multiplication f(53, 45) = (50 + 3) * 45 = 50 * 45 + 3 * 45 = 2250 + 135 = 2385 -rev-> 5832 wrong
+  Trying rare operations reversed operands [53->35 45->54] and reversed result [expected (35,54)->8]:
+    multiply+1 f(35, 54) = (30 + 5) * 54 + 1 = 30 * 54 + 5 * 54 + 1 = 1620 + 270 + 1 = 1890 + 1 = 1891 -rev-> 1981 wrong
+    multiply-1 f(35, 54) = (30 + 5) * 54 - 1 = 30 * 54 + 5 * 54 - 1 = 1620 + 270 - 1 = 1890 - 1 = 1889 -rev-> 9881 wrong
+    add+1 f(35, 54) = 35 + 54 + 1 = 90 -rev-> 09 wrong
+    add-1 f(35, 54) = 35 + 54 - 1 = 88 -rev-> 88 wrong
+    sub+1 f(35, 54) = 35 - 54 + 1 = -18 -rev-> -81 wrong
+    sub-1 f(35, 54) = 35 - 54 - 1 = -20 -rev-> -02 wrong
+    max mod min f(35, 54) = max(35,54) mod min(35,54) = 54 mod 35 = 19 -rev-> 91 wrong
+    integer division (a/b) f(35, 54) = 35 / 54 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(35, 54) = 35 mod 54 = 35 -rev-> 53 wrong
+    reverse division (b/a) f(35, 54) = 54 / 35 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(35, 54) = 54 mod 35 = 19 -rev-> 91 wrong
+    digit absolute diff f(35, 54) = |3-5| || |5-4| = 21 -rev-> 12 wrong
+    digit add mod10 f(35, 54) = (3+5)%10 || (5+4)%10 = 89 -rev-> 98 wrong
+    digit sub mod10 f(35, 54) = (3-5)%10 || (5-4)%10 = 81 -rev-> 18 wrong
+    cross multiply f(35, 54) = 3*5 + 5*4 = 15 + 20 = 35 -rev-> 53 wrong
+    cross multiply rev f(35, 54) = 3*4 + 5*5 = 12 + 25 = 37 -rev-> 73 wrong
+    digit multiply f(35, 54) = 3*5 || 5*4 = 15 || 20 = 1520 -rev-> 0251 wrong
+    digit multiply rev f(35, 54) = 3*4 || 5*5 = 12 || 25 = 1225 -rev-> 5221 wrong
+    digit sum diff f(35, 54) = (3+5) - (5+4) = -1 -rev-> -1 wrong
+    digit sum sum f(35, 54) = (3+5) + (5+4) = 17 -rev-> 71 wrong
+    digit product diff f(35, 54) = 3*5 - 5*4 = 15 - 20 = -5 -rev-> -5 wrong
+    digit product sum f(35, 54) = 3*5 + 5*4 = 15 + 20 = 35 -rev-> 53 wrong
+    determinant f(35, 54) = 3*4 - 5*5 = 12 - 25 = -13 -rev-> -31 wrong
+    abs determinant f(35, 54) = |3*4 - 5*5| = |12 - 25| = 13 -rev-> 31 wrong
+  Trying rare operations on identity [53 45] [expected (53,45)->8]:
+    multiply+1 f(53, 45) = (50 + 3) * 45 + 1 = 50 * 45 + 3 * 45 + 1 = 2250 + 135 + 1 = 2385 + 1 = 2386 wrong
+    multiply-1 f(53, 45) = (50 + 3) * 45 - 1 = 50 * 45 + 3 * 45 - 1 = 2250 + 135 - 1 = 2385 - 1 = 2384 wrong
+    add+1 f(53, 45) = 53 + 45 + 1 = 99 wrong
+    add-1 f(53, 45) = 53 + 45 - 1 = 97 wrong
+    sub+1 f(53, 45) = 53 - 45 + 1 = 9 wrong
+    sub-1 f(53, 45) = 53 - 45 - 1 = 7 wrong
+    max mod min f(53, 45) = max(53,45) mod min(53,45) = 53 mod 45 = 8 match, correct, but skipping
+    integer division (a/b) f(53, 45) = 53 / 45 = 1 wrong
+    modulo (a mod b) f(53, 45) = 53 mod 45 = 8 match, correct, but skipping
+    reverse division (b/a) f(53, 45) = 45 / 53 = 0 wrong
+    reverse modulo (b mod a) f(53, 45) = 45 mod 53 = 45 wrong
+    digit absolute diff f(53, 45) = |5-4| || |3-5| = 12 wrong
+    digit add mod10 f(53, 45) = (5+4)%10 || (3+5)%10 = 98 wrong
+    digit sub mod10 f(53, 45) = (5-4)%10 || (3-5)%10 = 18 wrong
+    cross multiply f(53, 45) = 5*4 + 3*5 = 20 + 15 = 35 wrong
+    cross multiply rev f(53, 45) = 5*5 + 3*4 = 25 + 12 = 37 wrong
+    digit multiply f(53, 45) = 5*4 || 3*5 = 20 || 15 = 2015 wrong
+    digit multiply rev f(53, 45) = 5*5 || 3*4 = 25 || 12 = 2512 wrong
+    digit sum diff f(53, 45) = (5+3) - (4+5) = -1 wrong
+    digit sum sum f(53, 45) = (5+3) + (4+5) = 17 wrong
+    digit product diff f(53, 45) = 5*3 - 4*5 = 15 - 20 = -5 wrong
+    digit product sum f(53, 45) = 5*3 + 4*5 = 15 + 20 = 35 wrong
+    determinant f(53, 45) = 5*5 - 3*4 = 25 - 12 = 13 wrong
+    abs determinant f(53, 45) = |5*5 - 3*4| = |25 - 12| = 13 wrong
+  Trying rare operations reversed operands [53->35 45->54] [expected (35,54)->8]:
+    multiply+1 f(35, 54) = (30 + 5) * 54 + 1 = 30 * 54 + 5 * 54 + 1 = 1620 + 270 + 1 = 1890 + 1 = 1891 wrong
+    multiply-1 f(35, 54) = (30 + 5) * 54 - 1 = 30 * 54 + 5 * 54 - 1 = 1620 + 270 - 1 = 1890 - 1 = 1889 wrong
+    add+1 f(35, 54) = 35 + 54 + 1 = 90 wrong
+    add-1 f(35, 54) = 35 + 54 - 1 = 88 wrong
+    sub+1 f(35, 54) = 35 - 54 + 1 = -18 wrong
+    sub-1 f(35, 54) = 35 - 54 - 1 = -20 wrong
+    max mod min f(35, 54) = max(35,54) mod min(35,54) = 54 mod 35 = 19 wrong
+    integer division (a/b) f(35, 54) = 35 / 54 = 0 wrong
+    modulo (a mod b) f(35, 54) = 35 mod 54 = 35 wrong
+    reverse division (b/a) f(35, 54) = 54 / 35 = 1 wrong
+    reverse modulo (b mod a) f(35, 54) = 54 mod 35 = 19 wrong
+    digit absolute diff f(35, 54) = |3-5| || |5-4| = 21 wrong
+    digit add mod10 f(35, 54) = (3+5)%10 || (5+4)%10 = 89 wrong
+    digit sub mod10 f(35, 54) = (3-5)%10 || (5-4)%10 = 81 wrong
+    cross multiply f(35, 54) = 3*5 + 5*4 = 15 + 20 = 35 wrong
+    cross multiply rev f(35, 54) = 3*4 + 5*5 = 12 + 25 = 37 wrong
+    digit multiply f(35, 54) = 3*5 || 5*4 = 15 || 20 = 1520 wrong
+    digit multiply rev f(35, 54) = 3*4 || 5*5 = 12 || 25 = 1225 wrong
+    digit sum diff f(35, 54) = (3+5) - (5+4) = -1 wrong
+    digit sum sum f(35, 54) = (3+5) + (5+4) = 17 wrong
+    digit product diff f(35, 54) = 3*5 - 5*4 = 15 - 20 = -5 wrong
+    digit product sum f(35, 54) = 3*5 + 5*4 = 15 + 20 = 35 wrong
+    determinant f(35, 54) = 3*4 - 5*5 = 12 - 25 = -13 wrong
+    abs determinant f(35, 54) = |3*4 - 5*5| = |12 - 25| = 13 wrong
+  Trying rare operations identity operands [53 45] reversed result [expected (53,45)->8]:
+    multiply+1 f(53, 45) = (50 + 3) * 45 + 1 = 50 * 45 + 3 * 45 + 1 = 2250 + 135 + 1 = 2385 + 1 = 2386 -rev-> 6832 wrong
+    multiply-1 f(53, 45) = (50 + 3) * 45 - 1 = 50 * 45 + 3 * 45 - 1 = 2250 + 135 - 1 = 2385 - 1 = 2384 -rev-> 4832 wrong
+    add+1 f(53, 45) = 53 + 45 + 1 = 99 -rev-> 99 wrong
+    add-1 f(53, 45) = 53 + 45 - 1 = 97 -rev-> 79 wrong
+    sub+1 f(53, 45) = 53 - 45 + 1 = 9 -rev-> 9 wrong
+    sub-1 f(53, 45) = 53 - 45 - 1 = 7 -rev-> 7 wrong
+    max mod min f(53, 45) = max(53,45) mod min(53,45) = 53 mod 45 = 8 -rev-> 8 match, correct, but skipping
+    integer division (a/b) f(53, 45) = 53 / 45 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(53, 45) = 53 mod 45 = 8 -rev-> 8 match, correct, but skipping
+    reverse division (b/a) f(53, 45) = 45 / 53 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(53, 45) = 45 mod 53 = 45 -rev-> 54 wrong
+    digit absolute diff f(53, 45) = |5-4| || |3-5| = 12 -rev-> 21 wrong
+    digit add mod10 f(53, 45) = (5+4)%10 || (3+5)%10 = 98 -rev-> 89 wrong
+    digit sub mod10 f(53, 45) = (5-4)%10 || (3-5)%10 = 18 -rev-> 81 wrong
+    cross multiply f(53, 45) = 5*4 + 3*5 = 20 + 15 = 35 -rev-> 53 wrong
+    cross multiply rev f(53, 45) = 5*5 + 3*4 = 25 + 12 = 37 -rev-> 73 wrong
+    digit multiply f(53, 45) = 5*4 || 3*5 = 20 || 15 = 2015 -rev-> 5102 wrong
+    digit multiply rev f(53, 45) = 5*5 || 3*4 = 25 || 12 = 2512 -rev-> 2152 wrong
+    digit sum diff f(53, 45) = (5+3) - (4+5) = -1 -rev-> -1 wrong
+    digit sum sum f(53, 45) = (5+3) + (4+5) = 17 -rev-> 71 wrong
+    digit product diff f(53, 45) = 5*3 - 4*5 = 15 - 20 = -5 -rev-> -5 wrong
+    digit product sum f(53, 45) = 5*3 + 4*5 = 15 + 20 = 35 -rev-> 53 wrong
+    determinant f(53, 45) = 5*5 - 3*4 = 25 - 12 = 13 -rev-> 31 wrong
+    abs determinant f(53, 45) = |5*5 - 3*4| = |25 - 12| = 13 -rev-> 31 wrong
+
+Applying to 38&90:
+  identity
+  absolute difference f(38, 90) = |38 - 90| = 52
+  Result: 【52】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{52}

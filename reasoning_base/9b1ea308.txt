@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  37\35 = 02
+  03|42 = 45
+  81:87 = 8781
+  18\91 = 26
+
+The inputs are 37, 35, 03, 42, 81, 87, 18, 91
+
+The outputs are 02, 45, 8781, 26
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+37\35 -> \
+03|42 -> |
+81:87 -> :
+18\91 -> \
+
+The operators
+\
+|
+:
+
+Looking at the question
+99|36 -> |
+The question operator is found in the examples.
+
+Looking at operator 【|】 [03|42 = 45]:
+  Trying common operations reversed operands [03->30 42->24] and reversed result [expected (30,24)->45]:
+    concatenation f(30, 24) = 30 || 24 = 3024 -rev-> 4203 wrong
+    reverse concatenation f(30, 24) = 24 || 30 = 2430 -rev-> 0342 wrong
+    addition f(30, 24) = 30 + 24 = 54 -rev-> 45 match, correct, actions: reversed operands, reversed result, addition
+    absolute difference f(30, 24) = |30 - 24| = 6 -rev-> 6 wrong
+    negated absolute difference f(30, 24) = -|30 - 24| = -6 -rev-> -6 wrong
+    subtraction (a-b) f(30, 24) = 30 - 24 = 6 -rev-> 6 wrong
+    reverse subtraction (b-a) f(30, 24) = 24 - 30 = -6 -rev-> -6 wrong
+    multiplication f(30, 24) = (30 + 0) * 24 = 30 * 24 + 0 * 24 = 720 + 0 = 720 -rev-> 027 wrong
+  Trying common operations on identity [03 42] [expected (03,42)->45]:
+    concatenation f(03, 42) = 03 || 42 = 0342 wrong
+    reverse concatenation f(03, 42) = 42 || 03 = 4203 wrong
+    addition f(03, 42) = 03 + 42 = 45 match, correct, but skipping
+    absolute difference f(03, 42) = |03 - 42| = 39 wrong
+    negated absolute difference f(03, 42) = -|03 - 42| = -39 wrong
+    subtraction (a-b) f(03, 42) = 03 - 42 = -39 wrong
+    reverse subtraction (b-a) f(03, 42) = 42 - 03 = 39 wrong
+    multiplication f(03, 42) = (0 + 3) * 42 = 0 * 42 + 3 * 42 = 0 + 126 = 126 wrong
+  Trying common operations reversed operands [03->30 42->24] [expected (30,24)->45]:
+    concatenation f(30, 24) = 30 || 24 = 3024 wrong
+    reverse concatenation f(30, 24) = 24 || 30 = 2430 wrong
+    addition f(30, 24) = 30 + 24 = 54 wrong
+    absolute difference f(30, 24) = |30 - 24| = 6 wrong
+    negated absolute difference f(30, 24) = -|30 - 24| = -6 wrong
+    subtraction (a-b) f(30, 24) = 30 - 24 = 6 wrong
+    reverse subtraction (b-a) f(30, 24) = 24 - 30 = -6 wrong
+    multiplication f(30, 24) = (30 + 0) * 24 = 30 * 24 + 0 * 24 = 720 + 0 = 720 wrong
+  Trying common operations identity operands [03 42] reversed result [expected (03,42)->45]:
+    concatenation f(03, 42) = 03 || 42 = 0342 -rev-> 2430 wrong
+    reverse concatenation f(03, 42) = 42 || 03 = 4203 -rev-> 3024 wrong
+    addition f(03, 42) = 03 + 42 = 45 -rev-> 54 wrong
+    absolute difference f(03, 42) = |03 - 42| = 39 -rev-> 93 wrong
+    negated absolute difference f(03, 42) = -|03 - 42| = -39 -rev-> -93 wrong
+    subtraction (a-b) f(03, 42) = 03 - 42 = -39 -rev-> -93 wrong
+    reverse subtraction (b-a) f(03, 42) = 42 - 03 = 39 -rev-> 93 wrong
+    multiplication f(03, 42) = (0 + 3) * 42 = 0 * 42 + 3 * 42 = 0 + 126 = 126 -rev-> 621 wrong
+  Trying rare operations reversed operands [03->30 42->24] and reversed result [expected (30,24)->45]:
+    multiply+1 f(30, 24) = (30 + 0) * 24 + 1 = 30 * 24 + 0 * 24 + 1 = 720 + 0 + 1 = 720 + 1 = 721 -rev-> 127 wrong
+    multiply-1 f(30, 24) = (30 + 0) * 24 - 1 = 30 * 24 + 0 * 24 - 1 = 720 + 0 - 1 = 720 - 1 = 719 -rev-> 917 wrong
+    add+1 f(30, 24) = 30 + 24 + 1 = 55 -rev-> 55 wrong
+    add-1 f(30, 24) = 30 + 24 - 1 = 53 -rev-> 35 wrong
+    sub+1 f(30, 24) = 30 - 24 + 1 = 7 -rev-> 7 wrong
+    sub-1 f(30, 24) = 30 - 24 - 1 = 5 -rev-> 5 wrong
+    max mod min f(30, 24) = max(30,24) mod min(30,24) = 30 mod 24 = 6 -rev-> 6 wrong
+    integer division (a/b) f(30, 24) = 30 / 24 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(30, 24) = 30 mod 24 = 6 -rev-> 6 wrong
+    reverse division (b/a) f(30, 24) = 24 / 30 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(30, 24) = 24 mod 30 = 24 -rev-> 42 wrong
+    digit absolute diff f(30, 24) = |3-2| || |0-4| = 14 -rev-> 41 wrong
+    digit add mod10 f(30, 24) = (3+2)%10 || (0+4)%10 = 54 -rev-> 45 match, correct, but skipping
+    digit sub mod10 f(30, 24) = (3-2)%10 || (0-4)%10 = 16 -rev-> 61 wrong
+    cross multiply f(30, 24) = 3*2 + 0*4 = 6 + 0 = 6 -rev-> 6 wrong
+    cross multiply rev f(30, 24) = 3*4 + 0*2 = 12 + 0 = 12 -rev-> 21 wrong
+    digit multiply f(30, 24) = 3*2 || 0*4 = 6 || 0 = 60 -rev-> 06 wrong
+    digit multiply rev f(30, 24) = 3*4 || 0*2 = 12 || 0 = 120 -rev-> 021 wrong
+    digit sum diff f(30, 24) = (3+0) - (2+4) = -3 -rev-> -3 wrong
+    digit sum sum f(30, 24) = (3+0) + (2+4) = 9 -rev-> 9 wrong
+    digit product diff f(30, 24) = 3*0 - 2*4 = 0 - 8 = -8 -rev-> -8 wrong
+    digit product sum f(30, 24) = 3*0 + 2*4 = 0 + 8 = 8 -rev-> 8 wrong
+    determinant f(30, 24) = 3*4 - 0*2 = 12 - 0 = 12 -rev-> 21 wrong
+    abs determinant f(30, 24) = |3*4 - 0*2| = |12 - 0| = 12 -rev-> 21 wrong
+  Trying rare operations on identity [03 42] [expected (03,42)->45]:
+    multiply+1 f(03, 42) = (0 + 3) * 42 + 1 = 0 * 42 + 3 * 42 + 1 = 0 + 126 + 1 = 126 + 1 = 127 wrong
+    multiply-1 f(03, 42) = (0 + 3) * 42 - 1 = 0 * 42 + 3 * 42 - 1 = 0 + 126 - 1 = 126 - 1 = 125 wrong
+    add+1 f(03, 42) = 03 + 42 + 1 = 46 wrong
+    add-1 f(03, 42) = 03 + 42 - 1 = 44 wrong
+    sub+1 f(03, 42) = 03 - 42 + 1 = -38 wrong
+    sub-1 f(03, 42) = 03 - 42 - 1 = -40 wrong
+    max mod min f(03, 42) = max(03,42) mod min(03,42) = 42 mod 03 = 0 wrong
+    integer division (a/b) f(03, 42) = 03 / 42 = 0 wrong
+    modulo (a mod b) f(03, 42) = 03 mod 42 = 3 wrong
+    reverse division (b/a) f(03, 42) = 42 / 03 = 14 wrong
+    reverse modulo (b mod a) f(03, 42) = 42 mod 03 = 0 wrong
+    digit absolute diff f(03, 42) = |0-4| || |3-2| = 41 wrong
+    digit add mod10 f(03, 42) = (0+4)%10 || (3+2)%10 = 45 match, correct, but skipping
+    digit sub mod10 f(03, 42) = (0-4)%10 || (3-2)%10 = 61 wrong
+    cross multiply f(03, 42) = 0*4 + 3*2 = 0 + 6 = 6 wrong
+    cross multiply rev f(03, 42) = 0*2 + 3*4 = 0 + 12 = 12 wrong
+    digit multiply f(03, 42) = 0*4 || 3*2 = 0 || 6 = 06 wrong
+    digit multiply rev f(03, 42) = 0*2 || 3*4 = 0 || 12 = 012 wrong
+    digit sum diff f(03, 42) = (0+3) - (4+2) = -3 wrong
+    digit sum sum f(03, 42) = (0+3) + (4+2) = 9 wrong
+    digit product diff f(03, 42) = 0*3 - 4*2 = 0 - 8 = -8 wrong
+    digit product sum f(03, 42) = 0*3 + 4*2 = 0 + 8 = 8 wrong
+    determinant f(03, 42) = 0*2 - 3*4 = 0 - 12 = -12 wrong
+    abs determinant f(03, 42) = |0*2 - 3*4| = |0 - 12| = 12 wrong
+  Trying rare operations reversed operands [03->30 42->24] [expected (30,24)->45]:
+    multiply+1 f(30, 24) = (30 + 0) * 24 + 1 = 30 * 24 + 0 * 24 + 1 = 720 + 0 + 1 = 720 + 1 = 721 wrong
+    multiply-1 f(30, 24) = (30 + 0) * 24 - 1 = 30 * 24 + 0 * 24 - 1 = 720 + 0 - 1 = 720 - 1 = 719 wrong
+    add+1 f(30, 24) = 30 + 24 + 1 = 55 wrong
+    add-1 f(30, 24) = 30 + 24 - 1 = 53 wrong
+    sub+1 f(30, 24) = 30 - 24 + 1 = 7 wrong
+    sub-1 f(30, 24) = 30 - 24 - 1 = 5 wrong
+    max mod min f(30, 24) = max(30,24) mod min(30,24) = 30 mod 24 = 6 wrong
+    integer division (a/b) f(30, 24) = 30 / 24 = 1 wrong
+    modulo (a mod b) f(30, 24) = 30 mod 24 = 6 wrong
+    reverse division (b/a) f(30, 24) = 24 / 30 = 0 wrong
+    reverse modulo (b mod a) f(30, 24) = 24 mod 30 = 24 wrong
+    digit absolute diff f(30, 24) = |3-2| || |0-4| = 14 wrong
+    digit add mod10 f(30, 24) = (3+2)%10 || (0+4)%10 = 54 wrong
+    digit sub mod10 f(30, 24) = (3-2)%10 || (0-4)%10 = 16 wrong
+    cross multiply f(30, 24) = 3*2 + 0*4 = 6 + 0 = 6 wrong
+    cross multiply rev f(30, 24) = 3*4 + 0*2 = 12 + 0 = 12 wrong
+    digit multiply f(30, 24) = 3*2 || 0*4 = 6 || 0 = 60 wrong
+    digit multiply rev f(30, 24) = 3*4 || 0*2 = 12 || 0 = 120 wrong
+    digit sum diff f(30, 24) = (3+0) - (2+4) = -3 wrong
+    digit sum sum f(30, 24) = (3+0) + (2+4) = 9 wrong
+    digit product diff f(30, 24) = 3*0 - 2*4 = 0 - 8 = -8 wrong
+    digit product sum f(30, 24) = 3*0 + 2*4 = 0 + 8 = 8 wrong
+    determinant f(30, 24) = 3*4 - 0*2 = 12 - 0 = 12 wrong
+    abs determinant f(30, 24) = |3*4 - 0*2| = |12 - 0| = 12 wrong
+  Trying rare operations identity operands [03 42] reversed result [expected (03,42)->45]:
+    multiply+1 f(03, 42) = (0 + 3) * 42 + 1 = 0 * 42 + 3 * 42 + 1 = 0 + 126 + 1 = 126 + 1 = 127 -rev-> 721 wrong
+    multiply-1 f(03, 42) = (0 + 3) * 42 - 1 = 0 * 42 + 3 * 42 - 1 = 0 + 126 - 1 = 126 - 1 = 125 -rev-> 521 wrong
+    add+1 f(03, 42) = 03 + 42 + 1 = 46 -rev-> 64 wrong
+    add-1 f(03, 42) = 03 + 42 - 1 = 44 -rev-> 44 wrong
+    sub+1 f(03, 42) = 03 - 42 + 1 = -38 -rev-> -83 wrong
+    sub-1 f(03, 42) = 03 - 42 - 1 = -40 -rev-> -04 wrong
+    max mod min f(03, 42) = max(03,42) mod min(03,42) = 42 mod 03 = 0 -rev-> 0 wrong
+    integer division (a/b) f(03, 42) = 03 / 42 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(03, 42) = 03 mod 42 = 3 -rev-> 3 wrong
+    reverse division (b/a) f(03, 42) = 42 / 03 = 14 -rev-> 41 wrong
+    reverse modulo (b mod a) f(03, 42) = 42 mod 03 = 0 -rev-> 0 wrong
+    digit absolute diff f(03, 42) = |0-4| || |3-2| = 41 -rev-> 14 wrong
+    digit add mod10 f(03, 42) = (0+4)%10 || (3+2)%10 = 45 -rev-> 54 wrong
+    digit sub mod10 f(03, 42) = (0-4)%10 || (3-2)%10 = 61 -rev-> 16 wrong
+    cross multiply f(03, 42) = 0*4 + 3*2 = 0 + 6 = 6 -rev-> 6 wrong
+    cross multiply rev f(03, 42) = 0*2 + 3*4 = 0 + 12 = 12 -rev-> 21 wrong
+    digit multiply f(03, 42) = 0*4 || 3*2 = 0 || 6 = 06 -rev-> 60 wrong
+    digit multiply rev f(03, 42) = 0*2 || 3*4 = 0 || 12 = 012 -rev-> 210 wrong
+    digit sum diff f(03, 42) = (0+3) - (4+2) = -3 -rev-> -3 wrong
+    digit sum sum f(03, 42) = (0+3) + (4+2) = 9 -rev-> 9 wrong
+    digit product diff f(03, 42) = 0*3 - 4*2 = 0 - 8 = -8 -rev-> -8 wrong
+    digit product sum f(03, 42) = 0*3 + 4*2 = 0 + 8 = 8 -rev-> 8 wrong
+    determinant f(03, 42) = 0*2 - 3*4 = 0 - 12 = -12 -rev-> -21 wrong
+    abs determinant f(03, 42) = |0*2 - 3*4| = |0 - 12| = 12 -rev-> 21 wrong
+
+Applying to 99|36:
+  reversed operands [99->99, 36->63] and reversed result
+  addition f(99, 63) = 99 + 63 = 162 -rev-> 261
+  Result: 【261】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{261}

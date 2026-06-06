@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  47-51 = 2396
+  32[26 = 3226
+  50*72 = *22
+
+The inputs are 47, 51, 32, 26, 50, 72
+
+The outputs are 2396, 3226, *22
+Some outputs have the operator symbol as prefix 【*】.
+We now consider the outputs to be 2396, 3226, -22
+We will add back the operator prefix if our answer is negative.
+
+Looking at the input of the examples
+47-51 -> -
+32[26 -> [
+50*72 -> *
+
+The operators
+-
+[
+*
+
+Looking at the question
+46[43 -> [
+The question operator is found in the examples.
+
+Looking at operator 【[】 [32[26 = 3226]:
+  Trying common operations reversed operands [32->23 26->62] and reversed result [expected (23,62)->3226]:
+    concatenation f(23, 62) = 23 || 62 = 2362 -rev-> 2632 wrong
+    reverse concatenation f(23, 62) = 62 || 23 = 6223 -rev-> 3226 match, correct, actions: reversed operands, reversed result, reverse concatenation
+    addition f(23, 62) = 23 + 62 = 85 -rev-> 58 wrong
+    absolute difference f(23, 62) = |23 - 62| = 39 -rev-> 93 wrong
+    negated absolute difference f(23, 62) = -|23 - 62| = -39 -rev-> -93 wrong
+    subtraction (a-b) f(23, 62) = 23 - 62 = -39 -rev-> -93 wrong
+    reverse subtraction (b-a) f(23, 62) = 62 - 23 = 39 -rev-> 93 wrong
+    multiplication f(23, 62) = (20 + 3) * 62 = 20 * 62 + 3 * 62 = 1240 + 186 = 1426 -rev-> 6241 wrong
+  Trying common operations on identity [32 26] [expected (32,26)->3226]:
+    concatenation f(32, 26) = 32 || 26 = 3226 match, correct, but skipping
+    reverse concatenation f(32, 26) = 26 || 32 = 2632 wrong
+    addition f(32, 26) = 32 + 26 = 58 wrong
+    absolute difference f(32, 26) = |32 - 26| = 6 wrong
+    negated absolute difference f(32, 26) = -|32 - 26| = -6 wrong
+    subtraction (a-b) f(32, 26) = 32 - 26 = 6 wrong
+    reverse subtraction (b-a) f(32, 26) = 26 - 32 = -6 wrong
+    multiplication f(32, 26) = (30 + 2) * 26 = 30 * 26 + 2 * 26 = 780 + 52 = 832 wrong
+  Trying common operations reversed operands [32->23 26->62] [expected (23,62)->3226]:
+    concatenation f(23, 62) = 23 || 62 = 2362 wrong
+    reverse concatenation f(23, 62) = 62 || 23 = 6223 wrong
+    addition f(23, 62) = 23 + 62 = 85 wrong
+    absolute difference f(23, 62) = |23 - 62| = 39 wrong
+    negated absolute difference f(23, 62) = -|23 - 62| = -39 wrong
+    subtraction (a-b) f(23, 62) = 23 - 62 = -39 wrong
+    reverse subtraction (b-a) f(23, 62) = 62 - 23 = 39 wrong
+    multiplication f(23, 62) = (20 + 3) * 62 = 20 * 62 + 3 * 62 = 1240 + 186 = 1426 wrong
+  Trying common operations identity operands [32 26] reversed result [expected (32,26)->3226]:
+    concatenation f(32, 26) = 32 || 26 = 3226 -rev-> 6223 wrong
+    reverse concatenation f(32, 26) = 26 || 32 = 2632 -rev-> 2362 wrong
+    addition f(32, 26) = 32 + 26 = 58 -rev-> 85 wrong
+    absolute difference f(32, 26) = |32 - 26| = 6 -rev-> 6 wrong
+    negated absolute difference f(32, 26) = -|32 - 26| = -6 -rev-> -6 wrong
+    subtraction (a-b) f(32, 26) = 32 - 26 = 6 -rev-> 6 wrong
+    reverse subtraction (b-a) f(32, 26) = 26 - 32 = -6 -rev-> -6 wrong
+    multiplication f(32, 26) = (30 + 2) * 26 = 30 * 26 + 2 * 26 = 780 + 52 = 832 -rev-> 238 wrong
+  Trying rare operations reversed operands [32->23 26->62] and reversed result [expected (23,62)->3226]:
+    multiply+1 f(23, 62) = (20 + 3) * 62 + 1 = 20 * 62 + 3 * 62 + 1 = 1240 + 186 + 1 = 1426 + 1 = 1427 -rev-> 7241 wrong
+    multiply-1 f(23, 62) = (20 + 3) * 62 - 1 = 20 * 62 + 3 * 62 - 1 = 1240 + 186 - 1 = 1426 - 1 = 1425 -rev-> 5241 wrong
+    add+1 f(23, 62) = 23 + 62 + 1 = 86 -rev-> 68 wrong
+    add-1 f(23, 62) = 23 + 62 - 1 = 84 -rev-> 48 wrong
+    sub+1 f(23, 62) = 23 - 62 + 1 = -38 -rev-> -83 wrong
+    sub-1 f(23, 62) = 23 - 62 - 1 = -40 -rev-> -04 wrong
+    max mod min f(23, 62) = max(23,62) mod min(23,62) = 62 mod 23 = 16 -rev-> 61 wrong
+    integer division (a/b) f(23, 62) = 23 / 62 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(23, 62) = 23 mod 62 = 23 -rev-> 32 wrong
+    reverse division (b/a) f(23, 62) = 62 / 23 = 2 -rev-> 2 wrong
+    reverse modulo (b mod a) f(23, 62) = 62 mod 23 = 16 -rev-> 61 wrong
+    digit absolute diff f(23, 62) = |2-6| || |3-2| = 41 -rev-> 14 wrong
+    digit add mod10 f(23, 62) = (2+6)%10 || (3+2)%10 = 85 -rev-> 58 wrong
+    digit sub mod10 f(23, 62) = (2-6)%10 || (3-2)%10 = 61 -rev-> 16 wrong
+    cross multiply f(23, 62) = 2*6 + 3*2 = 12 + 6 = 18 -rev-> 81 wrong
+    cross multiply rev f(23, 62) = 2*2 + 3*6 = 4 + 18 = 22 -rev-> 22 wrong
+    digit multiply f(23, 62) = 2*6 || 3*2 = 12 || 6 = 126 -rev-> 621 wrong
+    digit multiply rev f(23, 62) = 2*2 || 3*6 = 4 || 18 = 418 -rev-> 814 wrong
+    digit sum diff f(23, 62) = (2+3) - (6+2) = -3 -rev-> -3 wrong
+    digit sum sum f(23, 62) = (2+3) + (6+2) = 13 -rev-> 31 wrong
+    digit product diff f(23, 62) = 2*3 - 6*2 = 6 - 12 = -6 -rev-> -6 wrong
+    digit product sum f(23, 62) = 2*3 + 6*2 = 6 + 12 = 18 -rev-> 81 wrong
+    determinant f(23, 62) = 2*2 - 3*6 = 4 - 18 = -14 -rev-> -41 wrong
+    abs determinant f(23, 62) = |2*2 - 3*6| = |4 - 18| = 14 -rev-> 41 wrong
+  Trying rare operations on identity [32 26] [expected (32,26)->3226]:
+    multiply+1 f(32, 26) = (30 + 2) * 26 + 1 = 30 * 26 + 2 * 26 + 1 = 780 + 52 + 1 = 832 + 1 = 833 wrong
+    multiply-1 f(32, 26) = (30 + 2) * 26 - 1 = 30 * 26 + 2 * 26 - 1 = 780 + 52 - 1 = 832 - 1 = 831 wrong
+    add+1 f(32, 26) = 32 + 26 + 1 = 59 wrong
+    add-1 f(32, 26) = 32 + 26 - 1 = 57 wrong
+    sub+1 f(32, 26) = 32 - 26 + 1 = 7 wrong
+    sub-1 f(32, 26) = 32 - 26 - 1 = 5 wrong
+    max mod min f(32, 26) = max(32,26) mod min(32,26) = 32 mod 26 = 6 wrong
+    integer division (a/b) f(32, 26) = 32 / 26 = 1 wrong
+    modulo (a mod b) f(32, 26) = 32 mod 26 = 6 wrong
+    reverse division (b/a) f(32, 26) = 26 / 32 = 0 wrong
+    reverse modulo (b mod a) f(32, 26) = 26 mod 32 = 26 wrong
+    digit absolute diff f(32, 26) = |3-2| || |2-6| = 14 wrong
+    digit add mod10 f(32, 26) = (3+2)%10 || (2+6)%10 = 58 wrong
+    digit sub mod10 f(32, 26) = (3-2)%10 || (2-6)%10 = 16 wrong
+    cross multiply f(32, 26) = 3*2 + 2*6 = 6 + 12 = 18 wrong
+    cross multiply rev f(32, 26) = 3*6 + 2*2 = 18 + 4 = 22 wrong
+    digit multiply f(32, 26) = 3*2 || 2*6 = 6 || 12 = 612 wrong
+    digit multiply rev f(32, 26) = 3*6 || 2*2 = 18 || 4 = 184 wrong
+    digit sum diff f(32, 26) = (3+2) - (2+6) = -3 wrong
+    digit sum sum f(32, 26) = (3+2) + (2+6) = 13 wrong
+    digit product diff f(32, 26) = 3*2 - 2*6 = 6 - 12 = -6 wrong
+    digit product sum f(32, 26) = 3*2 + 2*6 = 6 + 12 = 18 wrong
+    determinant f(32, 26) = 3*6 - 2*2 = 18 - 4 = 14 wrong
+    abs determinant f(32, 26) = |3*6 - 2*2| = |18 - 4| = 14 wrong
+  Trying rare operations reversed operands [32->23 26->62] [expected (23,62)->3226]:
+    multiply+1 f(23, 62) = (20 + 3) * 62 + 1 = 20 * 62 + 3 * 62 + 1 = 1240 + 186 + 1 = 1426 + 1 = 1427 wrong
+    multiply-1 f(23, 62) = (20 + 3) * 62 - 1 = 20 * 62 + 3 * 62 - 1 = 1240 + 186 - 1 = 1426 - 1 = 1425 wrong
+    add+1 f(23, 62) = 23 + 62 + 1 = 86 wrong
+    add-1 f(23, 62) = 23 + 62 - 1 = 84 wrong
+    sub+1 f(23, 62) = 23 - 62 + 1 = -38 wrong
+    sub-1 f(23, 62) = 23 - 62 - 1 = -40 wrong
+    max mod min f(23, 62) = max(23,62) mod min(23,62) = 62 mod 23 = 16 wrong
+    integer division (a/b) f(23, 62) = 23 / 62 = 0 wrong
+    modulo (a mod b) f(23, 62) = 23 mod 62 = 23 wrong
+    reverse division (b/a) f(23, 62) = 62 / 23 = 2 wrong
+    reverse modulo (b mod a) f(23, 62) = 62 mod 23 = 16 wrong
+    digit absolute diff f(23, 62) = |2-6| || |3-2| = 41 wrong
+    digit add mod10 f(23, 62) = (2+6)%10 || (3+2)%10 = 85 wrong
+    digit sub mod10 f(23, 62) = (2-6)%10 || (3-2)%10 = 61 wrong
+    cross multiply f(23, 62) = 2*6 + 3*2 = 12 + 6 = 18 wrong
+    cross multiply rev f(23, 62) = 2*2 + 3*6 = 4 + 18 = 22 wrong
+    digit multiply f(23, 62) = 2*6 || 3*2 = 12 || 6 = 126 wrong
+    digit multiply rev f(23, 62) = 2*2 || 3*6 = 4 || 18 = 418 wrong
+    digit sum diff f(23, 62) = (2+3) - (6+2) = -3 wrong
+    digit sum sum f(23, 62) = (2+3) + (6+2) = 13 wrong
+    digit product diff f(23, 62) = 2*3 - 6*2 = 6 - 12 = -6 wrong
+    digit product sum f(23, 62) = 2*3 + 6*2 = 6 + 12 = 18 wrong
+    determinant f(23, 62) = 2*2 - 3*6 = 4 - 18 = -14 wrong
+    abs determinant f(23, 62) = |2*2 - 3*6| = |4 - 18| = 14 wrong
+  Trying rare operations identity operands [32 26] reversed result [expected (32,26)->3226]:
+    multiply+1 f(32, 26) = (30 + 2) * 26 + 1 = 30 * 26 + 2 * 26 + 1 = 780 + 52 + 1 = 832 + 1 = 833 -rev-> 338 wrong
+    multiply-1 f(32, 26) = (30 + 2) * 26 - 1 = 30 * 26 + 2 * 26 - 1 = 780 + 52 - 1 = 832 - 1 = 831 -rev-> 138 wrong
+    add+1 f(32, 26) = 32 + 26 + 1 = 59 -rev-> 95 wrong
+    add-1 f(32, 26) = 32 + 26 - 1 = 57 -rev-> 75 wrong
+    sub+1 f(32, 26) = 32 - 26 + 1 = 7 -rev-> 7 wrong
+    sub-1 f(32, 26) = 32 - 26 - 1 = 5 -rev-> 5 wrong
+    max mod min f(32, 26) = max(32,26) mod min(32,26) = 32 mod 26 = 6 -rev-> 6 wrong
+    integer division (a/b) f(32, 26) = 32 / 26 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(32, 26) = 32 mod 26 = 6 -rev-> 6 wrong
+    reverse division (b/a) f(32, 26) = 26 / 32 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(32, 26) = 26 mod 32 = 26 -rev-> 62 wrong
+    digit absolute diff f(32, 26) = |3-2| || |2-6| = 14 -rev-> 41 wrong
+    digit add mod10 f(32, 26) = (3+2)%10 || (2+6)%10 = 58 -rev-> 85 wrong
+    digit sub mod10 f(32, 26) = (3-2)%10 || (2-6)%10 = 16 -rev-> 61 wrong
+    cross multiply f(32, 26) = 3*2 + 2*6 = 6 + 12 = 18 -rev-> 81 wrong
+    cross multiply rev f(32, 26) = 3*6 + 2*2 = 18 + 4 = 22 -rev-> 22 wrong
+    digit multiply f(32, 26) = 3*2 || 2*6 = 6 || 12 = 612 -rev-> 216 wrong
+    digit multiply rev f(32, 26) = 3*6 || 2*2 = 18 || 4 = 184 -rev-> 481 wrong
+    digit sum diff f(32, 26) = (3+2) - (2+6) = -3 -rev-> -3 wrong
+    digit sum sum f(32, 26) = (3+2) + (2+6) = 13 -rev-> 31 wrong
+    digit product diff f(32, 26) = 3*2 - 2*6 = 6 - 12 = -6 -rev-> -6 wrong
+    digit product sum f(32, 26) = 3*2 + 2*6 = 6 + 12 = 18 -rev-> 81 wrong
+    determinant f(32, 26) = 3*6 - 2*2 = 18 - 4 = 14 -rev-> 41 wrong
+    abs determinant f(32, 26) = |3*6 - 2*2| = |18 - 4| = 14 -rev-> 41 wrong
+
+Applying to 46[43:
+  reversed operands [46->64, 43->34] and reversed result
+  reverse concatenation f(64, 34) = 34 || 64 = 3464 -rev-> 4643
+  Result: 【4643】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{4643}

@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  10^12 = 21
+  92!90 = 8280
+  98^33 = 130
+  48:26 = 22
+
+The inputs are 10, 12, 92, 90, 98, 33, 48, 26
+
+The outputs are 21, 8280, 130, 22
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+10^12 -> ^
+92!90 -> !
+98^33 -> ^
+48:26 -> :
+
+The operators
+^
+!
+:
+
+Looking at the question
+18^84 -> ^
+The question operator is found in the examples.
+
+Looking at operator 【^】 [10^12 = 21, 98^33 = 130]:
+  Trying common operations reversed operands [10->01 12->21, 98->89 33->33] and reversed result [expected (01,21)->21, (89,33)->130]:
+    concatenation f(01, 21) = 01 || 21 = 0121 -rev-> 1210 wrong
+    reverse concatenation f(89, 33) = 33 || 89 = 3389 -rev-> 9833 wrong
+    addition f(01, 21) = 01 + 21 = 22 -rev-> 22 wrong
+    absolute difference f(89, 33) = |89 - 33| = 56 -rev-> 65 wrong
+    negated absolute difference f(01, 21) = -|01 - 21| = -20 -rev-> -02 wrong
+    subtraction (a-b) f(89, 33) = 89 - 33 = 56 -rev-> 65 wrong
+    reverse subtraction (b-a) f(01, 21) = 21 - 01 = 20 -rev-> 02 wrong
+    multiplication f(89, 33) = (80 + 9) * 33 = 80 * 33 + 9 * 33 = 2640 + 297 = 2937 -rev-> 7392 wrong
+  Trying common operations on identity [10 12, 98 33] [expected (10,12)->21, (98,33)->130]:
+    concatenation f(10, 12) = 10 || 12 = 1012 wrong
+    reverse concatenation f(98, 33) = 33 || 98 = 3398 wrong
+    addition f(10, 12) = 10 + 12 = 22 wrong
+    absolute difference f(98, 33) = |98 - 33| = 65 wrong
+    negated absolute difference f(10, 12) = -|10 - 12| = -2 wrong
+    subtraction (a-b) f(98, 33) = 98 - 33 = 65 wrong
+    reverse subtraction (b-a) f(10, 12) = 12 - 10 = 2 wrong
+    multiplication f(98, 33) = (90 + 8) * 33 = 90 * 33 + 8 * 33 = 2970 + 264 = 3234 wrong
+  Trying common operations reversed operands [10->01 12->21, 98->89 33->33] [expected (01,21)->21, (89,33)->130]:
+    concatenation f(01, 21) = 01 || 21 = 0121 wrong
+    reverse concatenation f(89, 33) = 33 || 89 = 3389 wrong
+    addition f(01, 21) = 01 + 21 = 22 wrong
+    absolute difference f(89, 33) = |89 - 33| = 56 wrong
+    negated absolute difference f(01, 21) = -|01 - 21| = -20 wrong
+    subtraction (a-b) f(89, 33) = 89 - 33 = 56 wrong
+    reverse subtraction (b-a) f(01, 21) = 21 - 01 = 20 wrong
+    multiplication f(89, 33) = (80 + 9) * 33 = 80 * 33 + 9 * 33 = 2640 + 297 = 2937 wrong
+  Trying common operations identity operands [10 12, 98 33] reversed result [expected (10,12)->21, (98,33)->130]:
+    concatenation f(10, 12) = 10 || 12 = 1012 -rev-> 2101 wrong
+    reverse concatenation f(98, 33) = 33 || 98 = 3398 -rev-> 8933 wrong
+    addition f(10, 12) = 10 + 12 = 22 -rev-> 22 wrong
+    absolute difference f(98, 33) = |98 - 33| = 65 -rev-> 56 wrong
+    negated absolute difference f(10, 12) = -|10 - 12| = -2 -rev-> -2 wrong
+    subtraction (a-b) f(98, 33) = 98 - 33 = 65 -rev-> 56 wrong
+    reverse subtraction (b-a) f(10, 12) = 12 - 10 = 2 -rev-> 2 wrong
+    multiplication f(98, 33) = (90 + 8) * 33 = 90 * 33 + 8 * 33 = 2970 + 264 = 3234 -rev-> 4323 wrong
+  Trying rare operations reversed operands [10->01 12->21, 98->89 33->33] and reversed result [expected (01,21)->21, (89,33)->130]:
+    multiply+1 f(01, 21) = (0 + 1) * 21 + 1 = 0 * 21 + 1 * 21 + 1 = 0 + 21 + 1 = 21 + 1 = 22 -rev-> 22 wrong
+    multiply-1 f(89, 33) = (80 + 9) * 33 - 1 = 80 * 33 + 9 * 33 - 1 = 2640 + 297 - 1 = 2937 - 1 = 2936 -rev-> 6392 wrong
+    add+1 f(01, 21) = 01 + 21 + 1 = 23 -rev-> 32 wrong
+    add-1 f(89, 33) = 89 + 33 - 1 = 121 -rev-> 121 wrong
+    sub+1 f(01, 21) = 01 - 21 + 1 = -19 -rev-> -91 wrong
+    sub-1 f(89, 33) = 89 - 33 - 1 = 55 -rev-> 55 wrong
+    max mod min f(01, 21) = max(01,21) mod min(01,21) = 21 mod 01 = 0 -rev-> 0 wrong
+    integer division (a/b) f(89, 33) = 89 / 33 = 2 -rev-> 2 wrong
+    modulo (a mod b) f(01, 21) = 01 mod 21 = 1 -rev-> 1 wrong
+    reverse division (b/a) f(89, 33) = 33 / 89 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(01, 21) = 21 mod 01 = 0 -rev-> 0 wrong
+    digit absolute diff f(89, 33) = |8-3| || |9-3| = 56 -rev-> 65 wrong
+    digit add mod10 f(01, 21) = (0+2)%10 || (1+1)%10 = 22 -rev-> 22 wrong
+    digit sub mod10 f(89, 33) = (8-3)%10 || (9-3)%10 = 56 -rev-> 65 wrong
+    cross multiply f(01, 21) = 0*2 + 1*1 = 0 + 1 = 1 -rev-> 1 wrong
+    cross multiply rev f(89, 33) = 8*3 + 9*3 = 24 + 27 = 51 -rev-> 15 wrong
+    digit multiply f(01, 21) = 0*2 || 1*1 = 0 || 1 = 01 -rev-> 10 wrong
+    digit multiply rev f(89, 33) = 8*3 || 9*3 = 24 || 27 = 2427 -rev-> 7242 wrong
+    digit sum diff f(01, 21) = (0+1) - (2+1) = -2 -rev-> -2 wrong
+    digit sum sum f(89, 33) = (8+9) + (3+3) = 23 -rev-> 32 wrong
+    digit product diff f(01, 21) = 0*1 - 2*1 = 0 - 2 = -2 -rev-> -2 wrong
+    digit product sum f(89, 33) = 8*9 + 3*3 = 72 + 9 = 81 -rev-> 18 wrong
+    determinant f(01, 21) = 0*1 - 1*2 = 0 - 2 = -2 -rev-> -2 wrong
+    abs determinant f(89, 33) = |8*3 - 9*3| = |24 - 27| = 3 -rev-> 3 wrong
+  Trying rare operations on identity [10 12, 98 33] [expected (10,12)->21, (98,33)->130]:
+    multiply+1 f(10, 12) = (10 + 0) * 12 + 1 = 10 * 12 + 0 * 12 + 1 = 120 + 0 + 1 = 120 + 1 = 121 wrong
+    multiply-1 f(98, 33) = (90 + 8) * 33 - 1 = 90 * 33 + 8 * 33 - 1 = 2970 + 264 - 1 = 3234 - 1 = 3233 wrong
+    add+1 f(10, 12) = 10 + 12 + 1 = 23 wrong
+    add-1 f(98, 33) = 98 + 33 - 1 = 130 match, f(10,12) -> 10 + 12 - 1 = 21 match, correct, actions: add-1
+    sub+1 f(10, 12) = 10 - 12 + 1 = -1 wrong
+    sub-1 f(98, 33) = 98 - 33 - 1 = 64 wrong
+    max mod min f(10, 12) = max(10,12) mod min(10,12) = 12 mod 10 = 2 wrong
+    integer division (a/b) f(98, 33) = 98 / 33 = 2 wrong
+    modulo (a mod b) f(10, 12) = 10 mod 12 = 10 wrong
+    reverse division (b/a) f(98, 33) = 33 / 98 = 0 wrong
+    reverse modulo (b mod a) f(10, 12) = 12 mod 10 = 2 wrong
+    digit absolute diff f(98, 33) = |9-3| || |8-3| = 65 wrong
+    digit add mod10 f(10, 12) = (1+1)%10 || (0+2)%10 = 22 wrong
+    digit sub mod10 f(98, 33) = (9-3)%10 || (8-3)%10 = 65 wrong
+    cross multiply f(10, 12) = 1*1 + 0*2 = 1 + 0 = 1 wrong
+    cross multiply rev f(98, 33) = 9*3 + 8*3 = 27 + 24 = 51 wrong
+    digit multiply f(10, 12) = 1*1 || 0*2 = 1 || 0 = 10 wrong
+    digit multiply rev f(98, 33) = 9*3 || 8*3 = 27 || 24 = 2724 wrong
+    digit sum diff f(10, 12) = (1+0) - (1+2) = -2 wrong
+    digit sum sum f(98, 33) = (9+8) + (3+3) = 23 wrong
+    digit product diff f(10, 12) = 1*0 - 1*2 = 0 - 2 = -2 wrong
+    digit product sum f(98, 33) = 9*8 + 3*3 = 72 + 9 = 81 wrong
+    determinant f(10, 12) = 1*2 - 0*1 = 2 - 0 = 2 wrong
+    abs determinant f(98, 33) = |9*3 - 8*3| = |27 - 24| = 3 wrong
+  Trying rare operations reversed operands [10->01 12->21, 98->89 33->33] [expected (01,21)->21, (89,33)->130]:
+    multiply+1 f(01, 21) = (0 + 1) * 21 + 1 = 0 * 21 + 1 * 21 + 1 = 0 + 21 + 1 = 21 + 1 = 22 wrong
+    multiply-1 f(89, 33) = (80 + 9) * 33 - 1 = 80 * 33 + 9 * 33 - 1 = 2640 + 297 - 1 = 2937 - 1 = 2936 wrong
+    add+1 f(01, 21) = 01 + 21 + 1 = 23 wrong
+    add-1 f(89, 33) = 89 + 33 - 1 = 121 wrong
+    sub+1 f(01, 21) = 01 - 21 + 1 = -19 wrong
+    sub-1 f(89, 33) = 89 - 33 - 1 = 55 wrong
+    max mod min f(01, 21) = max(01,21) mod min(01,21) = 21 mod 01 = 0 wrong
+    integer division (a/b) f(89, 33) = 89 / 33 = 2 wrong
+    modulo (a mod b) f(01, 21) = 01 mod 21 = 1 wrong
+    reverse division (b/a) f(89, 33) = 33 / 89 = 0 wrong
+    reverse modulo (b mod a) f(01, 21) = 21 mod 01 = 0 wrong
+    digit absolute diff f(89, 33) = |8-3| || |9-3| = 56 wrong
+    digit add mod10 f(01, 21) = (0+2)%10 || (1+1)%10 = 22 wrong
+    digit sub mod10 f(89, 33) = (8-3)%10 || (9-3)%10 = 56 wrong
+    cross multiply f(01, 21) = 0*2 + 1*1 = 0 + 1 = 1 wrong
+    cross multiply rev f(89, 33) = 8*3 + 9*3 = 24 + 27 = 51 wrong
+    digit multiply f(01, 21) = 0*2 || 1*1 = 0 || 1 = 01 wrong
+    digit multiply rev f(89, 33) = 8*3 || 9*3 = 24 || 27 = 2427 wrong
+    digit sum diff f(01, 21) = (0+1) - (2+1) = -2 wrong
+    digit sum sum f(89, 33) = (8+9) + (3+3) = 23 wrong
+    digit product diff f(01, 21) = 0*1 - 2*1 = 0 - 2 = -2 wrong
+    digit product sum f(89, 33) = 8*9 + 3*3 = 72 + 9 = 81 wrong
+    determinant f(01, 21) = 0*1 - 1*2 = 0 - 2 = -2 wrong
+    abs determinant f(89, 33) = |8*3 - 9*3| = |24 - 27| = 3 wrong
+  Trying rare operations identity operands [10 12, 98 33] reversed result [expected (10,12)->21, (98,33)->130]:
+    multiply+1 f(10, 12) = (10 + 0) * 12 + 1 = 10 * 12 + 0 * 12 + 1 = 120 + 0 + 1 = 120 + 1 = 121 -rev-> 121 wrong
+    multiply-1 f(98, 33) = (90 + 8) * 33 - 1 = 90 * 33 + 8 * 33 - 1 = 2970 + 264 - 1 = 3234 - 1 = 3233 -rev-> 3323 wrong
+    add+1 f(10, 12) = 10 + 12 + 1 = 23 -rev-> 32 wrong
+    add-1 f(98, 33) = 98 + 33 - 1 = 130 -rev-> 031 wrong
+    sub+1 f(10, 12) = 10 - 12 + 1 = -1 -rev-> -1 wrong
+    sub-1 f(98, 33) = 98 - 33 - 1 = 64 -rev-> 46 wrong
+    max mod min f(10, 12) = max(10,12) mod min(10,12) = 12 mod 10 = 2 -rev-> 2 wrong
+    integer division (a/b) f(98, 33) = 98 / 33 = 2 -rev-> 2 wrong
+    modulo (a mod b) f(10, 12) = 10 mod 12 = 10 -rev-> 01 wrong
+    reverse division (b/a) f(98, 33) = 33 / 98 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(10, 12) = 12 mod 10 = 2 -rev-> 2 wrong
+    digit absolute diff f(98, 33) = |9-3| || |8-3| = 65 -rev-> 56 wrong
+    digit add mod10 f(10, 12) = (1+1)%10 || (0+2)%10 = 22 -rev-> 22 wrong
+    digit sub mod10 f(98, 33) = (9-3)%10 || (8-3)%10 = 65 -rev-> 56 wrong
+    cross multiply f(10, 12) = 1*1 + 0*2 = 1 + 0 = 1 -rev-> 1 wrong
+    cross multiply rev f(98, 33) = 9*3 + 8*3 = 27 + 24 = 51 -rev-> 15 wrong
+    digit multiply f(10, 12) = 1*1 || 0*2 = 1 || 0 = 10 -rev-> 01 wrong
+    digit multiply rev f(98, 33) = 9*3 || 8*3 = 27 || 24 = 2724 -rev-> 4272 wrong
+    digit sum diff f(10, 12) = (1+0) - (1+2) = -2 -rev-> -2 wrong
+    digit sum sum f(98, 33) = (9+8) + (3+3) = 23 -rev-> 32 wrong
+    digit product diff f(10, 12) = 1*0 - 1*2 = 0 - 2 = -2 -rev-> -2 wrong
+    digit product sum f(98, 33) = 9*8 + 3*3 = 72 + 9 = 81 -rev-> 18 wrong
+    determinant f(10, 12) = 1*2 - 0*1 = 2 - 0 = 2 -rev-> 2 wrong
+    abs determinant f(98, 33) = |9*3 - 8*3| = |27 - 24| = 3 -rev-> 3 wrong
+
+Applying to 18^84:
+  identity
+  add-1 f(18, 84) = 18 + 84 - 1 = 101
+  Result: 【101】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{101}

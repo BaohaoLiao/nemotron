@@ -1,0 +1,172 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  14-04 = 18
+  99-07 = 961
+  66*95 = 7
+
+The inputs are 14, 04, 99, 07, 66, 95
+
+The outputs are 18, 961, 7
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+14-04 -> -
+99-07 -> -
+66*95 -> *
+
+The operators
+-
+*
+
+Looking at the question
+71)42 -> )
+The question operator is not found in the examples. Investigating the most common example operator 【-】 instead. We will use absolute difference for the question operator.
+
+Looking at operator 【-】 [14-04 = 18, 99-07 = 961]:
+  Trying common operations reversed operands [14->41 04->40, 99->99 07->70] and reversed result [expected (41,40)->18, (99,70)->961]:
+    concatenation f(41, 40) = 41 || 40 = 4140 -rev-> 0414 wrong
+    reverse concatenation f(99, 70) = 70 || 99 = 7099 -rev-> 9907 wrong
+    addition f(41, 40) = 41 + 40 = 81 -rev-> 18 match, f(99,70) -> 99 + 70 = 169 -rev-> 961 match, correct, actions: reversed operands, reversed result, addition
+    absolute difference f(99, 70) = |99 - 70| = 29 -rev-> 92 wrong
+    negated absolute difference f(41, 40) = -|41 - 40| = -1 -rev-> -1 wrong
+    subtraction (a-b) f(99, 70) = 99 - 70 = 29 -rev-> 92 wrong
+    reverse subtraction (b-a) f(41, 40) = 40 - 41 = -1 -rev-> -1 wrong
+    multiplication f(99, 70) = (90 + 9) * 70 = 90 * 70 + 9 * 70 = 6300 + 630 = 6930 -rev-> 0396 wrong
+  Trying common operations on identity [14 04, 99 07] [expected (14,04)->18, (99,07)->961]:
+    concatenation f(14, 04) = 14 || 04 = 1404 wrong
+    reverse concatenation f(99, 07) = 07 || 99 = 0799 wrong
+    addition f(14, 04) = 14 + 04 = 18 match, f(99,07) -> 99 + 07 = 106 wrong
+    absolute difference f(99, 07) = |99 - 07| = 92 wrong
+    negated absolute difference f(14, 04) = -|14 - 04| = -10 wrong
+    subtraction (a-b) f(99, 07) = 99 - 07 = 92 wrong
+    reverse subtraction (b-a) f(14, 04) = 04 - 14 = -10 wrong
+    multiplication f(99, 07) = (90 + 9) * 07 = 90 * 07 + 9 * 07 = 630 + 63 = 693 wrong
+  Trying common operations reversed operands [14->41 04->40, 99->99 07->70] [expected (41,40)->18, (99,70)->961]:
+    concatenation f(41, 40) = 41 || 40 = 4140 wrong
+    reverse concatenation f(99, 70) = 70 || 99 = 7099 wrong
+    addition f(41, 40) = 41 + 40 = 81 wrong
+    absolute difference f(99, 70) = |99 - 70| = 29 wrong
+    negated absolute difference f(41, 40) = -|41 - 40| = -1 wrong
+    subtraction (a-b) f(99, 70) = 99 - 70 = 29 wrong
+    reverse subtraction (b-a) f(41, 40) = 40 - 41 = -1 wrong
+    multiplication f(99, 70) = (90 + 9) * 70 = 90 * 70 + 9 * 70 = 6300 + 630 = 6930 wrong
+  Trying common operations identity operands [14 04, 99 07] reversed result [expected (14,04)->18, (99,07)->961]:
+    concatenation f(14, 04) = 14 || 04 = 1404 -rev-> 4041 wrong
+    reverse concatenation f(99, 07) = 07 || 99 = 0799 -rev-> 9970 wrong
+    addition f(14, 04) = 14 + 04 = 18 -rev-> 81 wrong
+    absolute difference f(99, 07) = |99 - 07| = 92 -rev-> 29 wrong
+    negated absolute difference f(14, 04) = -|14 - 04| = -10 -rev-> -01 wrong
+    subtraction (a-b) f(99, 07) = 99 - 07 = 92 -rev-> 29 wrong
+    reverse subtraction (b-a) f(14, 04) = 04 - 14 = -10 -rev-> -01 wrong
+    multiplication f(99, 07) = (90 + 9) * 07 = 90 * 07 + 9 * 07 = 630 + 63 = 693 -rev-> 396 wrong
+  Trying rare operations reversed operands [14->41 04->40, 99->99 07->70] and reversed result [expected (41,40)->18, (99,70)->961]:
+    multiply+1 f(41, 40) = (40 + 1) * 40 + 1 = 40 * 40 + 1 * 40 + 1 = 1600 + 40 + 1 = 1640 + 1 = 1641 -rev-> 1461 wrong
+    multiply-1 f(99, 70) = (90 + 9) * 70 - 1 = 90 * 70 + 9 * 70 - 1 = 6300 + 630 - 1 = 6930 - 1 = 6929 -rev-> 9296 wrong
+    add+1 f(41, 40) = 41 + 40 + 1 = 82 -rev-> 28 wrong
+    add-1 f(99, 70) = 99 + 70 - 1 = 168 -rev-> 861 wrong
+    sub+1 f(41, 40) = 41 - 40 + 1 = 2 -rev-> 2 wrong
+    sub-1 f(99, 70) = 99 - 70 - 1 = 28 -rev-> 82 wrong
+    max mod min f(41, 40) = max(41,40) mod min(41,40) = 41 mod 40 = 1 -rev-> 1 wrong
+    integer division (a/b) f(99, 70) = 99 / 70 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(41, 40) = 41 mod 40 = 1 -rev-> 1 wrong
+    reverse division (b/a) f(99, 70) = 70 / 99 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(41, 40) = 40 mod 41 = 40 -rev-> 04 wrong
+    digit absolute diff f(99, 70) = |9-7| || |9-0| = 29 -rev-> 92 wrong
+    digit add mod10 f(41, 40) = (4+4)%10 || (1+0)%10 = 81 -rev-> 18 match, f(99,70) -> (9+7)%10 || (9+0)%10 = 69 -rev-> 96 wrong
+    digit sub mod10 f(99, 70) = (9-7)%10 || (9-0)%10 = 29 -rev-> 92 wrong
+    cross multiply f(41, 40) = 4*4 + 1*0 = 16 + 0 = 16 -rev-> 61 wrong
+    cross multiply rev f(99, 70) = 9*0 + 9*7 = 0 + 63 = 63 -rev-> 36 wrong
+    digit multiply f(41, 40) = 4*4 || 1*0 = 16 || 0 = 160 -rev-> 061 wrong
+    digit multiply rev f(99, 70) = 9*0 || 9*7 = 0 || 63 = 063 -rev-> 360 wrong
+    digit sum diff f(41, 40) = (4+1) - (4+0) = 1 -rev-> 1 wrong
+    digit sum sum f(99, 70) = (9+9) + (7+0) = 25 -rev-> 52 wrong
+    digit product diff f(41, 40) = 4*1 - 4*0 = 4 - 0 = 4 -rev-> 4 wrong
+    digit product sum f(99, 70) = 9*9 + 7*0 = 81 + 0 = 81 -rev-> 18 wrong
+    determinant f(41, 40) = 4*0 - 1*4 = 0 - 4 = -4 -rev-> -4 wrong
+    abs determinant f(99, 70) = |9*0 - 9*7| = |0 - 63| = 63 -rev-> 36 wrong
+  Trying rare operations on identity [14 04, 99 07] [expected (14,04)->18, (99,07)->961]:
+    multiply+1 f(14, 04) = (10 + 4) * 04 + 1 = 10 * 04 + 4 * 04 + 1 = 40 + 16 + 1 = 56 + 1 = 57 wrong
+    multiply-1 f(99, 07) = (90 + 9) * 07 - 1 = 90 * 07 + 9 * 07 - 1 = 630 + 63 - 1 = 693 - 1 = 692 wrong
+    add+1 f(14, 04) = 14 + 04 + 1 = 19 wrong
+    add-1 f(99, 07) = 99 + 07 - 1 = 105 wrong
+    sub+1 f(14, 04) = 14 - 04 + 1 = 11 wrong
+    sub-1 f(99, 07) = 99 - 07 - 1 = 91 wrong
+    max mod min f(14, 04) = max(14,04) mod min(14,04) = 14 mod 04 = 2 wrong
+    integer division (a/b) f(99, 07) = 99 / 07 = 14 wrong
+    modulo (a mod b) f(14, 04) = 14 mod 04 = 2 wrong
+    reverse division (b/a) f(99, 07) = 07 / 99 = 0 wrong
+    reverse modulo (b mod a) f(14, 04) = 04 mod 14 = 4 wrong
+    digit absolute diff f(99, 07) = |9-0| || |9-7| = 92 wrong
+    digit add mod10 f(14, 04) = (1+0)%10 || (4+4)%10 = 18 match, f(99,07) -> (9+0)%10 || (9+7)%10 = 96 wrong
+    digit sub mod10 f(99, 07) = (9-0)%10 || (9-7)%10 = 92 wrong
+    cross multiply f(14, 04) = 1*0 + 4*4 = 0 + 16 = 16 wrong
+    cross multiply rev f(99, 07) = 9*7 + 9*0 = 63 + 0 = 63 wrong
+    digit multiply f(14, 04) = 1*0 || 4*4 = 0 || 16 = 016 wrong
+    digit multiply rev f(99, 07) = 9*7 || 9*0 = 63 || 0 = 630 wrong
+    digit sum diff f(14, 04) = (1+4) - (0+4) = 1 wrong
+    digit sum sum f(99, 07) = (9+9) + (0+7) = 25 wrong
+    digit product diff f(14, 04) = 1*4 - 0*4 = 4 - 0 = 4 wrong
+    digit product sum f(99, 07) = 9*9 + 0*7 = 81 + 0 = 81 wrong
+    determinant f(14, 04) = 1*4 - 4*0 = 4 - 0 = 4 wrong
+    abs determinant f(99, 07) = |9*7 - 9*0| = |63 - 0| = 63 wrong
+  Trying rare operations reversed operands [14->41 04->40, 99->99 07->70] [expected (41,40)->18, (99,70)->961]:
+    multiply+1 f(41, 40) = (40 + 1) * 40 + 1 = 40 * 40 + 1 * 40 + 1 = 1600 + 40 + 1 = 1640 + 1 = 1641 wrong
+    multiply-1 f(99, 70) = (90 + 9) * 70 - 1 = 90 * 70 + 9 * 70 - 1 = 6300 + 630 - 1 = 6930 - 1 = 6929 wrong
+    add+1 f(41, 40) = 41 + 40 + 1 = 82 wrong
+    add-1 f(99, 70) = 99 + 70 - 1 = 168 wrong
+    sub+1 f(41, 40) = 41 - 40 + 1 = 2 wrong
+    sub-1 f(99, 70) = 99 - 70 - 1 = 28 wrong
+    max mod min f(41, 40) = max(41,40) mod min(41,40) = 41 mod 40 = 1 wrong
+    integer division (a/b) f(99, 70) = 99 / 70 = 1 wrong
+    modulo (a mod b) f(41, 40) = 41 mod 40 = 1 wrong
+    reverse division (b/a) f(99, 70) = 70 / 99 = 0 wrong
+    reverse modulo (b mod a) f(41, 40) = 40 mod 41 = 40 wrong
+    digit absolute diff f(99, 70) = |9-7| || |9-0| = 29 wrong
+    digit add mod10 f(41, 40) = (4+4)%10 || (1+0)%10 = 81 wrong
+    digit sub mod10 f(99, 70) = (9-7)%10 || (9-0)%10 = 29 wrong
+    cross multiply f(41, 40) = 4*4 + 1*0 = 16 + 0 = 16 wrong
+    cross multiply rev f(99, 70) = 9*0 + 9*7 = 0 + 63 = 63 wrong
+    digit multiply f(41, 40) = 4*4 || 1*0 = 16 || 0 = 160 wrong
+    digit multiply rev f(99, 70) = 9*0 || 9*7 = 0 || 63 = 063 wrong
+    digit sum diff f(41, 40) = (4+1) - (4+0) = 1 wrong
+    digit sum sum f(99, 70) = (9+9) + (7+0) = 25 wrong
+    digit product diff f(41, 40) = 4*1 - 4*0 = 4 - 0 = 4 wrong
+    digit product sum f(99, 70) = 9*9 + 7*0 = 81 + 0 = 81 wrong
+    determinant f(41, 40) = 4*0 - 1*4 = 0 - 4 = -4 wrong
+    abs determinant f(99, 70) = |9*0 - 9*7| = |0 - 63| = 63 wrong
+  Trying rare operations identity operands [14 04, 99 07] reversed result [expected (14,04)->18, (99,07)->961]:
+    multiply+1 f(14, 04) = (10 + 4) * 04 + 1 = 10 * 04 + 4 * 04 + 1 = 40 + 16 + 1 = 56 + 1 = 57 -rev-> 75 wrong
+    multiply-1 f(99, 07) = (90 + 9) * 07 - 1 = 90 * 07 + 9 * 07 - 1 = 630 + 63 - 1 = 693 - 1 = 692 -rev-> 296 wrong
+    add+1 f(14, 04) = 14 + 04 + 1 = 19 -rev-> 91 wrong
+    add-1 f(99, 07) = 99 + 07 - 1 = 105 -rev-> 501 wrong
+    sub+1 f(14, 04) = 14 - 04 + 1 = 11 -rev-> 11 wrong
+    sub-1 f(99, 07) = 99 - 07 - 1 = 91 -rev-> 19 wrong
+    max mod min f(14, 04) = max(14,04) mod min(14,04) = 14 mod 04 = 2 -rev-> 2 wrong
+    integer division (a/b) f(99, 07) = 99 / 07 = 14 -rev-> 41 wrong
+    modulo (a mod b) f(14, 04) = 14 mod 04 = 2 -rev-> 2 wrong
+    reverse division (b/a) f(99, 07) = 07 / 99 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(14, 04) = 04 mod 14 = 4 -rev-> 4 wrong
+    digit absolute diff f(99, 07) = |9-0| || |9-7| = 92 -rev-> 29 wrong
+    digit add mod10 f(14, 04) = (1+0)%10 || (4+4)%10 = 18 -rev-> 81 wrong
+    digit sub mod10 f(99, 07) = (9-0)%10 || (9-7)%10 = 92 -rev-> 29 wrong
+    cross multiply f(14, 04) = 1*0 + 4*4 = 0 + 16 = 16 -rev-> 61 wrong
+    cross multiply rev f(99, 07) = 9*7 + 9*0 = 63 + 0 = 63 -rev-> 36 wrong
+    digit multiply f(14, 04) = 1*0 || 4*4 = 0 || 16 = 016 -rev-> 610 wrong
+    digit multiply rev f(99, 07) = 9*7 || 9*0 = 63 || 0 = 630 -rev-> 036 wrong
+    digit sum diff f(14, 04) = (1+4) - (0+4) = 1 -rev-> 1 wrong
+    digit sum sum f(99, 07) = (9+9) + (0+7) = 25 -rev-> 52 wrong
+    digit product diff f(14, 04) = 1*4 - 0*4 = 4 - 0 = 4 -rev-> 4 wrong
+    digit product sum f(99, 07) = 9*9 + 0*7 = 81 + 0 = 81 -rev-> 18 wrong
+    determinant f(14, 04) = 1*4 - 4*0 = 4 - 0 = 4 -rev-> 4 wrong
+    abs determinant f(99, 07) = |9*7 - 9*0| = |63 - 0| = 63 -rev-> 36 wrong
+
+Applying to 71)42:
+  We recall that the question operator is not found in the examples. We will use the absolute difference as the operator.
+  identity
+  absolute difference f(71, 42) = |71 - 42| = 29
+  Result: 【29】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{29}

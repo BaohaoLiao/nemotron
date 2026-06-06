@@ -1,0 +1,172 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  01+55 = 56
+  35*04 = 9112
+  85-98 = 13
+
+The inputs are 01, 55, 35, 04, 85, 98
+
+The outputs are 56, 9112, 13
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+01+55 -> +
+35*04 -> *
+85-98 -> -
+
+The operators
++
+*
+-
+
+Looking at the question
+37-06 -> -
+The question operator is found in the examples.
+
+Looking at operator 【-】 [85-98 = 13]:
+  Trying common operations reversed operands [85->58 98->89] and reversed result [expected (58,89)->13]:
+    concatenation f(58, 89) = 58 || 89 = 5889 -rev-> 9885 wrong
+    reverse concatenation f(58, 89) = 89 || 58 = 8958 -rev-> 8598 wrong
+    addition f(58, 89) = 58 + 89 = 147 -rev-> 741 wrong
+    absolute difference f(58, 89) = |58 - 89| = 31 -rev-> 13 match, correct, actions: reversed operands, reversed result, absolute difference
+    negated absolute difference f(58, 89) = -|58 - 89| = -31 -rev-> -13 wrong
+    subtraction (a-b) f(58, 89) = 58 - 89 = -31 -rev-> -13 wrong
+    reverse subtraction (b-a) f(58, 89) = 89 - 58 = 31 -rev-> 13 match, correct, but skipping
+    multiplication f(58, 89) = (50 + 8) * 89 = 50 * 89 + 8 * 89 = 4450 + 712 = 5162 -rev-> 2615 wrong
+  Trying common operations on identity [85 98] [expected (85,98)->13]:
+    concatenation f(85, 98) = 85 || 98 = 8598 wrong
+    reverse concatenation f(85, 98) = 98 || 85 = 9885 wrong
+    addition f(85, 98) = 85 + 98 = 183 wrong
+    absolute difference f(85, 98) = |85 - 98| = 13 match, correct, but skipping
+    negated absolute difference f(85, 98) = -|85 - 98| = -13 wrong
+    subtraction (a-b) f(85, 98) = 85 - 98 = -13 wrong
+    reverse subtraction (b-a) f(85, 98) = 98 - 85 = 13 match, correct, but skipping
+    multiplication f(85, 98) = (80 + 5) * 98 = 80 * 98 + 5 * 98 = 7840 + 490 = 8330 wrong
+  Trying common operations reversed operands [85->58 98->89] [expected (58,89)->13]:
+    concatenation f(58, 89) = 58 || 89 = 5889 wrong
+    reverse concatenation f(58, 89) = 89 || 58 = 8958 wrong
+    addition f(58, 89) = 58 + 89 = 147 wrong
+    absolute difference f(58, 89) = |58 - 89| = 31 wrong
+    negated absolute difference f(58, 89) = -|58 - 89| = -31 wrong
+    subtraction (a-b) f(58, 89) = 58 - 89 = -31 wrong
+    reverse subtraction (b-a) f(58, 89) = 89 - 58 = 31 wrong
+    multiplication f(58, 89) = (50 + 8) * 89 = 50 * 89 + 8 * 89 = 4450 + 712 = 5162 wrong
+  Trying common operations identity operands [85 98] reversed result [expected (85,98)->13]:
+    concatenation f(85, 98) = 85 || 98 = 8598 -rev-> 8958 wrong
+    reverse concatenation f(85, 98) = 98 || 85 = 9885 -rev-> 5889 wrong
+    addition f(85, 98) = 85 + 98 = 183 -rev-> 381 wrong
+    absolute difference f(85, 98) = |85 - 98| = 13 -rev-> 31 wrong
+    negated absolute difference f(85, 98) = -|85 - 98| = -13 -rev-> -31 wrong
+    subtraction (a-b) f(85, 98) = 85 - 98 = -13 -rev-> -31 wrong
+    reverse subtraction (b-a) f(85, 98) = 98 - 85 = 13 -rev-> 31 wrong
+    multiplication f(85, 98) = (80 + 5) * 98 = 80 * 98 + 5 * 98 = 7840 + 490 = 8330 -rev-> 0338 wrong
+  Trying rare operations reversed operands [85->58 98->89] and reversed result [expected (58,89)->13]:
+    multiply+1 f(58, 89) = (50 + 8) * 89 + 1 = 50 * 89 + 8 * 89 + 1 = 4450 + 712 + 1 = 5162 + 1 = 5163 -rev-> 3615 wrong
+    multiply-1 f(58, 89) = (50 + 8) * 89 - 1 = 50 * 89 + 8 * 89 - 1 = 4450 + 712 - 1 = 5162 - 1 = 5161 -rev-> 1615 wrong
+    add+1 f(58, 89) = 58 + 89 + 1 = 148 -rev-> 841 wrong
+    add-1 f(58, 89) = 58 + 89 - 1 = 146 -rev-> 641 wrong
+    sub+1 f(58, 89) = 58 - 89 + 1 = -30 -rev-> -03 wrong
+    sub-1 f(58, 89) = 58 - 89 - 1 = -32 -rev-> -23 wrong
+    max mod min f(58, 89) = max(58,89) mod min(58,89) = 89 mod 58 = 31 -rev-> 13 match, correct, but skipping
+    integer division (a/b) f(58, 89) = 58 / 89 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(58, 89) = 58 mod 89 = 58 -rev-> 85 wrong
+    reverse division (b/a) f(58, 89) = 89 / 58 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(58, 89) = 89 mod 58 = 31 -rev-> 13 match, correct, but skipping
+    digit absolute diff f(58, 89) = |5-8| || |8-9| = 31 -rev-> 13 match, correct, but skipping
+    digit add mod10 f(58, 89) = (5+8)%10 || (8+9)%10 = 37 -rev-> 73 wrong
+    digit sub mod10 f(58, 89) = (5-8)%10 || (8-9)%10 = 79 -rev-> 97 wrong
+    cross multiply f(58, 89) = 5*8 + 8*9 = 40 + 72 = 112 -rev-> 211 wrong
+    cross multiply rev f(58, 89) = 5*9 + 8*8 = 45 + 64 = 109 -rev-> 901 wrong
+    digit multiply f(58, 89) = 5*8 || 8*9 = 40 || 72 = 4072 -rev-> 2704 wrong
+    digit multiply rev f(58, 89) = 5*9 || 8*8 = 45 || 64 = 4564 -rev-> 4654 wrong
+    digit sum diff f(58, 89) = (5+8) - (8+9) = -4 -rev-> -4 wrong
+    digit sum sum f(58, 89) = (5+8) + (8+9) = 30 -rev-> 03 wrong
+    digit product diff f(58, 89) = 5*8 - 8*9 = 40 - 72 = -32 -rev-> -23 wrong
+    digit product sum f(58, 89) = 5*8 + 8*9 = 40 + 72 = 112 -rev-> 211 wrong
+    determinant f(58, 89) = 5*9 - 8*8 = 45 - 64 = -19 -rev-> -91 wrong
+    abs determinant f(58, 89) = |5*9 - 8*8| = |45 - 64| = 19 -rev-> 91 wrong
+  Trying rare operations on identity [85 98] [expected (85,98)->13]:
+    multiply+1 f(85, 98) = (80 + 5) * 98 + 1 = 80 * 98 + 5 * 98 + 1 = 7840 + 490 + 1 = 8330 + 1 = 8331 wrong
+    multiply-1 f(85, 98) = (80 + 5) * 98 - 1 = 80 * 98 + 5 * 98 - 1 = 7840 + 490 - 1 = 8330 - 1 = 8329 wrong
+    add+1 f(85, 98) = 85 + 98 + 1 = 184 wrong
+    add-1 f(85, 98) = 85 + 98 - 1 = 182 wrong
+    sub+1 f(85, 98) = 85 - 98 + 1 = -12 wrong
+    sub-1 f(85, 98) = 85 - 98 - 1 = -14 wrong
+    max mod min f(85, 98) = max(85,98) mod min(85,98) = 98 mod 85 = 13 match, correct, but skipping
+    integer division (a/b) f(85, 98) = 85 / 98 = 0 wrong
+    modulo (a mod b) f(85, 98) = 85 mod 98 = 85 wrong
+    reverse division (b/a) f(85, 98) = 98 / 85 = 1 wrong
+    reverse modulo (b mod a) f(85, 98) = 98 mod 85 = 13 match, correct, but skipping
+    digit absolute diff f(85, 98) = |8-9| || |5-8| = 13 match, correct, but skipping
+    digit add mod10 f(85, 98) = (8+9)%10 || (5+8)%10 = 73 wrong
+    digit sub mod10 f(85, 98) = (8-9)%10 || (5-8)%10 = 97 wrong
+    cross multiply f(85, 98) = 8*9 + 5*8 = 72 + 40 = 112 wrong
+    cross multiply rev f(85, 98) = 8*8 + 5*9 = 64 + 45 = 109 wrong
+    digit multiply f(85, 98) = 8*9 || 5*8 = 72 || 40 = 7240 wrong
+    digit multiply rev f(85, 98) = 8*8 || 5*9 = 64 || 45 = 6445 wrong
+    digit sum diff f(85, 98) = (8+5) - (9+8) = -4 wrong
+    digit sum sum f(85, 98) = (8+5) + (9+8) = 30 wrong
+    digit product diff f(85, 98) = 8*5 - 9*8 = 40 - 72 = -32 wrong
+    digit product sum f(85, 98) = 8*5 + 9*8 = 40 + 72 = 112 wrong
+    determinant f(85, 98) = 8*8 - 5*9 = 64 - 45 = 19 wrong
+    abs determinant f(85, 98) = |8*8 - 5*9| = |64 - 45| = 19 wrong
+  Trying rare operations reversed operands [85->58 98->89] [expected (58,89)->13]:
+    multiply+1 f(58, 89) = (50 + 8) * 89 + 1 = 50 * 89 + 8 * 89 + 1 = 4450 + 712 + 1 = 5162 + 1 = 5163 wrong
+    multiply-1 f(58, 89) = (50 + 8) * 89 - 1 = 50 * 89 + 8 * 89 - 1 = 4450 + 712 - 1 = 5162 - 1 = 5161 wrong
+    add+1 f(58, 89) = 58 + 89 + 1 = 148 wrong
+    add-1 f(58, 89) = 58 + 89 - 1 = 146 wrong
+    sub+1 f(58, 89) = 58 - 89 + 1 = -30 wrong
+    sub-1 f(58, 89) = 58 - 89 - 1 = -32 wrong
+    max mod min f(58, 89) = max(58,89) mod min(58,89) = 89 mod 58 = 31 wrong
+    integer division (a/b) f(58, 89) = 58 / 89 = 0 wrong
+    modulo (a mod b) f(58, 89) = 58 mod 89 = 58 wrong
+    reverse division (b/a) f(58, 89) = 89 / 58 = 1 wrong
+    reverse modulo (b mod a) f(58, 89) = 89 mod 58 = 31 wrong
+    digit absolute diff f(58, 89) = |5-8| || |8-9| = 31 wrong
+    digit add mod10 f(58, 89) = (5+8)%10 || (8+9)%10 = 37 wrong
+    digit sub mod10 f(58, 89) = (5-8)%10 || (8-9)%10 = 79 wrong
+    cross multiply f(58, 89) = 5*8 + 8*9 = 40 + 72 = 112 wrong
+    cross multiply rev f(58, 89) = 5*9 + 8*8 = 45 + 64 = 109 wrong
+    digit multiply f(58, 89) = 5*8 || 8*9 = 40 || 72 = 4072 wrong
+    digit multiply rev f(58, 89) = 5*9 || 8*8 = 45 || 64 = 4564 wrong
+    digit sum diff f(58, 89) = (5+8) - (8+9) = -4 wrong
+    digit sum sum f(58, 89) = (5+8) + (8+9) = 30 wrong
+    digit product diff f(58, 89) = 5*8 - 8*9 = 40 - 72 = -32 wrong
+    digit product sum f(58, 89) = 5*8 + 8*9 = 40 + 72 = 112 wrong
+    determinant f(58, 89) = 5*9 - 8*8 = 45 - 64 = -19 wrong
+    abs determinant f(58, 89) = |5*9 - 8*8| = |45 - 64| = 19 wrong
+  Trying rare operations identity operands [85 98] reversed result [expected (85,98)->13]:
+    multiply+1 f(85, 98) = (80 + 5) * 98 + 1 = 80 * 98 + 5 * 98 + 1 = 7840 + 490 + 1 = 8330 + 1 = 8331 -rev-> 1338 wrong
+    multiply-1 f(85, 98) = (80 + 5) * 98 - 1 = 80 * 98 + 5 * 98 - 1 = 7840 + 490 - 1 = 8330 - 1 = 8329 -rev-> 9238 wrong
+    add+1 f(85, 98) = 85 + 98 + 1 = 184 -rev-> 481 wrong
+    add-1 f(85, 98) = 85 + 98 - 1 = 182 -rev-> 281 wrong
+    sub+1 f(85, 98) = 85 - 98 + 1 = -12 -rev-> -21 wrong
+    sub-1 f(85, 98) = 85 - 98 - 1 = -14 -rev-> -41 wrong
+    max mod min f(85, 98) = max(85,98) mod min(85,98) = 98 mod 85 = 13 -rev-> 31 wrong
+    integer division (a/b) f(85, 98) = 85 / 98 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(85, 98) = 85 mod 98 = 85 -rev-> 58 wrong
+    reverse division (b/a) f(85, 98) = 98 / 85 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(85, 98) = 98 mod 85 = 13 -rev-> 31 wrong
+    digit absolute diff f(85, 98) = |8-9| || |5-8| = 13 -rev-> 31 wrong
+    digit add mod10 f(85, 98) = (8+9)%10 || (5+8)%10 = 73 -rev-> 37 wrong
+    digit sub mod10 f(85, 98) = (8-9)%10 || (5-8)%10 = 97 -rev-> 79 wrong
+    cross multiply f(85, 98) = 8*9 + 5*8 = 72 + 40 = 112 -rev-> 211 wrong
+    cross multiply rev f(85, 98) = 8*8 + 5*9 = 64 + 45 = 109 -rev-> 901 wrong
+    digit multiply f(85, 98) = 8*9 || 5*8 = 72 || 40 = 7240 -rev-> 0427 wrong
+    digit multiply rev f(85, 98) = 8*8 || 5*9 = 64 || 45 = 6445 -rev-> 5446 wrong
+    digit sum diff f(85, 98) = (8+5) - (9+8) = -4 -rev-> -4 wrong
+    digit sum sum f(85, 98) = (8+5) + (9+8) = 30 -rev-> 03 wrong
+    digit product diff f(85, 98) = 8*5 - 9*8 = 40 - 72 = -32 -rev-> -23 wrong
+    digit product sum f(85, 98) = 8*5 + 9*8 = 40 + 72 = 112 -rev-> 211 wrong
+    determinant f(85, 98) = 8*8 - 5*9 = 64 - 45 = 19 -rev-> 91 wrong
+    abs determinant f(85, 98) = |8*8 - 5*9| = |64 - 45| = 19 -rev-> 91 wrong
+
+Applying to 37-06:
+  reversed operands [37->73, 06->60] and reversed result
+  absolute difference f(73, 60) = |73 - 60| = 13 -rev-> 31
+  Result: 【31】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{31}

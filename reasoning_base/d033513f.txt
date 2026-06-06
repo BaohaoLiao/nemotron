@@ -1,0 +1,175 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  35+34 = 59
+  32*46 = 2741
+  75*62 = 2841
+  07+94 = 811
+  57*66 = 0594
+
+The inputs are 35, 34, 32, 46, 75, 62, 07, 94, 57, 66
+
+The outputs are 59, 2741, 2841, 811, 0594
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+35+34 -> +
+32*46 -> *
+75*62 -> *
+07+94 -> +
+57*66 -> *
+
+The operators
++
+*
+
+Looking at the question
+91+12 -> +
+The question operator is found in the examples.
+
+Looking at operator 【+】 [35+34 = 59, 07+94 = 811]:
+  Trying common operations reversed operands [35->53 34->43, 07->70 94->49] and reversed result [expected (53,43)->59, (70,49)->811]:
+    concatenation f(53, 43) = 53 || 43 = 5343 -rev-> 3435 wrong
+    reverse concatenation f(70, 49) = 49 || 70 = 4970 -rev-> 0794 wrong
+    addition f(53, 43) = 53 + 43 = 96 -rev-> 69 wrong
+    absolute difference f(70, 49) = |70 - 49| = 21 -rev-> 12 wrong
+    negated absolute difference f(53, 43) = -|53 - 43| = -10 -rev-> -01 wrong
+    subtraction (a-b) f(70, 49) = 70 - 49 = 21 -rev-> 12 wrong
+    reverse subtraction (b-a) f(53, 43) = 43 - 53 = -10 -rev-> -01 wrong
+    multiplication f(70, 49) = (70 + 0) * 49 = 70 * 49 + 0 * 49 = 3430 + 0 = 3430 -rev-> 0343 wrong
+  Trying common operations on identity [35 34, 07 94] [expected (35,34)->59, (07,94)->811]:
+    concatenation f(35, 34) = 35 || 34 = 3534 wrong
+    reverse concatenation f(07, 94) = 94 || 07 = 9407 wrong
+    addition f(35, 34) = 35 + 34 = 69 wrong
+    absolute difference f(07, 94) = |07 - 94| = 87 wrong
+    negated absolute difference f(35, 34) = -|35 - 34| = -1 wrong
+    subtraction (a-b) f(07, 94) = 07 - 94 = -87 wrong
+    reverse subtraction (b-a) f(35, 34) = 34 - 35 = -1 wrong
+    multiplication f(07, 94) = (0 + 7) * 94 = 0 * 94 + 7 * 94 = 0 + 658 = 658 wrong
+  Trying common operations reversed operands [35->53 34->43, 07->70 94->49] [expected (53,43)->59, (70,49)->811]:
+    concatenation f(53, 43) = 53 || 43 = 5343 wrong
+    reverse concatenation f(70, 49) = 49 || 70 = 4970 wrong
+    addition f(53, 43) = 53 + 43 = 96 wrong
+    absolute difference f(70, 49) = |70 - 49| = 21 wrong
+    negated absolute difference f(53, 43) = -|53 - 43| = -10 wrong
+    subtraction (a-b) f(70, 49) = 70 - 49 = 21 wrong
+    reverse subtraction (b-a) f(53, 43) = 43 - 53 = -10 wrong
+    multiplication f(70, 49) = (70 + 0) * 49 = 70 * 49 + 0 * 49 = 3430 + 0 = 3430 wrong
+  Trying common operations identity operands [35 34, 07 94] reversed result [expected (35,34)->59, (07,94)->811]:
+    concatenation f(35, 34) = 35 || 34 = 3534 -rev-> 4353 wrong
+    reverse concatenation f(07, 94) = 94 || 07 = 9407 -rev-> 7049 wrong
+    addition f(35, 34) = 35 + 34 = 69 -rev-> 96 wrong
+    absolute difference f(07, 94) = |07 - 94| = 87 -rev-> 78 wrong
+    negated absolute difference f(35, 34) = -|35 - 34| = -1 -rev-> -1 wrong
+    subtraction (a-b) f(07, 94) = 07 - 94 = -87 -rev-> -78 wrong
+    reverse subtraction (b-a) f(35, 34) = 34 - 35 = -1 -rev-> -1 wrong
+    multiplication f(07, 94) = (0 + 7) * 94 = 0 * 94 + 7 * 94 = 0 + 658 = 658 -rev-> 856 wrong
+  Trying rare operations reversed operands [35->53 34->43, 07->70 94->49] and reversed result [expected (53,43)->59, (70,49)->811]:
+    multiply+1 f(53, 43) = (50 + 3) * 43 + 1 = 50 * 43 + 3 * 43 + 1 = 2150 + 129 + 1 = 2279 + 1 = 2280 -rev-> 0822 wrong
+    multiply-1 f(70, 49) = (70 + 0) * 49 - 1 = 70 * 49 + 0 * 49 - 1 = 3430 + 0 - 1 = 3430 - 1 = 3429 -rev-> 9243 wrong
+    add+1 f(53, 43) = 53 + 43 + 1 = 97 -rev-> 79 wrong
+    add-1 f(70, 49) = 70 + 49 - 1 = 118 -rev-> 811 match, f(53,43) -> 53 + 43 - 1 = 95 -rev-> 59 match, correct, actions: reversed operands, reversed result, add-1
+    sub+1 f(53, 43) = 53 - 43 + 1 = 11 -rev-> 11 wrong
+    sub-1 f(70, 49) = 70 - 49 - 1 = 20 -rev-> 02 wrong
+    max mod min f(53, 43) = max(53,43) mod min(53,43) = 53 mod 43 = 10 -rev-> 01 wrong
+    integer division (a/b) f(70, 49) = 70 / 49 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(53, 43) = 53 mod 43 = 10 -rev-> 01 wrong
+    reverse division (b/a) f(70, 49) = 49 / 70 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(53, 43) = 43 mod 53 = 43 -rev-> 34 wrong
+    digit absolute diff f(70, 49) = |7-4| || |0-9| = 39 -rev-> 93 wrong
+    digit add mod10 f(53, 43) = (5+4)%10 || (3+3)%10 = 96 -rev-> 69 wrong
+    digit sub mod10 f(70, 49) = (7-4)%10 || (0-9)%10 = 31 -rev-> 13 wrong
+    cross multiply f(53, 43) = 5*4 + 3*3 = 20 + 9 = 29 -rev-> 92 wrong
+    cross multiply rev f(70, 49) = 7*9 + 0*4 = 63 + 0 = 63 -rev-> 36 wrong
+    digit multiply f(53, 43) = 5*4 || 3*3 = 20 || 9 = 209 -rev-> 902 wrong
+    digit multiply rev f(70, 49) = 7*9 || 0*4 = 63 || 0 = 630 -rev-> 036 wrong
+    digit sum diff f(53, 43) = (5+3) - (4+3) = 1 -rev-> 1 wrong
+    digit sum sum f(70, 49) = (7+0) + (4+9) = 20 -rev-> 02 wrong
+    digit product diff f(53, 43) = 5*3 - 4*3 = 15 - 12 = 3 -rev-> 3 wrong
+    digit product sum f(70, 49) = 7*0 + 4*9 = 0 + 36 = 36 -rev-> 63 wrong
+    determinant f(53, 43) = 5*3 - 3*4 = 15 - 12 = 3 -rev-> 3 wrong
+    abs determinant f(70, 49) = |7*9 - 0*4| = |63 - 0| = 63 -rev-> 36 wrong
+  Trying rare operations on identity [35 34, 07 94] [expected (35,34)->59, (07,94)->811]:
+    multiply+1 f(35, 34) = (30 + 5) * 34 + 1 = 30 * 34 + 5 * 34 + 1 = 1020 + 170 + 1 = 1190 + 1 = 1191 wrong
+    multiply-1 f(07, 94) = (0 + 7) * 94 - 1 = 0 * 94 + 7 * 94 - 1 = 0 + 658 - 1 = 658 - 1 = 657 wrong
+    add+1 f(35, 34) = 35 + 34 + 1 = 70 wrong
+    add-1 f(07, 94) = 07 + 94 - 1 = 100 wrong
+    sub+1 f(35, 34) = 35 - 34 + 1 = 2 wrong
+    sub-1 f(07, 94) = 07 - 94 - 1 = -88 wrong
+    max mod min f(35, 34) = max(35,34) mod min(35,34) = 35 mod 34 = 1 wrong
+    integer division (a/b) f(07, 94) = 07 / 94 = 0 wrong
+    modulo (a mod b) f(35, 34) = 35 mod 34 = 1 wrong
+    reverse division (b/a) f(07, 94) = 94 / 07 = 13 wrong
+    reverse modulo (b mod a) f(35, 34) = 34 mod 35 = 34 wrong
+    digit absolute diff f(07, 94) = |0-9| || |7-4| = 93 wrong
+    digit add mod10 f(35, 34) = (3+3)%10 || (5+4)%10 = 69 wrong
+    digit sub mod10 f(07, 94) = (0-9)%10 || (7-4)%10 = 13 wrong
+    cross multiply f(35, 34) = 3*3 + 5*4 = 9 + 20 = 29 wrong
+    cross multiply rev f(07, 94) = 0*4 + 7*9 = 0 + 63 = 63 wrong
+    digit multiply f(35, 34) = 3*3 || 5*4 = 9 || 20 = 920 wrong
+    digit multiply rev f(07, 94) = 0*4 || 7*9 = 0 || 63 = 063 wrong
+    digit sum diff f(35, 34) = (3+5) - (3+4) = 1 wrong
+    digit sum sum f(07, 94) = (0+7) + (9+4) = 20 wrong
+    digit product diff f(35, 34) = 3*5 - 3*4 = 15 - 12 = 3 wrong
+    digit product sum f(07, 94) = 0*7 + 9*4 = 0 + 36 = 36 wrong
+    determinant f(35, 34) = 3*4 - 5*3 = 12 - 15 = -3 wrong
+    abs determinant f(07, 94) = |0*4 - 7*9| = |0 - 63| = 63 wrong
+  Trying rare operations reversed operands [35->53 34->43, 07->70 94->49] [expected (53,43)->59, (70,49)->811]:
+    multiply+1 f(53, 43) = (50 + 3) * 43 + 1 = 50 * 43 + 3 * 43 + 1 = 2150 + 129 + 1 = 2279 + 1 = 2280 wrong
+    multiply-1 f(70, 49) = (70 + 0) * 49 - 1 = 70 * 49 + 0 * 49 - 1 = 3430 + 0 - 1 = 3430 - 1 = 3429 wrong
+    add+1 f(53, 43) = 53 + 43 + 1 = 97 wrong
+    add-1 f(70, 49) = 70 + 49 - 1 = 118 wrong
+    sub+1 f(53, 43) = 53 - 43 + 1 = 11 wrong
+    sub-1 f(70, 49) = 70 - 49 - 1 = 20 wrong
+    max mod min f(53, 43) = max(53,43) mod min(53,43) = 53 mod 43 = 10 wrong
+    integer division (a/b) f(70, 49) = 70 / 49 = 1 wrong
+    modulo (a mod b) f(53, 43) = 53 mod 43 = 10 wrong
+    reverse division (b/a) f(70, 49) = 49 / 70 = 0 wrong
+    reverse modulo (b mod a) f(53, 43) = 43 mod 53 = 43 wrong
+    digit absolute diff f(70, 49) = |7-4| || |0-9| = 39 wrong
+    digit add mod10 f(53, 43) = (5+4)%10 || (3+3)%10 = 96 wrong
+    digit sub mod10 f(70, 49) = (7-4)%10 || (0-9)%10 = 31 wrong
+    cross multiply f(53, 43) = 5*4 + 3*3 = 20 + 9 = 29 wrong
+    cross multiply rev f(70, 49) = 7*9 + 0*4 = 63 + 0 = 63 wrong
+    digit multiply f(53, 43) = 5*4 || 3*3 = 20 || 9 = 209 wrong
+    digit multiply rev f(70, 49) = 7*9 || 0*4 = 63 || 0 = 630 wrong
+    digit sum diff f(53, 43) = (5+3) - (4+3) = 1 wrong
+    digit sum sum f(70, 49) = (7+0) + (4+9) = 20 wrong
+    digit product diff f(53, 43) = 5*3 - 4*3 = 15 - 12 = 3 wrong
+    digit product sum f(70, 49) = 7*0 + 4*9 = 0 + 36 = 36 wrong
+    determinant f(53, 43) = 5*3 - 3*4 = 15 - 12 = 3 wrong
+    abs determinant f(70, 49) = |7*9 - 0*4| = |63 - 0| = 63 wrong
+  Trying rare operations identity operands [35 34, 07 94] reversed result [expected (35,34)->59, (07,94)->811]:
+    multiply+1 f(35, 34) = (30 + 5) * 34 + 1 = 30 * 34 + 5 * 34 + 1 = 1020 + 170 + 1 = 1190 + 1 = 1191 -rev-> 1911 wrong
+    multiply-1 f(07, 94) = (0 + 7) * 94 - 1 = 0 * 94 + 7 * 94 - 1 = 0 + 658 - 1 = 658 - 1 = 657 -rev-> 756 wrong
+    add+1 f(35, 34) = 35 + 34 + 1 = 70 -rev-> 07 wrong
+    add-1 f(07, 94) = 07 + 94 - 1 = 100 -rev-> 001 wrong
+    sub+1 f(35, 34) = 35 - 34 + 1 = 2 -rev-> 2 wrong
+    sub-1 f(07, 94) = 07 - 94 - 1 = -88 -rev-> -88 wrong
+    max mod min f(35, 34) = max(35,34) mod min(35,34) = 35 mod 34 = 1 -rev-> 1 wrong
+    integer division (a/b) f(07, 94) = 07 / 94 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(35, 34) = 35 mod 34 = 1 -rev-> 1 wrong
+    reverse division (b/a) f(07, 94) = 94 / 07 = 13 -rev-> 31 wrong
+    reverse modulo (b mod a) f(35, 34) = 34 mod 35 = 34 -rev-> 43 wrong
+    digit absolute diff f(07, 94) = |0-9| || |7-4| = 93 -rev-> 39 wrong
+    digit add mod10 f(35, 34) = (3+3)%10 || (5+4)%10 = 69 -rev-> 96 wrong
+    digit sub mod10 f(07, 94) = (0-9)%10 || (7-4)%10 = 13 -rev-> 31 wrong
+    cross multiply f(35, 34) = 3*3 + 5*4 = 9 + 20 = 29 -rev-> 92 wrong
+    cross multiply rev f(07, 94) = 0*4 + 7*9 = 0 + 63 = 63 -rev-> 36 wrong
+    digit multiply f(35, 34) = 3*3 || 5*4 = 9 || 20 = 920 -rev-> 029 wrong
+    digit multiply rev f(07, 94) = 0*4 || 7*9 = 0 || 63 = 063 -rev-> 360 wrong
+    digit sum diff f(35, 34) = (3+5) - (3+4) = 1 -rev-> 1 wrong
+    digit sum sum f(07, 94) = (0+7) + (9+4) = 20 -rev-> 02 wrong
+    digit product diff f(35, 34) = 3*5 - 3*4 = 15 - 12 = 3 -rev-> 3 wrong
+    digit product sum f(07, 94) = 0*7 + 9*4 = 0 + 36 = 36 -rev-> 63 wrong
+    determinant f(35, 34) = 3*4 - 5*3 = 12 - 15 = -3 -rev-> -3 wrong
+    abs determinant f(07, 94) = |0*4 - 7*9| = |0 - 63| = 63 -rev-> 36 wrong
+
+Applying to 91+12:
+  reversed operands [91->19, 12->21] and reversed result
+  add-1 f(19, 21) = 19 + 21 - 1 = 39 -rev-> 93
+  Result: 【93】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{93}

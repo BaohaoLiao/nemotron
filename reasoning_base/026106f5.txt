@@ -1,0 +1,173 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  52{43 = 9
+  31*15 = 46
+  37{26 = 11
+  17{92 = 24
+
+The inputs are 52, 43, 31, 15, 37, 26, 17, 92
+
+The outputs are 9, 46, 11, 24
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+52{43 -> {
+31*15 -> *
+37{26 -> {
+17{92 -> {
+
+The operators
+{
+*
+
+Looking at the question
+75*97 -> *
+The question operator is found in the examples.
+
+Looking at operator 【*】 [31*15 = 46]:
+  Trying common operations reversed operands [31->13 15->51] and reversed result [expected (13,51)->46]:
+    concatenation f(13, 51) = 13 || 51 = 1351 -rev-> 1531 wrong
+    reverse concatenation f(13, 51) = 51 || 13 = 5113 -rev-> 3115 wrong
+    addition f(13, 51) = 13 + 51 = 64 -rev-> 46 match, correct, actions: reversed operands, reversed result, addition
+    absolute difference f(13, 51) = |13 - 51| = 38 -rev-> 83 wrong
+    negated absolute difference f(13, 51) = -|13 - 51| = -38 -rev-> -83 wrong
+    subtraction (a-b) f(13, 51) = 13 - 51 = -38 -rev-> -83 wrong
+    reverse subtraction (b-a) f(13, 51) = 51 - 13 = 38 -rev-> 83 wrong
+    multiplication f(13, 51) = (10 + 3) * 51 = 10 * 51 + 3 * 51 = 510 + 153 = 663 -rev-> 366 wrong
+  Trying common operations on identity [31 15] [expected (31,15)->46]:
+    concatenation f(31, 15) = 31 || 15 = 3115 wrong
+    reverse concatenation f(31, 15) = 15 || 31 = 1531 wrong
+    addition f(31, 15) = 31 + 15 = 46 match, correct, but skipping
+    absolute difference f(31, 15) = |31 - 15| = 16 wrong
+    negated absolute difference f(31, 15) = -|31 - 15| = -16 wrong
+    subtraction (a-b) f(31, 15) = 31 - 15 = 16 wrong
+    reverse subtraction (b-a) f(31, 15) = 15 - 31 = -16 wrong
+    multiplication f(31, 15) = (30 + 1) * 15 = 30 * 15 + 1 * 15 = 450 + 15 = 465 wrong
+  Trying common operations reversed operands [31->13 15->51] [expected (13,51)->46]:
+    concatenation f(13, 51) = 13 || 51 = 1351 wrong
+    reverse concatenation f(13, 51) = 51 || 13 = 5113 wrong
+    addition f(13, 51) = 13 + 51 = 64 wrong
+    absolute difference f(13, 51) = |13 - 51| = 38 wrong
+    negated absolute difference f(13, 51) = -|13 - 51| = -38 wrong
+    subtraction (a-b) f(13, 51) = 13 - 51 = -38 wrong
+    reverse subtraction (b-a) f(13, 51) = 51 - 13 = 38 wrong
+    multiplication f(13, 51) = (10 + 3) * 51 = 10 * 51 + 3 * 51 = 510 + 153 = 663 wrong
+  Trying common operations identity operands [31 15] reversed result [expected (31,15)->46]:
+    concatenation f(31, 15) = 31 || 15 = 3115 -rev-> 5113 wrong
+    reverse concatenation f(31, 15) = 15 || 31 = 1531 -rev-> 1351 wrong
+    addition f(31, 15) = 31 + 15 = 46 -rev-> 64 wrong
+    absolute difference f(31, 15) = |31 - 15| = 16 -rev-> 61 wrong
+    negated absolute difference f(31, 15) = -|31 - 15| = -16 -rev-> -61 wrong
+    subtraction (a-b) f(31, 15) = 31 - 15 = 16 -rev-> 61 wrong
+    reverse subtraction (b-a) f(31, 15) = 15 - 31 = -16 -rev-> -61 wrong
+    multiplication f(31, 15) = (30 + 1) * 15 = 30 * 15 + 1 * 15 = 450 + 15 = 465 -rev-> 564 wrong
+  Trying rare operations reversed operands [31->13 15->51] and reversed result [expected (13,51)->46]:
+    multiply+1 f(13, 51) = (10 + 3) * 51 + 1 = 10 * 51 + 3 * 51 + 1 = 510 + 153 + 1 = 663 + 1 = 664 -rev-> 466 wrong
+    multiply-1 f(13, 51) = (10 + 3) * 51 - 1 = 10 * 51 + 3 * 51 - 1 = 510 + 153 - 1 = 663 - 1 = 662 -rev-> 266 wrong
+    add+1 f(13, 51) = 13 + 51 + 1 = 65 -rev-> 56 wrong
+    add-1 f(13, 51) = 13 + 51 - 1 = 63 -rev-> 36 wrong
+    sub+1 f(13, 51) = 13 - 51 + 1 = -37 -rev-> -73 wrong
+    sub-1 f(13, 51) = 13 - 51 - 1 = -39 -rev-> -93 wrong
+    max mod min f(13, 51) = max(13,51) mod min(13,51) = 51 mod 13 = 12 -rev-> 21 wrong
+    integer division (a/b) f(13, 51) = 13 / 51 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(13, 51) = 13 mod 51 = 13 -rev-> 31 wrong
+    reverse division (b/a) f(13, 51) = 51 / 13 = 3 -rev-> 3 wrong
+    reverse modulo (b mod a) f(13, 51) = 51 mod 13 = 12 -rev-> 21 wrong
+    digit absolute diff f(13, 51) = |1-5| || |3-1| = 42 -rev-> 24 wrong
+    digit add mod10 f(13, 51) = (1+5)%10 || (3+1)%10 = 64 -rev-> 46 match, correct, but skipping
+    digit sub mod10 f(13, 51) = (1-5)%10 || (3-1)%10 = 62 -rev-> 26 wrong
+    cross multiply f(13, 51) = 1*5 + 3*1 = 5 + 3 = 8 -rev-> 8 wrong
+    cross multiply rev f(13, 51) = 1*1 + 3*5 = 1 + 15 = 16 -rev-> 61 wrong
+    digit multiply f(13, 51) = 1*5 || 3*1 = 5 || 3 = 53 -rev-> 35 wrong
+    digit multiply rev f(13, 51) = 1*1 || 3*5 = 1 || 15 = 115 -rev-> 511 wrong
+    digit sum diff f(13, 51) = (1+3) - (5+1) = -2 -rev-> -2 wrong
+    digit sum sum f(13, 51) = (1+3) + (5+1) = 10 -rev-> 01 wrong
+    digit product diff f(13, 51) = 1*3 - 5*1 = 3 - 5 = -2 -rev-> -2 wrong
+    digit product sum f(13, 51) = 1*3 + 5*1 = 3 + 5 = 8 -rev-> 8 wrong
+    determinant f(13, 51) = 1*1 - 3*5 = 1 - 15 = -14 -rev-> -41 wrong
+    abs determinant f(13, 51) = |1*1 - 3*5| = |1 - 15| = 14 -rev-> 41 wrong
+  Trying rare operations on identity [31 15] [expected (31,15)->46]:
+    multiply+1 f(31, 15) = (30 + 1) * 15 + 1 = 30 * 15 + 1 * 15 + 1 = 450 + 15 + 1 = 465 + 1 = 466 wrong
+    multiply-1 f(31, 15) = (30 + 1) * 15 - 1 = 30 * 15 + 1 * 15 - 1 = 450 + 15 - 1 = 465 - 1 = 464 wrong
+    add+1 f(31, 15) = 31 + 15 + 1 = 47 wrong
+    add-1 f(31, 15) = 31 + 15 - 1 = 45 wrong
+    sub+1 f(31, 15) = 31 - 15 + 1 = 17 wrong
+    sub-1 f(31, 15) = 31 - 15 - 1 = 15 wrong
+    max mod min f(31, 15) = max(31,15) mod min(31,15) = 31 mod 15 = 1 wrong
+    integer division (a/b) f(31, 15) = 31 / 15 = 2 wrong
+    modulo (a mod b) f(31, 15) = 31 mod 15 = 1 wrong
+    reverse division (b/a) f(31, 15) = 15 / 31 = 0 wrong
+    reverse modulo (b mod a) f(31, 15) = 15 mod 31 = 15 wrong
+    digit absolute diff f(31, 15) = |3-1| || |1-5| = 24 wrong
+    digit add mod10 f(31, 15) = (3+1)%10 || (1+5)%10 = 46 match, correct, but skipping
+    digit sub mod10 f(31, 15) = (3-1)%10 || (1-5)%10 = 26 wrong
+    cross multiply f(31, 15) = 3*1 + 1*5 = 3 + 5 = 8 wrong
+    cross multiply rev f(31, 15) = 3*5 + 1*1 = 15 + 1 = 16 wrong
+    digit multiply f(31, 15) = 3*1 || 1*5 = 3 || 5 = 35 wrong
+    digit multiply rev f(31, 15) = 3*5 || 1*1 = 15 || 1 = 151 wrong
+    digit sum diff f(31, 15) = (3+1) - (1+5) = -2 wrong
+    digit sum sum f(31, 15) = (3+1) + (1+5) = 10 wrong
+    digit product diff f(31, 15) = 3*1 - 1*5 = 3 - 5 = -2 wrong
+    digit product sum f(31, 15) = 3*1 + 1*5 = 3 + 5 = 8 wrong
+    determinant f(31, 15) = 3*5 - 1*1 = 15 - 1 = 14 wrong
+    abs determinant f(31, 15) = |3*5 - 1*1| = |15 - 1| = 14 wrong
+  Trying rare operations reversed operands [31->13 15->51] [expected (13,51)->46]:
+    multiply+1 f(13, 51) = (10 + 3) * 51 + 1 = 10 * 51 + 3 * 51 + 1 = 510 + 153 + 1 = 663 + 1 = 664 wrong
+    multiply-1 f(13, 51) = (10 + 3) * 51 - 1 = 10 * 51 + 3 * 51 - 1 = 510 + 153 - 1 = 663 - 1 = 662 wrong
+    add+1 f(13, 51) = 13 + 51 + 1 = 65 wrong
+    add-1 f(13, 51) = 13 + 51 - 1 = 63 wrong
+    sub+1 f(13, 51) = 13 - 51 + 1 = -37 wrong
+    sub-1 f(13, 51) = 13 - 51 - 1 = -39 wrong
+    max mod min f(13, 51) = max(13,51) mod min(13,51) = 51 mod 13 = 12 wrong
+    integer division (a/b) f(13, 51) = 13 / 51 = 0 wrong
+    modulo (a mod b) f(13, 51) = 13 mod 51 = 13 wrong
+    reverse division (b/a) f(13, 51) = 51 / 13 = 3 wrong
+    reverse modulo (b mod a) f(13, 51) = 51 mod 13 = 12 wrong
+    digit absolute diff f(13, 51) = |1-5| || |3-1| = 42 wrong
+    digit add mod10 f(13, 51) = (1+5)%10 || (3+1)%10 = 64 wrong
+    digit sub mod10 f(13, 51) = (1-5)%10 || (3-1)%10 = 62 wrong
+    cross multiply f(13, 51) = 1*5 + 3*1 = 5 + 3 = 8 wrong
+    cross multiply rev f(13, 51) = 1*1 + 3*5 = 1 + 15 = 16 wrong
+    digit multiply f(13, 51) = 1*5 || 3*1 = 5 || 3 = 53 wrong
+    digit multiply rev f(13, 51) = 1*1 || 3*5 = 1 || 15 = 115 wrong
+    digit sum diff f(13, 51) = (1+3) - (5+1) = -2 wrong
+    digit sum sum f(13, 51) = (1+3) + (5+1) = 10 wrong
+    digit product diff f(13, 51) = 1*3 - 5*1 = 3 - 5 = -2 wrong
+    digit product sum f(13, 51) = 1*3 + 5*1 = 3 + 5 = 8 wrong
+    determinant f(13, 51) = 1*1 - 3*5 = 1 - 15 = -14 wrong
+    abs determinant f(13, 51) = |1*1 - 3*5| = |1 - 15| = 14 wrong
+  Trying rare operations identity operands [31 15] reversed result [expected (31,15)->46]:
+    multiply+1 f(31, 15) = (30 + 1) * 15 + 1 = 30 * 15 + 1 * 15 + 1 = 450 + 15 + 1 = 465 + 1 = 466 -rev-> 664 wrong
+    multiply-1 f(31, 15) = (30 + 1) * 15 - 1 = 30 * 15 + 1 * 15 - 1 = 450 + 15 - 1 = 465 - 1 = 464 -rev-> 464 wrong
+    add+1 f(31, 15) = 31 + 15 + 1 = 47 -rev-> 74 wrong
+    add-1 f(31, 15) = 31 + 15 - 1 = 45 -rev-> 54 wrong
+    sub+1 f(31, 15) = 31 - 15 + 1 = 17 -rev-> 71 wrong
+    sub-1 f(31, 15) = 31 - 15 - 1 = 15 -rev-> 51 wrong
+    max mod min f(31, 15) = max(31,15) mod min(31,15) = 31 mod 15 = 1 -rev-> 1 wrong
+    integer division (a/b) f(31, 15) = 31 / 15 = 2 -rev-> 2 wrong
+    modulo (a mod b) f(31, 15) = 31 mod 15 = 1 -rev-> 1 wrong
+    reverse division (b/a) f(31, 15) = 15 / 31 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(31, 15) = 15 mod 31 = 15 -rev-> 51 wrong
+    digit absolute diff f(31, 15) = |3-1| || |1-5| = 24 -rev-> 42 wrong
+    digit add mod10 f(31, 15) = (3+1)%10 || (1+5)%10 = 46 -rev-> 64 wrong
+    digit sub mod10 f(31, 15) = (3-1)%10 || (1-5)%10 = 26 -rev-> 62 wrong
+    cross multiply f(31, 15) = 3*1 + 1*5 = 3 + 5 = 8 -rev-> 8 wrong
+    cross multiply rev f(31, 15) = 3*5 + 1*1 = 15 + 1 = 16 -rev-> 61 wrong
+    digit multiply f(31, 15) = 3*1 || 1*5 = 3 || 5 = 35 -rev-> 53 wrong
+    digit multiply rev f(31, 15) = 3*5 || 1*1 = 15 || 1 = 151 -rev-> 151 wrong
+    digit sum diff f(31, 15) = (3+1) - (1+5) = -2 -rev-> -2 wrong
+    digit sum sum f(31, 15) = (3+1) + (1+5) = 10 -rev-> 01 wrong
+    digit product diff f(31, 15) = 3*1 - 1*5 = 3 - 5 = -2 -rev-> -2 wrong
+    digit product sum f(31, 15) = 3*1 + 1*5 = 3 + 5 = 8 -rev-> 8 wrong
+    determinant f(31, 15) = 3*5 - 1*1 = 15 - 1 = 14 -rev-> 41 wrong
+    abs determinant f(31, 15) = |3*5 - 1*1| = |15 - 1| = 14 -rev-> 41 wrong
+
+Applying to 75*97:
+  reversed operands [75->57, 97->79] and reversed result
+  addition f(57, 79) = 57 + 79 = 136 -rev-> 631
+  Result: 【631】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{631}

@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  32+26 = 58
+  83-49 = -65
+  11*27 = 2711
+
+The inputs are 32, 26, 83, 49, 11, 27
+
+The outputs are 58, -65, 2711
+Some outputs have the operator symbol as prefix 【-】.
+We now consider the outputs to be 58, -65, 2711
+We will add back the operator prefix if our answer is negative.
+
+Looking at the input of the examples
+32+26 -> +
+83-49 -> -
+11*27 -> *
+
+The operators
++
+-
+*
+
+Looking at the question
+46*51 -> *
+The question operator is found in the examples.
+
+Looking at operator 【*】 [11*27 = 2711]:
+  Trying common operations reversed operands [11->11 27->72] and reversed result [expected (11,72)->2711]:
+    concatenation f(11, 72) = 11 || 72 = 1172 -rev-> 2711 match, correct, actions: reversed operands, reversed result, concatenation
+    reverse concatenation f(11, 72) = 72 || 11 = 7211 -rev-> 1127 wrong
+    addition f(11, 72) = 11 + 72 = 83 -rev-> 38 wrong
+    absolute difference f(11, 72) = |11 - 72| = 61 -rev-> 16 wrong
+    negated absolute difference f(11, 72) = -|11 - 72| = -61 -rev-> -16 wrong
+    subtraction (a-b) f(11, 72) = 11 - 72 = -61 -rev-> -16 wrong
+    reverse subtraction (b-a) f(11, 72) = 72 - 11 = 61 -rev-> 16 wrong
+    multiplication f(11, 72) = (10 + 1) * 72 = 10 * 72 + 1 * 72 = 720 + 72 = 792 -rev-> 297 wrong
+  Trying common operations on identity [11 27] [expected (11,27)->2711]:
+    concatenation f(11, 27) = 11 || 27 = 1127 wrong
+    reverse concatenation f(11, 27) = 27 || 11 = 2711 match, correct, but skipping
+    addition f(11, 27) = 11 + 27 = 38 wrong
+    absolute difference f(11, 27) = |11 - 27| = 16 wrong
+    negated absolute difference f(11, 27) = -|11 - 27| = -16 wrong
+    subtraction (a-b) f(11, 27) = 11 - 27 = -16 wrong
+    reverse subtraction (b-a) f(11, 27) = 27 - 11 = 16 wrong
+    multiplication f(11, 27) = (10 + 1) * 27 = 10 * 27 + 1 * 27 = 270 + 27 = 297 wrong
+  Trying common operations reversed operands [11->11 27->72] [expected (11,72)->2711]:
+    concatenation f(11, 72) = 11 || 72 = 1172 wrong
+    reverse concatenation f(11, 72) = 72 || 11 = 7211 wrong
+    addition f(11, 72) = 11 + 72 = 83 wrong
+    absolute difference f(11, 72) = |11 - 72| = 61 wrong
+    negated absolute difference f(11, 72) = -|11 - 72| = -61 wrong
+    subtraction (a-b) f(11, 72) = 11 - 72 = -61 wrong
+    reverse subtraction (b-a) f(11, 72) = 72 - 11 = 61 wrong
+    multiplication f(11, 72) = (10 + 1) * 72 = 10 * 72 + 1 * 72 = 720 + 72 = 792 wrong
+  Trying common operations identity operands [11 27] reversed result [expected (11,27)->2711]:
+    concatenation f(11, 27) = 11 || 27 = 1127 -rev-> 7211 wrong
+    reverse concatenation f(11, 27) = 27 || 11 = 2711 -rev-> 1172 wrong
+    addition f(11, 27) = 11 + 27 = 38 -rev-> 83 wrong
+    absolute difference f(11, 27) = |11 - 27| = 16 -rev-> 61 wrong
+    negated absolute difference f(11, 27) = -|11 - 27| = -16 -rev-> -61 wrong
+    subtraction (a-b) f(11, 27) = 11 - 27 = -16 -rev-> -61 wrong
+    reverse subtraction (b-a) f(11, 27) = 27 - 11 = 16 -rev-> 61 wrong
+    multiplication f(11, 27) = (10 + 1) * 27 = 10 * 27 + 1 * 27 = 270 + 27 = 297 -rev-> 792 wrong
+  Trying rare operations reversed operands [11->11 27->72] and reversed result [expected (11,72)->2711]:
+    multiply+1 f(11, 72) = (10 + 1) * 72 + 1 = 10 * 72 + 1 * 72 + 1 = 720 + 72 + 1 = 792 + 1 = 793 -rev-> 397 wrong
+    multiply-1 f(11, 72) = (10 + 1) * 72 - 1 = 10 * 72 + 1 * 72 - 1 = 720 + 72 - 1 = 792 - 1 = 791 -rev-> 197 wrong
+    add+1 f(11, 72) = 11 + 72 + 1 = 84 -rev-> 48 wrong
+    add-1 f(11, 72) = 11 + 72 - 1 = 82 -rev-> 28 wrong
+    sub+1 f(11, 72) = 11 - 72 + 1 = -60 -rev-> -06 wrong
+    sub-1 f(11, 72) = 11 - 72 - 1 = -62 -rev-> -26 wrong
+    max mod min f(11, 72) = max(11,72) mod min(11,72) = 72 mod 11 = 6 -rev-> 6 wrong
+    integer division (a/b) f(11, 72) = 11 / 72 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(11, 72) = 11 mod 72 = 11 -rev-> 11 wrong
+    reverse division (b/a) f(11, 72) = 72 / 11 = 6 -rev-> 6 wrong
+    reverse modulo (b mod a) f(11, 72) = 72 mod 11 = 6 -rev-> 6 wrong
+    digit absolute diff f(11, 72) = |1-7| || |1-2| = 61 -rev-> 16 wrong
+    digit add mod10 f(11, 72) = (1+7)%10 || (1+2)%10 = 83 -rev-> 38 wrong
+    digit sub mod10 f(11, 72) = (1-7)%10 || (1-2)%10 = 49 -rev-> 94 wrong
+    cross multiply f(11, 72) = 1*7 + 1*2 = 7 + 2 = 9 -rev-> 9 wrong
+    cross multiply rev f(11, 72) = 1*2 + 1*7 = 2 + 7 = 9 -rev-> 9 wrong
+    digit multiply f(11, 72) = 1*7 || 1*2 = 7 || 2 = 72 -rev-> 27 wrong
+    digit multiply rev f(11, 72) = 1*2 || 1*7 = 2 || 7 = 27 -rev-> 72 wrong
+    digit sum diff f(11, 72) = (1+1) - (7+2) = -7 -rev-> -7 wrong
+    digit sum sum f(11, 72) = (1+1) + (7+2) = 11 -rev-> 11 wrong
+    digit product diff f(11, 72) = 1*1 - 7*2 = 1 - 14 = -13 -rev-> -31 wrong
+    digit product sum f(11, 72) = 1*1 + 7*2 = 1 + 14 = 15 -rev-> 51 wrong
+    determinant f(11, 72) = 1*2 - 1*7 = 2 - 7 = -5 -rev-> -5 wrong
+    abs determinant f(11, 72) = |1*2 - 1*7| = |2 - 7| = 5 -rev-> 5 wrong
+  Trying rare operations on identity [11 27] [expected (11,27)->2711]:
+    multiply+1 f(11, 27) = (10 + 1) * 27 + 1 = 10 * 27 + 1 * 27 + 1 = 270 + 27 + 1 = 297 + 1 = 298 wrong
+    multiply-1 f(11, 27) = (10 + 1) * 27 - 1 = 10 * 27 + 1 * 27 - 1 = 270 + 27 - 1 = 297 - 1 = 296 wrong
+    add+1 f(11, 27) = 11 + 27 + 1 = 39 wrong
+    add-1 f(11, 27) = 11 + 27 - 1 = 37 wrong
+    sub+1 f(11, 27) = 11 - 27 + 1 = -15 wrong
+    sub-1 f(11, 27) = 11 - 27 - 1 = -17 wrong
+    max mod min f(11, 27) = max(11,27) mod min(11,27) = 27 mod 11 = 5 wrong
+    integer division (a/b) f(11, 27) = 11 / 27 = 0 wrong
+    modulo (a mod b) f(11, 27) = 11 mod 27 = 11 wrong
+    reverse division (b/a) f(11, 27) = 27 / 11 = 2 wrong
+    reverse modulo (b mod a) f(11, 27) = 27 mod 11 = 5 wrong
+    digit absolute diff f(11, 27) = |1-2| || |1-7| = 16 wrong
+    digit add mod10 f(11, 27) = (1+2)%10 || (1+7)%10 = 38 wrong
+    digit sub mod10 f(11, 27) = (1-2)%10 || (1-7)%10 = 94 wrong
+    cross multiply f(11, 27) = 1*2 + 1*7 = 2 + 7 = 9 wrong
+    cross multiply rev f(11, 27) = 1*7 + 1*2 = 7 + 2 = 9 wrong
+    digit multiply f(11, 27) = 1*2 || 1*7 = 2 || 7 = 27 wrong
+    digit multiply rev f(11, 27) = 1*7 || 1*2 = 7 || 2 = 72 wrong
+    digit sum diff f(11, 27) = (1+1) - (2+7) = -7 wrong
+    digit sum sum f(11, 27) = (1+1) + (2+7) = 11 wrong
+    digit product diff f(11, 27) = 1*1 - 2*7 = 1 - 14 = -13 wrong
+    digit product sum f(11, 27) = 1*1 + 2*7 = 1 + 14 = 15 wrong
+    determinant f(11, 27) = 1*7 - 1*2 = 7 - 2 = 5 wrong
+    abs determinant f(11, 27) = |1*7 - 1*2| = |7 - 2| = 5 wrong
+  Trying rare operations reversed operands [11->11 27->72] [expected (11,72)->2711]:
+    multiply+1 f(11, 72) = (10 + 1) * 72 + 1 = 10 * 72 + 1 * 72 + 1 = 720 + 72 + 1 = 792 + 1 = 793 wrong
+    multiply-1 f(11, 72) = (10 + 1) * 72 - 1 = 10 * 72 + 1 * 72 - 1 = 720 + 72 - 1 = 792 - 1 = 791 wrong
+    add+1 f(11, 72) = 11 + 72 + 1 = 84 wrong
+    add-1 f(11, 72) = 11 + 72 - 1 = 82 wrong
+    sub+1 f(11, 72) = 11 - 72 + 1 = -60 wrong
+    sub-1 f(11, 72) = 11 - 72 - 1 = -62 wrong
+    max mod min f(11, 72) = max(11,72) mod min(11,72) = 72 mod 11 = 6 wrong
+    integer division (a/b) f(11, 72) = 11 / 72 = 0 wrong
+    modulo (a mod b) f(11, 72) = 11 mod 72 = 11 wrong
+    reverse division (b/a) f(11, 72) = 72 / 11 = 6 wrong
+    reverse modulo (b mod a) f(11, 72) = 72 mod 11 = 6 wrong
+    digit absolute diff f(11, 72) = |1-7| || |1-2| = 61 wrong
+    digit add mod10 f(11, 72) = (1+7)%10 || (1+2)%10 = 83 wrong
+    digit sub mod10 f(11, 72) = (1-7)%10 || (1-2)%10 = 49 wrong
+    cross multiply f(11, 72) = 1*7 + 1*2 = 7 + 2 = 9 wrong
+    cross multiply rev f(11, 72) = 1*2 + 1*7 = 2 + 7 = 9 wrong
+    digit multiply f(11, 72) = 1*7 || 1*2 = 7 || 2 = 72 wrong
+    digit multiply rev f(11, 72) = 1*2 || 1*7 = 2 || 7 = 27 wrong
+    digit sum diff f(11, 72) = (1+1) - (7+2) = -7 wrong
+    digit sum sum f(11, 72) = (1+1) + (7+2) = 11 wrong
+    digit product diff f(11, 72) = 1*1 - 7*2 = 1 - 14 = -13 wrong
+    digit product sum f(11, 72) = 1*1 + 7*2 = 1 + 14 = 15 wrong
+    determinant f(11, 72) = 1*2 - 1*7 = 2 - 7 = -5 wrong
+    abs determinant f(11, 72) = |1*2 - 1*7| = |2 - 7| = 5 wrong
+  Trying rare operations identity operands [11 27] reversed result [expected (11,27)->2711]:
+    multiply+1 f(11, 27) = (10 + 1) * 27 + 1 = 10 * 27 + 1 * 27 + 1 = 270 + 27 + 1 = 297 + 1 = 298 -rev-> 892 wrong
+    multiply-1 f(11, 27) = (10 + 1) * 27 - 1 = 10 * 27 + 1 * 27 - 1 = 270 + 27 - 1 = 297 - 1 = 296 -rev-> 692 wrong
+    add+1 f(11, 27) = 11 + 27 + 1 = 39 -rev-> 93 wrong
+    add-1 f(11, 27) = 11 + 27 - 1 = 37 -rev-> 73 wrong
+    sub+1 f(11, 27) = 11 - 27 + 1 = -15 -rev-> -51 wrong
+    sub-1 f(11, 27) = 11 - 27 - 1 = -17 -rev-> -71 wrong
+    max mod min f(11, 27) = max(11,27) mod min(11,27) = 27 mod 11 = 5 -rev-> 5 wrong
+    integer division (a/b) f(11, 27) = 11 / 27 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(11, 27) = 11 mod 27 = 11 -rev-> 11 wrong
+    reverse division (b/a) f(11, 27) = 27 / 11 = 2 -rev-> 2 wrong
+    reverse modulo (b mod a) f(11, 27) = 27 mod 11 = 5 -rev-> 5 wrong
+    digit absolute diff f(11, 27) = |1-2| || |1-7| = 16 -rev-> 61 wrong
+    digit add mod10 f(11, 27) = (1+2)%10 || (1+7)%10 = 38 -rev-> 83 wrong
+    digit sub mod10 f(11, 27) = (1-2)%10 || (1-7)%10 = 94 -rev-> 49 wrong
+    cross multiply f(11, 27) = 1*2 + 1*7 = 2 + 7 = 9 -rev-> 9 wrong
+    cross multiply rev f(11, 27) = 1*7 + 1*2 = 7 + 2 = 9 -rev-> 9 wrong
+    digit multiply f(11, 27) = 1*2 || 1*7 = 2 || 7 = 27 -rev-> 72 wrong
+    digit multiply rev f(11, 27) = 1*7 || 1*2 = 7 || 2 = 72 -rev-> 27 wrong
+    digit sum diff f(11, 27) = (1+1) - (2+7) = -7 -rev-> -7 wrong
+    digit sum sum f(11, 27) = (1+1) + (2+7) = 11 -rev-> 11 wrong
+    digit product diff f(11, 27) = 1*1 - 2*7 = 1 - 14 = -13 -rev-> -31 wrong
+    digit product sum f(11, 27) = 1*1 + 2*7 = 1 + 14 = 15 -rev-> 51 wrong
+    determinant f(11, 27) = 1*7 - 1*2 = 7 - 2 = 5 -rev-> 5 wrong
+    abs determinant f(11, 27) = |1*7 - 1*2| = |7 - 2| = 5 -rev-> 5 wrong
+
+Applying to 46*51:
+  reversed operands [46->64, 51->15] and reversed result
+  concatenation f(64, 15) = 64 || 15 = 6415 -rev-> 5146
+  Result: 【5146】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{5146}

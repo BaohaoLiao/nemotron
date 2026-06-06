@@ -1,0 +1,171 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  40-82 = 2
+  23-28 = 5
+  31%94 = 125
+
+The inputs are 40, 82, 23, 28, 31, 94
+
+The outputs are 2, 5, 125
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+40-82 -> -
+23-28 -> -
+31%94 -> %
+
+The operators
+-
+%
+
+Looking at the question
+18-86 -> -
+The question operator is found in the examples.
+
+Looking at operator 【-】 [40-82 = 2, 23-28 = 5]:
+  Trying common operations reversed operands [40->04 82->28, 23->32 28->82] and reversed result [expected (04,28)->2, (32,82)->5]:
+    concatenation f(04, 28) = 04 || 28 = 0428 -rev-> 8240 wrong
+    reverse concatenation f(32, 82) = 82 || 32 = 8232 -rev-> 2328 wrong
+    addition f(04, 28) = 04 + 28 = 32 -rev-> 23 wrong
+    absolute difference f(32, 82) = |32 - 82| = 50 -rev-> 05 wrong
+    negated absolute difference f(04, 28) = -|04 - 28| = -24 -rev-> -42 wrong
+    subtraction (a-b) f(32, 82) = 32 - 82 = -50 -rev-> -05 wrong
+    reverse subtraction (b-a) f(04, 28) = 28 - 04 = 24 -rev-> 42 wrong
+    multiplication f(32, 82) = (30 + 2) * 82 = 30 * 82 + 2 * 82 = 2460 + 164 = 2624 -rev-> 4262 wrong
+  Trying common operations on identity [40 82, 23 28] [expected (40,82)->2, (23,28)->5]:
+    concatenation f(40, 82) = 40 || 82 = 4082 wrong
+    reverse concatenation f(23, 28) = 28 || 23 = 2823 wrong
+    addition f(40, 82) = 40 + 82 = 122 wrong
+    absolute difference f(23, 28) = |23 - 28| = 5 match, f(40,82) -> |40 - 82| = 42 wrong
+    negated absolute difference f(40, 82) = -|40 - 82| = -42 wrong
+    subtraction (a-b) f(23, 28) = 23 - 28 = -5 wrong
+    reverse subtraction (b-a) f(40, 82) = 82 - 40 = 42 wrong
+    multiplication f(23, 28) = (20 + 3) * 28 = 20 * 28 + 3 * 28 = 560 + 84 = 644 wrong
+  Trying common operations reversed operands [40->04 82->28, 23->32 28->82] [expected (04,28)->2, (32,82)->5]:
+    concatenation f(04, 28) = 04 || 28 = 0428 wrong
+    reverse concatenation f(32, 82) = 82 || 32 = 8232 wrong
+    addition f(04, 28) = 04 + 28 = 32 wrong
+    absolute difference f(32, 82) = |32 - 82| = 50 wrong
+    negated absolute difference f(04, 28) = -|04 - 28| = -24 wrong
+    subtraction (a-b) f(32, 82) = 32 - 82 = -50 wrong
+    reverse subtraction (b-a) f(04, 28) = 28 - 04 = 24 wrong
+    multiplication f(32, 82) = (30 + 2) * 82 = 30 * 82 + 2 * 82 = 2460 + 164 = 2624 wrong
+  Trying common operations identity operands [40 82, 23 28] reversed result [expected (40,82)->2, (23,28)->5]:
+    concatenation f(40, 82) = 40 || 82 = 4082 -rev-> 2804 wrong
+    reverse concatenation f(23, 28) = 28 || 23 = 2823 -rev-> 3282 wrong
+    addition f(40, 82) = 40 + 82 = 122 -rev-> 221 wrong
+    absolute difference f(23, 28) = |23 - 28| = 5 -rev-> 5 match, f(40,82) -> |40 - 82| = 42 -rev-> 24 wrong
+    negated absolute difference f(40, 82) = -|40 - 82| = -42 -rev-> -24 wrong
+    subtraction (a-b) f(23, 28) = 23 - 28 = -5 -rev-> -5 wrong
+    reverse subtraction (b-a) f(40, 82) = 82 - 40 = 42 -rev-> 24 wrong
+    multiplication f(23, 28) = (20 + 3) * 28 = 20 * 28 + 3 * 28 = 560 + 84 = 644 -rev-> 446 wrong
+  Trying rare operations reversed operands [40->04 82->28, 23->32 28->82] and reversed result [expected (04,28)->2, (32,82)->5]:
+    multiply+1 f(04, 28) = (0 + 4) * 28 + 1 = 0 * 28 + 4 * 28 + 1 = 0 + 112 + 1 = 112 + 1 = 113 -rev-> 311 wrong
+    multiply-1 f(32, 82) = (30 + 2) * 82 - 1 = 30 * 82 + 2 * 82 - 1 = 2460 + 164 - 1 = 2624 - 1 = 2623 -rev-> 3262 wrong
+    add+1 f(04, 28) = 04 + 28 + 1 = 33 -rev-> 33 wrong
+    add-1 f(32, 82) = 32 + 82 - 1 = 113 -rev-> 311 wrong
+    sub+1 f(04, 28) = 04 - 28 + 1 = -23 -rev-> -32 wrong
+    sub-1 f(32, 82) = 32 - 82 - 1 = -51 -rev-> -15 wrong
+    max mod min f(04, 28) = max(04,28) mod min(04,28) = 28 mod 04 = 0 -rev-> 0 wrong
+    integer division (a/b) f(32, 82) = 32 / 82 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(04, 28) = 04 mod 28 = 4 -rev-> 4 wrong
+    reverse division (b/a) f(32, 82) = 82 / 32 = 2 -rev-> 2 wrong
+    reverse modulo (b mod a) f(04, 28) = 28 mod 04 = 0 -rev-> 0 wrong
+    digit absolute diff f(32, 82) = |3-8| || |2-2| = 50 -rev-> 05 wrong
+    digit add mod10 f(04, 28) = (0+2)%10 || (4+8)%10 = 22 -rev-> 22 wrong
+    digit sub mod10 f(32, 82) = (3-8)%10 || (2-2)%10 = 50 -rev-> 05 wrong
+    cross multiply f(04, 28) = 0*2 + 4*8 = 0 + 32 = 32 -rev-> 23 wrong
+    cross multiply rev f(32, 82) = 3*2 + 2*8 = 6 + 16 = 22 -rev-> 22 wrong
+    digit multiply f(04, 28) = 0*2 || 4*8 = 0 || 32 = 032 -rev-> 230 wrong
+    digit multiply rev f(32, 82) = 3*2 || 2*8 = 6 || 16 = 616 -rev-> 616 wrong
+    digit sum diff f(04, 28) = (0+4) - (2+8) = -6 -rev-> -6 wrong
+    digit sum sum f(32, 82) = (3+2) + (8+2) = 15 -rev-> 51 wrong
+    digit product diff f(04, 28) = 0*4 - 2*8 = 0 - 16 = -16 -rev-> -61 wrong
+    digit product sum f(32, 82) = 3*2 + 8*2 = 6 + 16 = 22 -rev-> 22 wrong
+    determinant f(04, 28) = 0*8 - 4*2 = 0 - 8 = -8 -rev-> -8 wrong
+    abs determinant f(32, 82) = |3*2 - 2*8| = |6 - 16| = 10 -rev-> 01 wrong
+  Trying rare operations on identity [40 82, 23 28] [expected (40,82)->2, (23,28)->5]:
+    multiply+1 f(40, 82) = (40 + 0) * 82 + 1 = 40 * 82 + 0 * 82 + 1 = 3280 + 0 + 1 = 3280 + 1 = 3281 wrong
+    multiply-1 f(23, 28) = (20 + 3) * 28 - 1 = 20 * 28 + 3 * 28 - 1 = 560 + 84 - 1 = 644 - 1 = 643 wrong
+    add+1 f(40, 82) = 40 + 82 + 1 = 123 wrong
+    add-1 f(23, 28) = 23 + 28 - 1 = 50 wrong
+    sub+1 f(40, 82) = 40 - 82 + 1 = -41 wrong
+    sub-1 f(23, 28) = 23 - 28 - 1 = -6 wrong
+    max mod min f(40, 82) = max(40,82) mod min(40,82) = 82 mod 40 = 2 match, f(23,28) -> max(23,28) mod min(23,28) = 28 mod 23 = 5 match, correct, actions: max mod min
+    integer division (a/b) f(23, 28) = 23 / 28 = 0 wrong
+    modulo (a mod b) f(40, 82) = 40 mod 82 = 40 wrong
+    reverse division (b/a) f(23, 28) = 28 / 23 = 1 wrong
+    reverse modulo (b mod a) f(40, 82) = 82 mod 40 = 2 match, f(23,28) -> 28 mod 23 = 5 match, correct, but skipping
+    digit absolute diff f(23, 28) = |2-2| || |3-8| = 05 wrong
+    digit add mod10 f(40, 82) = (4+8)%10 || (0+2)%10 = 22 wrong
+    digit sub mod10 f(23, 28) = (2-2)%10 || (3-8)%10 = 05 wrong
+    cross multiply f(40, 82) = 4*8 + 0*2 = 32 + 0 = 32 wrong
+    cross multiply rev f(23, 28) = 2*8 + 3*2 = 16 + 6 = 22 wrong
+    digit multiply f(40, 82) = 4*8 || 0*2 = 32 || 0 = 320 wrong
+    digit multiply rev f(23, 28) = 2*8 || 3*2 = 16 || 6 = 166 wrong
+    digit sum diff f(40, 82) = (4+0) - (8+2) = -6 wrong
+    digit sum sum f(23, 28) = (2+3) + (2+8) = 15 wrong
+    digit product diff f(40, 82) = 4*0 - 8*2 = 0 - 16 = -16 wrong
+    digit product sum f(23, 28) = 2*3 + 2*8 = 6 + 16 = 22 wrong
+    determinant f(40, 82) = 4*2 - 0*8 = 8 - 0 = 8 wrong
+    abs determinant f(23, 28) = |2*8 - 3*2| = |16 - 6| = 10 wrong
+  Trying rare operations reversed operands [40->04 82->28, 23->32 28->82] [expected (04,28)->2, (32,82)->5]:
+    multiply+1 f(04, 28) = (0 + 4) * 28 + 1 = 0 * 28 + 4 * 28 + 1 = 0 + 112 + 1 = 112 + 1 = 113 wrong
+    multiply-1 f(32, 82) = (30 + 2) * 82 - 1 = 30 * 82 + 2 * 82 - 1 = 2460 + 164 - 1 = 2624 - 1 = 2623 wrong
+    add+1 f(04, 28) = 04 + 28 + 1 = 33 wrong
+    add-1 f(32, 82) = 32 + 82 - 1 = 113 wrong
+    sub+1 f(04, 28) = 04 - 28 + 1 = -23 wrong
+    sub-1 f(32, 82) = 32 - 82 - 1 = -51 wrong
+    max mod min f(04, 28) = max(04,28) mod min(04,28) = 28 mod 04 = 0 wrong
+    integer division (a/b) f(32, 82) = 32 / 82 = 0 wrong
+    modulo (a mod b) f(04, 28) = 04 mod 28 = 4 wrong
+    reverse division (b/a) f(32, 82) = 82 / 32 = 2 wrong
+    reverse modulo (b mod a) f(04, 28) = 28 mod 04 = 0 wrong
+    digit absolute diff f(32, 82) = |3-8| || |2-2| = 50 wrong
+    digit add mod10 f(04, 28) = (0+2)%10 || (4+8)%10 = 22 wrong
+    digit sub mod10 f(32, 82) = (3-8)%10 || (2-2)%10 = 50 wrong
+    cross multiply f(04, 28) = 0*2 + 4*8 = 0 + 32 = 32 wrong
+    cross multiply rev f(32, 82) = 3*2 + 2*8 = 6 + 16 = 22 wrong
+    digit multiply f(04, 28) = 0*2 || 4*8 = 0 || 32 = 032 wrong
+    digit multiply rev f(32, 82) = 3*2 || 2*8 = 6 || 16 = 616 wrong
+    digit sum diff f(04, 28) = (0+4) - (2+8) = -6 wrong
+    digit sum sum f(32, 82) = (3+2) + (8+2) = 15 wrong
+    digit product diff f(04, 28) = 0*4 - 2*8 = 0 - 16 = -16 wrong
+    digit product sum f(32, 82) = 3*2 + 8*2 = 6 + 16 = 22 wrong
+    determinant f(04, 28) = 0*8 - 4*2 = 0 - 8 = -8 wrong
+    abs determinant f(32, 82) = |3*2 - 2*8| = |6 - 16| = 10 wrong
+  Trying rare operations identity operands [40 82, 23 28] reversed result [expected (40,82)->2, (23,28)->5]:
+    multiply+1 f(40, 82) = (40 + 0) * 82 + 1 = 40 * 82 + 0 * 82 + 1 = 3280 + 0 + 1 = 3280 + 1 = 3281 -rev-> 1823 wrong
+    multiply-1 f(23, 28) = (20 + 3) * 28 - 1 = 20 * 28 + 3 * 28 - 1 = 560 + 84 - 1 = 644 - 1 = 643 -rev-> 346 wrong
+    add+1 f(40, 82) = 40 + 82 + 1 = 123 -rev-> 321 wrong
+    add-1 f(23, 28) = 23 + 28 - 1 = 50 -rev-> 05 wrong
+    sub+1 f(40, 82) = 40 - 82 + 1 = -41 -rev-> -14 wrong
+    sub-1 f(23, 28) = 23 - 28 - 1 = -6 -rev-> -6 wrong
+    max mod min f(40, 82) = max(40,82) mod min(40,82) = 82 mod 40 = 2 -rev-> 2 match, f(23,28) -> max(23,28) mod min(23,28) = 28 mod 23 = 5 -rev-> 5 match, correct, but skipping
+    integer division (a/b) f(23, 28) = 23 / 28 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(40, 82) = 40 mod 82 = 40 -rev-> 04 wrong
+    reverse division (b/a) f(23, 28) = 28 / 23 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(40, 82) = 82 mod 40 = 2 -rev-> 2 match, f(23,28) -> 28 mod 23 = 5 -rev-> 5 match, correct, but skipping
+    digit absolute diff f(23, 28) = |2-2| || |3-8| = 05 -rev-> 50 wrong
+    digit add mod10 f(40, 82) = (4+8)%10 || (0+2)%10 = 22 -rev-> 22 wrong
+    digit sub mod10 f(23, 28) = (2-2)%10 || (3-8)%10 = 05 -rev-> 50 wrong
+    cross multiply f(40, 82) = 4*8 + 0*2 = 32 + 0 = 32 -rev-> 23 wrong
+    cross multiply rev f(23, 28) = 2*8 + 3*2 = 16 + 6 = 22 -rev-> 22 wrong
+    digit multiply f(40, 82) = 4*8 || 0*2 = 32 || 0 = 320 -rev-> 023 wrong
+    digit multiply rev f(23, 28) = 2*8 || 3*2 = 16 || 6 = 166 -rev-> 661 wrong
+    digit sum diff f(40, 82) = (4+0) - (8+2) = -6 -rev-> -6 wrong
+    digit sum sum f(23, 28) = (2+3) + (2+8) = 15 -rev-> 51 wrong
+    digit product diff f(40, 82) = 4*0 - 8*2 = 0 - 16 = -16 -rev-> -61 wrong
+    digit product sum f(23, 28) = 2*3 + 2*8 = 6 + 16 = 22 -rev-> 22 wrong
+    determinant f(40, 82) = 4*2 - 0*8 = 8 - 0 = 8 -rev-> 8 wrong
+    abs determinant f(23, 28) = |2*8 - 3*2| = |16 - 6| = 10 -rev-> 01 wrong
+
+Applying to 18-86:
+  identity
+  max mod min f(18, 86) = max(18,86) mod min(18,86) = 86 mod 18 = 14
+  Result: 【14】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{14}

@@ -1,0 +1,176 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  85:17 = 102
+  47]72 = 25
+  62'71 = 6271
+  10]99 = 9
+  94:71 = 165
+
+The inputs are 85, 17, 47, 72, 62, 71, 10, 99, 94, 71
+
+The outputs are 102, 25, 6271, 9, 165
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+85:17 -> :
+47]72 -> ]
+62'71 -> '
+10]99 -> ]
+94:71 -> :
+
+The operators
+:
+]
+'
+
+Looking at the question
+18]17 -> ]
+The question operator is found in the examples.
+
+Looking at operator 【]】 [47]72 = 25, 10]99 = 9]:
+  Trying common operations reversed operands [47->74 72->27, 10->01 99->99] and reversed result [expected (74,27)->25, (01,99)->9]:
+    concatenation f(74, 27) = 74 || 27 = 7427 -rev-> 7247 wrong
+    reverse concatenation f(01, 99) = 99 || 01 = 9901 -rev-> 1099 wrong
+    addition f(74, 27) = 74 + 27 = 101 -rev-> 101 wrong
+    absolute difference f(01, 99) = |01 - 99| = 98 -rev-> 89 wrong
+    negated absolute difference f(74, 27) = -|74 - 27| = -47 -rev-> -74 wrong
+    subtraction (a-b) f(01, 99) = 01 - 99 = -98 -rev-> -89 wrong
+    reverse subtraction (b-a) f(74, 27) = 27 - 74 = -47 -rev-> -74 wrong
+    multiplication f(01, 99) = (0 + 1) * 99 = 0 * 99 + 1 * 99 = 0 + 99 = 99 -rev-> 99 wrong
+  Trying common operations on identity [47 72, 10 99] [expected (47,72)->25, (10,99)->9]:
+    concatenation f(47, 72) = 47 || 72 = 4772 wrong
+    reverse concatenation f(10, 99) = 99 || 10 = 9910 wrong
+    addition f(47, 72) = 47 + 72 = 119 wrong
+    absolute difference f(10, 99) = |10 - 99| = 89 wrong
+    negated absolute difference f(47, 72) = -|47 - 72| = -25 wrong
+    subtraction (a-b) f(10, 99) = 10 - 99 = -89 wrong
+    reverse subtraction (b-a) f(47, 72) = 72 - 47 = 25 match, f(10,99) -> 99 - 10 = 89 wrong
+    multiplication f(10, 99) = (10 + 0) * 99 = 10 * 99 + 0 * 99 = 990 + 0 = 990 wrong
+  Trying common operations reversed operands [47->74 72->27, 10->01 99->99] [expected (74,27)->25, (01,99)->9]:
+    concatenation f(74, 27) = 74 || 27 = 7427 wrong
+    reverse concatenation f(01, 99) = 99 || 01 = 9901 wrong
+    addition f(74, 27) = 74 + 27 = 101 wrong
+    absolute difference f(01, 99) = |01 - 99| = 98 wrong
+    negated absolute difference f(74, 27) = -|74 - 27| = -47 wrong
+    subtraction (a-b) f(01, 99) = 01 - 99 = -98 wrong
+    reverse subtraction (b-a) f(74, 27) = 27 - 74 = -47 wrong
+    multiplication f(01, 99) = (0 + 1) * 99 = 0 * 99 + 1 * 99 = 0 + 99 = 99 wrong
+  Trying common operations identity operands [47 72, 10 99] reversed result [expected (47,72)->25, (10,99)->9]:
+    concatenation f(47, 72) = 47 || 72 = 4772 -rev-> 2774 wrong
+    reverse concatenation f(10, 99) = 99 || 10 = 9910 -rev-> 0199 wrong
+    addition f(47, 72) = 47 + 72 = 119 -rev-> 911 wrong
+    absolute difference f(10, 99) = |10 - 99| = 89 -rev-> 98 wrong
+    negated absolute difference f(47, 72) = -|47 - 72| = -25 -rev-> -52 wrong
+    subtraction (a-b) f(10, 99) = 10 - 99 = -89 -rev-> -98 wrong
+    reverse subtraction (b-a) f(47, 72) = 72 - 47 = 25 -rev-> 52 wrong
+    multiplication f(10, 99) = (10 + 0) * 99 = 10 * 99 + 0 * 99 = 990 + 0 = 990 -rev-> 099 wrong
+  Trying rare operations reversed operands [47->74 72->27, 10->01 99->99] and reversed result [expected (74,27)->25, (01,99)->9]:
+    multiply+1 f(74, 27) = (70 + 4) * 27 + 1 = 70 * 27 + 4 * 27 + 1 = 1890 + 108 + 1 = 1998 + 1 = 1999 -rev-> 9991 wrong
+    multiply-1 f(01, 99) = (0 + 1) * 99 - 1 = 0 * 99 + 1 * 99 - 1 = 0 + 99 - 1 = 99 - 1 = 98 -rev-> 89 wrong
+    add+1 f(74, 27) = 74 + 27 + 1 = 102 -rev-> 201 wrong
+    add-1 f(01, 99) = 01 + 99 - 1 = 99 -rev-> 99 wrong
+    sub+1 f(74, 27) = 74 - 27 + 1 = 48 -rev-> 84 wrong
+    sub-1 f(01, 99) = 01 - 99 - 1 = -99 -rev-> -99 wrong
+    max mod min f(74, 27) = max(74,27) mod min(74,27) = 74 mod 27 = 20 -rev-> 02 wrong
+    integer division (a/b) f(01, 99) = 01 / 99 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(74, 27) = 74 mod 27 = 20 -rev-> 02 wrong
+    reverse division (b/a) f(01, 99) = 99 / 01 = 99 -rev-> 99 wrong
+    reverse modulo (b mod a) f(74, 27) = 27 mod 74 = 27 -rev-> 72 wrong
+    digit absolute diff f(01, 99) = |0-9| || |1-9| = 98 -rev-> 89 wrong
+    digit add mod10 f(74, 27) = (7+2)%10 || (4+7)%10 = 91 -rev-> 19 wrong
+    digit sub mod10 f(01, 99) = (0-9)%10 || (1-9)%10 = 12 -rev-> 21 wrong
+    cross multiply f(74, 27) = 7*2 + 4*7 = 14 + 28 = 42 -rev-> 24 wrong
+    cross multiply rev f(01, 99) = 0*9 + 1*9 = 0 + 9 = 9 -rev-> 9 match, f(74,27) -> 7*7 + 4*2 = 49 + 8 = 57 -rev-> 75 wrong
+    digit multiply f(74, 27) = 7*2 || 4*7 = 14 || 28 = 1428 -rev-> 8241 wrong
+    digit multiply rev f(01, 99) = 0*9 || 1*9 = 0 || 9 = 09 -rev-> 90 wrong
+    digit sum diff f(74, 27) = (7+4) - (2+7) = 2 -rev-> 2 wrong
+    digit sum sum f(01, 99) = (0+1) + (9+9) = 19 -rev-> 91 wrong
+    digit product diff f(74, 27) = 7*4 - 2*7 = 28 - 14 = 14 -rev-> 41 wrong
+    digit product sum f(01, 99) = 0*1 + 9*9 = 0 + 81 = 81 -rev-> 18 wrong
+    determinant f(74, 27) = 7*7 - 4*2 = 49 - 8 = 41 -rev-> 14 wrong
+    abs determinant f(01, 99) = |0*9 - 1*9| = |0 - 9| = 9 -rev-> 9 match, f(74,27) -> |7*7 - 4*2| = |49 - 8| = 41 -rev-> 14 wrong
+  Trying rare operations on identity [47 72, 10 99] [expected (47,72)->25, (10,99)->9]:
+    multiply+1 f(47, 72) = (40 + 7) * 72 + 1 = 40 * 72 + 7 * 72 + 1 = 2880 + 504 + 1 = 3384 + 1 = 3385 wrong
+    multiply-1 f(10, 99) = (10 + 0) * 99 - 1 = 10 * 99 + 0 * 99 - 1 = 990 + 0 - 1 = 990 - 1 = 989 wrong
+    add+1 f(47, 72) = 47 + 72 + 1 = 120 wrong
+    add-1 f(10, 99) = 10 + 99 - 1 = 108 wrong
+    sub+1 f(47, 72) = 47 - 72 + 1 = -24 wrong
+    sub-1 f(10, 99) = 10 - 99 - 1 = -90 wrong
+    max mod min f(47, 72) = max(47,72) mod min(47,72) = 72 mod 47 = 25 match, f(10,99) -> max(10,99) mod min(10,99) = 99 mod 10 = 9 match, correct, actions: max mod min
+    integer division (a/b) f(10, 99) = 10 / 99 = 0 wrong
+    modulo (a mod b) f(47, 72) = 47 mod 72 = 47 wrong
+    reverse division (b/a) f(10, 99) = 99 / 10 = 9 match, f(47,72) -> 72 / 47 = 1 wrong
+    reverse modulo (b mod a) f(47, 72) = 72 mod 47 = 25 match, f(10,99) -> 99 mod 10 = 9 match, correct, but skipping
+    digit absolute diff f(10, 99) = |1-9| || |0-9| = 89 wrong
+    digit add mod10 f(47, 72) = (4+7)%10 || (7+2)%10 = 19 wrong
+    digit sub mod10 f(10, 99) = (1-9)%10 || (0-9)%10 = 21 wrong
+    cross multiply f(47, 72) = 4*7 + 7*2 = 28 + 14 = 42 wrong
+    cross multiply rev f(10, 99) = 1*9 + 0*9 = 9 + 0 = 9 match, f(47,72) -> 4*2 + 7*7 = 8 + 49 = 57 wrong
+    digit multiply f(47, 72) = 4*7 || 7*2 = 28 || 14 = 2814 wrong
+    digit multiply rev f(10, 99) = 1*9 || 0*9 = 9 || 0 = 90 wrong
+    digit sum diff f(47, 72) = (4+7) - (7+2) = 2 wrong
+    digit sum sum f(10, 99) = (1+0) + (9+9) = 19 wrong
+    digit product diff f(47, 72) = 4*7 - 7*2 = 28 - 14 = 14 wrong
+    digit product sum f(10, 99) = 1*0 + 9*9 = 0 + 81 = 81 wrong
+    determinant f(47, 72) = 4*2 - 7*7 = 8 - 49 = -41 wrong
+    abs determinant f(10, 99) = |1*9 - 0*9| = |9 - 0| = 9 match, f(47,72) -> |4*2 - 7*7| = |8 - 49| = 41 wrong
+  Trying rare operations reversed operands [47->74 72->27, 10->01 99->99] [expected (74,27)->25, (01,99)->9]:
+    multiply+1 f(74, 27) = (70 + 4) * 27 + 1 = 70 * 27 + 4 * 27 + 1 = 1890 + 108 + 1 = 1998 + 1 = 1999 wrong
+    multiply-1 f(01, 99) = (0 + 1) * 99 - 1 = 0 * 99 + 1 * 99 - 1 = 0 + 99 - 1 = 99 - 1 = 98 wrong
+    add+1 f(74, 27) = 74 + 27 + 1 = 102 wrong
+    add-1 f(01, 99) = 01 + 99 - 1 = 99 wrong
+    sub+1 f(74, 27) = 74 - 27 + 1 = 48 wrong
+    sub-1 f(01, 99) = 01 - 99 - 1 = -99 wrong
+    max mod min f(74, 27) = max(74,27) mod min(74,27) = 74 mod 27 = 20 wrong
+    integer division (a/b) f(01, 99) = 01 / 99 = 0 wrong
+    modulo (a mod b) f(74, 27) = 74 mod 27 = 20 wrong
+    reverse division (b/a) f(01, 99) = 99 / 01 = 99 wrong
+    reverse modulo (b mod a) f(74, 27) = 27 mod 74 = 27 wrong
+    digit absolute diff f(01, 99) = |0-9| || |1-9| = 98 wrong
+    digit add mod10 f(74, 27) = (7+2)%10 || (4+7)%10 = 91 wrong
+    digit sub mod10 f(01, 99) = (0-9)%10 || (1-9)%10 = 12 wrong
+    cross multiply f(74, 27) = 7*2 + 4*7 = 14 + 28 = 42 wrong
+    cross multiply rev f(01, 99) = 0*9 + 1*9 = 0 + 9 = 9 match, f(74,27) -> 7*7 + 4*2 = 49 + 8 = 57 wrong
+    digit multiply f(74, 27) = 7*2 || 4*7 = 14 || 28 = 1428 wrong
+    digit multiply rev f(01, 99) = 0*9 || 1*9 = 0 || 9 = 09 wrong
+    digit sum diff f(74, 27) = (7+4) - (2+7) = 2 wrong
+    digit sum sum f(01, 99) = (0+1) + (9+9) = 19 wrong
+    digit product diff f(74, 27) = 7*4 - 2*7 = 28 - 14 = 14 wrong
+    digit product sum f(01, 99) = 0*1 + 9*9 = 0 + 81 = 81 wrong
+    determinant f(74, 27) = 7*7 - 4*2 = 49 - 8 = 41 wrong
+    abs determinant f(01, 99) = |0*9 - 1*9| = |0 - 9| = 9 match, f(74,27) -> |7*7 - 4*2| = |49 - 8| = 41 wrong
+  Trying rare operations identity operands [47 72, 10 99] reversed result [expected (47,72)->25, (10,99)->9]:
+    multiply+1 f(47, 72) = (40 + 7) * 72 + 1 = 40 * 72 + 7 * 72 + 1 = 2880 + 504 + 1 = 3384 + 1 = 3385 -rev-> 5833 wrong
+    multiply-1 f(10, 99) = (10 + 0) * 99 - 1 = 10 * 99 + 0 * 99 - 1 = 990 + 0 - 1 = 990 - 1 = 989 -rev-> 989 wrong
+    add+1 f(47, 72) = 47 + 72 + 1 = 120 -rev-> 021 wrong
+    add-1 f(10, 99) = 10 + 99 - 1 = 108 -rev-> 801 wrong
+    sub+1 f(47, 72) = 47 - 72 + 1 = -24 -rev-> -42 wrong
+    sub-1 f(10, 99) = 10 - 99 - 1 = -90 -rev-> -09 wrong
+    max mod min f(47, 72) = max(47,72) mod min(47,72) = 72 mod 47 = 25 -rev-> 52 wrong
+    integer division (a/b) f(10, 99) = 10 / 99 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(47, 72) = 47 mod 72 = 47 -rev-> 74 wrong
+    reverse division (b/a) f(10, 99) = 99 / 10 = 9 -rev-> 9 match, f(47,72) -> 72 / 47 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(47, 72) = 72 mod 47 = 25 -rev-> 52 wrong
+    digit absolute diff f(10, 99) = |1-9| || |0-9| = 89 -rev-> 98 wrong
+    digit add mod10 f(47, 72) = (4+7)%10 || (7+2)%10 = 19 -rev-> 91 wrong
+    digit sub mod10 f(10, 99) = (1-9)%10 || (0-9)%10 = 21 -rev-> 12 wrong
+    cross multiply f(47, 72) = 4*7 + 7*2 = 28 + 14 = 42 -rev-> 24 wrong
+    cross multiply rev f(10, 99) = 1*9 + 0*9 = 9 + 0 = 9 -rev-> 9 match, f(47,72) -> 4*2 + 7*7 = 8 + 49 = 57 -rev-> 75 wrong
+    digit multiply f(47, 72) = 4*7 || 7*2 = 28 || 14 = 2814 -rev-> 4182 wrong
+    digit multiply rev f(10, 99) = 1*9 || 0*9 = 9 || 0 = 90 -rev-> 09 wrong
+    digit sum diff f(47, 72) = (4+7) - (7+2) = 2 -rev-> 2 wrong
+    digit sum sum f(10, 99) = (1+0) + (9+9) = 19 -rev-> 91 wrong
+    digit product diff f(47, 72) = 4*7 - 7*2 = 28 - 14 = 14 -rev-> 41 wrong
+    digit product sum f(10, 99) = 1*0 + 9*9 = 0 + 81 = 81 -rev-> 18 wrong
+    determinant f(47, 72) = 4*2 - 7*7 = 8 - 49 = -41 -rev-> -14 wrong
+    abs determinant f(10, 99) = |1*9 - 0*9| = |9 - 0| = 9 -rev-> 9 match, f(47,72) -> |4*2 - 7*7| = |8 - 49| = 41 -rev-> 14 wrong
+
+Applying to 18]17:
+  identity
+  max mod min f(18, 17) = max(18,17) mod min(18,17) = 18 mod 17 = 1
+  Result: 【1】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{1}

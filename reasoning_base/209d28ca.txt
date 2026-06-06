@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  35}22 = 13
+  10^96 = 961
+  66}15 = 51
+  23^91 = 2094
+
+The inputs are 35, 22, 10, 96, 66, 15, 23, 91
+
+The outputs are 13, 961, 51, 2094
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+35}22 -> }
+10^96 -> ^
+66}15 -> }
+23^91 -> ^
+
+The operators
+}
+^
+
+Looking at the question
+84[87 -> [
+The question operator is not found in the examples. Investigating the most common example operator 【}】 instead. We will use absolute difference for the question operator.
+
+Looking at operator 【}】 [35}22 = 13, 66}15 = 51]:
+  Trying common operations reversed operands [35->53 22->22, 66->66 15->51] and reversed result [expected (53,22)->13, (66,51)->51]:
+    concatenation f(53, 22) = 53 || 22 = 5322 -rev-> 2235 wrong
+    reverse concatenation f(66, 51) = 51 || 66 = 5166 -rev-> 6615 wrong
+    addition f(53, 22) = 53 + 22 = 75 -rev-> 57 wrong
+    absolute difference f(66, 51) = |66 - 51| = 15 -rev-> 51 match, f(53,22) -> |53 - 22| = 31 -rev-> 13 match, correct, actions: reversed operands, reversed result, absolute difference
+    negated absolute difference f(53, 22) = -|53 - 22| = -31 -rev-> -13 wrong
+    subtraction (a-b) f(66, 51) = 66 - 51 = 15 -rev-> 51 match, f(53,22) -> 53 - 22 = 31 -rev-> 13 match, correct, but skipping
+    reverse subtraction (b-a) f(53, 22) = 22 - 53 = -31 -rev-> -13 wrong
+    multiplication f(66, 51) = (60 + 6) * 51 = 60 * 51 + 6 * 51 = 3060 + 306 = 3366 -rev-> 6633 wrong
+  Trying common operations on identity [35 22, 66 15] [expected (35,22)->13, (66,15)->51]:
+    concatenation f(35, 22) = 35 || 22 = 3522 wrong
+    reverse concatenation f(66, 15) = 15 || 66 = 1566 wrong
+    addition f(35, 22) = 35 + 22 = 57 wrong
+    absolute difference f(66, 15) = |66 - 15| = 51 match, f(35,22) -> |35 - 22| = 13 match, correct, but skipping
+    negated absolute difference f(35, 22) = -|35 - 22| = -13 wrong
+    subtraction (a-b) f(66, 15) = 66 - 15 = 51 match, f(35,22) -> 35 - 22 = 13 match, correct, but skipping
+    reverse subtraction (b-a) f(35, 22) = 22 - 35 = -13 wrong
+    multiplication f(66, 15) = (60 + 6) * 15 = 60 * 15 + 6 * 15 = 900 + 90 = 990 wrong
+  Trying common operations reversed operands [35->53 22->22, 66->66 15->51] [expected (53,22)->13, (66,51)->51]:
+    concatenation f(53, 22) = 53 || 22 = 5322 wrong
+    reverse concatenation f(66, 51) = 51 || 66 = 5166 wrong
+    addition f(53, 22) = 53 + 22 = 75 wrong
+    absolute difference f(66, 51) = |66 - 51| = 15 wrong
+    negated absolute difference f(53, 22) = -|53 - 22| = -31 wrong
+    subtraction (a-b) f(66, 51) = 66 - 51 = 15 wrong
+    reverse subtraction (b-a) f(53, 22) = 22 - 53 = -31 wrong
+    multiplication f(66, 51) = (60 + 6) * 51 = 60 * 51 + 6 * 51 = 3060 + 306 = 3366 wrong
+  Trying common operations identity operands [35 22, 66 15] reversed result [expected (35,22)->13, (66,15)->51]:
+    concatenation f(35, 22) = 35 || 22 = 3522 -rev-> 2253 wrong
+    reverse concatenation f(66, 15) = 15 || 66 = 1566 -rev-> 6651 wrong
+    addition f(35, 22) = 35 + 22 = 57 -rev-> 75 wrong
+    absolute difference f(66, 15) = |66 - 15| = 51 -rev-> 15 wrong
+    negated absolute difference f(35, 22) = -|35 - 22| = -13 -rev-> -31 wrong
+    subtraction (a-b) f(66, 15) = 66 - 15 = 51 -rev-> 15 wrong
+    reverse subtraction (b-a) f(35, 22) = 22 - 35 = -13 -rev-> -31 wrong
+    multiplication f(66, 15) = (60 + 6) * 15 = 60 * 15 + 6 * 15 = 900 + 90 = 990 -rev-> 099 wrong
+  Trying rare operations reversed operands [35->53 22->22, 66->66 15->51] and reversed result [expected (53,22)->13, (66,51)->51]:
+    multiply+1 f(53, 22) = (50 + 3) * 22 + 1 = 50 * 22 + 3 * 22 + 1 = 1100 + 66 + 1 = 1166 + 1 = 1167 -rev-> 7611 wrong
+    multiply-1 f(66, 51) = (60 + 6) * 51 - 1 = 60 * 51 + 6 * 51 - 1 = 3060 + 306 - 1 = 3366 - 1 = 3365 -rev-> 5633 wrong
+    add+1 f(53, 22) = 53 + 22 + 1 = 76 -rev-> 67 wrong
+    add-1 f(66, 51) = 66 + 51 - 1 = 116 -rev-> 611 wrong
+    sub+1 f(53, 22) = 53 - 22 + 1 = 32 -rev-> 23 wrong
+    sub-1 f(66, 51) = 66 - 51 - 1 = 14 -rev-> 41 wrong
+    max mod min f(53, 22) = max(53,22) mod min(53,22) = 53 mod 22 = 9 -rev-> 9 wrong
+    integer division (a/b) f(66, 51) = 66 / 51 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(53, 22) = 53 mod 22 = 9 -rev-> 9 wrong
+    reverse division (b/a) f(66, 51) = 51 / 66 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(53, 22) = 22 mod 53 = 22 -rev-> 22 wrong
+    digit absolute diff f(66, 51) = |6-5| || |6-1| = 15 -rev-> 51 match, f(53,22) -> |5-2| || |3-2| = 31 -rev-> 13 match, correct, but skipping
+    digit add mod10 f(53, 22) = (5+2)%10 || (3+2)%10 = 75 -rev-> 57 wrong
+    digit sub mod10 f(66, 51) = (6-5)%10 || (6-1)%10 = 15 -rev-> 51 match, f(53,22) -> (5-2)%10 || (3-2)%10 = 31 -rev-> 13 match, correct, but skipping
+    cross multiply f(53, 22) = 5*2 + 3*2 = 10 + 6 = 16 -rev-> 61 wrong
+    cross multiply rev f(66, 51) = 6*1 + 6*5 = 6 + 30 = 36 -rev-> 63 wrong
+    digit multiply f(53, 22) = 5*2 || 3*2 = 10 || 6 = 106 -rev-> 601 wrong
+    digit multiply rev f(66, 51) = 6*1 || 6*5 = 6 || 30 = 630 -rev-> 036 wrong
+    digit sum diff f(53, 22) = (5+3) - (2+2) = 4 -rev-> 4 wrong
+    digit sum sum f(66, 51) = (6+6) + (5+1) = 18 -rev-> 81 wrong
+    digit product diff f(53, 22) = 5*3 - 2*2 = 15 - 4 = 11 -rev-> 11 wrong
+    digit product sum f(66, 51) = 6*6 + 5*1 = 36 + 5 = 41 -rev-> 14 wrong
+    determinant f(53, 22) = 5*2 - 3*2 = 10 - 6 = 4 -rev-> 4 wrong
+    abs determinant f(66, 51) = |6*1 - 6*5| = |6 - 30| = 24 -rev-> 42 wrong
+  Trying rare operations on identity [35 22, 66 15] [expected (35,22)->13, (66,15)->51]:
+    multiply+1 f(35, 22) = (30 + 5) * 22 + 1 = 30 * 22 + 5 * 22 + 1 = 660 + 110 + 1 = 770 + 1 = 771 wrong
+    multiply-1 f(66, 15) = (60 + 6) * 15 - 1 = 60 * 15 + 6 * 15 - 1 = 900 + 90 - 1 = 990 - 1 = 989 wrong
+    add+1 f(35, 22) = 35 + 22 + 1 = 58 wrong
+    add-1 f(66, 15) = 66 + 15 - 1 = 80 wrong
+    sub+1 f(35, 22) = 35 - 22 + 1 = 14 wrong
+    sub-1 f(66, 15) = 66 - 15 - 1 = 50 wrong
+    max mod min f(35, 22) = max(35,22) mod min(35,22) = 35 mod 22 = 13 match, f(66,15) -> max(66,15) mod min(66,15) = 66 mod 15 = 6 wrong
+    integer division (a/b) f(66, 15) = 66 / 15 = 4 wrong
+    modulo (a mod b) f(35, 22) = 35 mod 22 = 13 match, f(66,15) -> 66 mod 15 = 6 wrong
+    reverse division (b/a) f(66, 15) = 15 / 66 = 0 wrong
+    reverse modulo (b mod a) f(35, 22) = 22 mod 35 = 22 wrong
+    digit absolute diff f(66, 15) = |6-1| || |6-5| = 51 match, f(35,22) -> |3-2| || |5-2| = 13 match, correct, but skipping
+    digit add mod10 f(35, 22) = (3+2)%10 || (5+2)%10 = 57 wrong
+    digit sub mod10 f(66, 15) = (6-1)%10 || (6-5)%10 = 51 match, f(35,22) -> (3-2)%10 || (5-2)%10 = 13 match, correct, but skipping
+    cross multiply f(35, 22) = 3*2 + 5*2 = 6 + 10 = 16 wrong
+    cross multiply rev f(66, 15) = 6*5 + 6*1 = 30 + 6 = 36 wrong
+    digit multiply f(35, 22) = 3*2 || 5*2 = 6 || 10 = 610 wrong
+    digit multiply rev f(66, 15) = 6*5 || 6*1 = 30 || 6 = 306 wrong
+    digit sum diff f(35, 22) = (3+5) - (2+2) = 4 wrong
+    digit sum sum f(66, 15) = (6+6) + (1+5) = 18 wrong
+    digit product diff f(35, 22) = 3*5 - 2*2 = 15 - 4 = 11 wrong
+    digit product sum f(66, 15) = 6*6 + 1*5 = 36 + 5 = 41 wrong
+    determinant f(35, 22) = 3*2 - 5*2 = 6 - 10 = -4 wrong
+    abs determinant f(66, 15) = |6*5 - 6*1| = |30 - 6| = 24 wrong
+  Trying rare operations reversed operands [35->53 22->22, 66->66 15->51] [expected (53,22)->13, (66,51)->51]:
+    multiply+1 f(53, 22) = (50 + 3) * 22 + 1 = 50 * 22 + 3 * 22 + 1 = 1100 + 66 + 1 = 1166 + 1 = 1167 wrong
+    multiply-1 f(66, 51) = (60 + 6) * 51 - 1 = 60 * 51 + 6 * 51 - 1 = 3060 + 306 - 1 = 3366 - 1 = 3365 wrong
+    add+1 f(53, 22) = 53 + 22 + 1 = 76 wrong
+    add-1 f(66, 51) = 66 + 51 - 1 = 116 wrong
+    sub+1 f(53, 22) = 53 - 22 + 1 = 32 wrong
+    sub-1 f(66, 51) = 66 - 51 - 1 = 14 wrong
+    max mod min f(53, 22) = max(53,22) mod min(53,22) = 53 mod 22 = 9 wrong
+    integer division (a/b) f(66, 51) = 66 / 51 = 1 wrong
+    modulo (a mod b) f(53, 22) = 53 mod 22 = 9 wrong
+    reverse division (b/a) f(66, 51) = 51 / 66 = 0 wrong
+    reverse modulo (b mod a) f(53, 22) = 22 mod 53 = 22 wrong
+    digit absolute diff f(66, 51) = |6-5| || |6-1| = 15 wrong
+    digit add mod10 f(53, 22) = (5+2)%10 || (3+2)%10 = 75 wrong
+    digit sub mod10 f(66, 51) = (6-5)%10 || (6-1)%10 = 15 wrong
+    cross multiply f(53, 22) = 5*2 + 3*2 = 10 + 6 = 16 wrong
+    cross multiply rev f(66, 51) = 6*1 + 6*5 = 6 + 30 = 36 wrong
+    digit multiply f(53, 22) = 5*2 || 3*2 = 10 || 6 = 106 wrong
+    digit multiply rev f(66, 51) = 6*1 || 6*5 = 6 || 30 = 630 wrong
+    digit sum diff f(53, 22) = (5+3) - (2+2) = 4 wrong
+    digit sum sum f(66, 51) = (6+6) + (5+1) = 18 wrong
+    digit product diff f(53, 22) = 5*3 - 2*2 = 15 - 4 = 11 wrong
+    digit product sum f(66, 51) = 6*6 + 5*1 = 36 + 5 = 41 wrong
+    determinant f(53, 22) = 5*2 - 3*2 = 10 - 6 = 4 wrong
+    abs determinant f(66, 51) = |6*1 - 6*5| = |6 - 30| = 24 wrong
+  Trying rare operations identity operands [35 22, 66 15] reversed result [expected (35,22)->13, (66,15)->51]:
+    multiply+1 f(35, 22) = (30 + 5) * 22 + 1 = 30 * 22 + 5 * 22 + 1 = 660 + 110 + 1 = 770 + 1 = 771 -rev-> 177 wrong
+    multiply-1 f(66, 15) = (60 + 6) * 15 - 1 = 60 * 15 + 6 * 15 - 1 = 900 + 90 - 1 = 990 - 1 = 989 -rev-> 989 wrong
+    add+1 f(35, 22) = 35 + 22 + 1 = 58 -rev-> 85 wrong
+    add-1 f(66, 15) = 66 + 15 - 1 = 80 -rev-> 08 wrong
+    sub+1 f(35, 22) = 35 - 22 + 1 = 14 -rev-> 41 wrong
+    sub-1 f(66, 15) = 66 - 15 - 1 = 50 -rev-> 05 wrong
+    max mod min f(35, 22) = max(35,22) mod min(35,22) = 35 mod 22 = 13 -rev-> 31 wrong
+    integer division (a/b) f(66, 15) = 66 / 15 = 4 -rev-> 4 wrong
+    modulo (a mod b) f(35, 22) = 35 mod 22 = 13 -rev-> 31 wrong
+    reverse division (b/a) f(66, 15) = 15 / 66 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(35, 22) = 22 mod 35 = 22 -rev-> 22 wrong
+    digit absolute diff f(66, 15) = |6-1| || |6-5| = 51 -rev-> 15 wrong
+    digit add mod10 f(35, 22) = (3+2)%10 || (5+2)%10 = 57 -rev-> 75 wrong
+    digit sub mod10 f(66, 15) = (6-1)%10 || (6-5)%10 = 51 -rev-> 15 wrong
+    cross multiply f(35, 22) = 3*2 + 5*2 = 6 + 10 = 16 -rev-> 61 wrong
+    cross multiply rev f(66, 15) = 6*5 + 6*1 = 30 + 6 = 36 -rev-> 63 wrong
+    digit multiply f(35, 22) = 3*2 || 5*2 = 6 || 10 = 610 -rev-> 016 wrong
+    digit multiply rev f(66, 15) = 6*5 || 6*1 = 30 || 6 = 306 -rev-> 603 wrong
+    digit sum diff f(35, 22) = (3+5) - (2+2) = 4 -rev-> 4 wrong
+    digit sum sum f(66, 15) = (6+6) + (1+5) = 18 -rev-> 81 wrong
+    digit product diff f(35, 22) = 3*5 - 2*2 = 15 - 4 = 11 -rev-> 11 wrong
+    digit product sum f(66, 15) = 6*6 + 1*5 = 36 + 5 = 41 -rev-> 14 wrong
+    determinant f(35, 22) = 3*2 - 5*2 = 6 - 10 = -4 -rev-> -4 wrong
+    abs determinant f(66, 15) = |6*5 - 6*1| = |30 - 6| = 24 -rev-> 42 wrong
+
+Applying to 84[87:
+  We recall that the question operator is not found in the examples. We will use the absolute difference as the operator.
+  identity
+  absolute difference f(84, 87) = |84 - 87| = 3
+  Result: 【3】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{3}

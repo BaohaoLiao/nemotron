@@ -1,0 +1,171 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  23-79 = 56
+  22+68 = 801
+  29-58 = 7
+
+The inputs are 23, 79, 22, 68, 29, 58
+
+The outputs are 56, 801, 7
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+23-79 -> -
+22+68 -> +
+29-58 -> -
+
+The operators
+-
++
+
+Looking at the question
+56-91 -> -
+The question operator is found in the examples.
+
+Looking at operator 【-】 [23-79 = 56, 29-58 = 7]:
+  Trying common operations reversed operands [23->32 79->97, 29->92 58->85] and reversed result [expected (32,97)->56, (92,85)->7]:
+    concatenation f(32, 97) = 32 || 97 = 3297 -rev-> 7923 wrong
+    reverse concatenation f(92, 85) = 85 || 92 = 8592 -rev-> 2958 wrong
+    addition f(32, 97) = 32 + 97 = 129 -rev-> 921 wrong
+    absolute difference f(92, 85) = |92 - 85| = 7 -rev-> 7 match, f(32,97) -> |32 - 97| = 65 -rev-> 56 match, correct, actions: reversed operands, reversed result, absolute difference
+    negated absolute difference f(32, 97) = -|32 - 97| = -65 -rev-> -56 wrong
+    subtraction (a-b) f(92, 85) = 92 - 85 = 7 -rev-> 7 match, f(32,97) -> 32 - 97 = -65 -rev-> -56 wrong
+    reverse subtraction (b-a) f(32, 97) = 97 - 32 = 65 -rev-> 56 match, f(92,85) -> 85 - 92 = -7 -rev-> -7 wrong
+    multiplication f(92, 85) = (90 + 2) * 85 = 90 * 85 + 2 * 85 = 7650 + 170 = 7820 -rev-> 0287 wrong
+  Trying common operations on identity [23 79, 29 58] [expected (23,79)->56, (29,58)->7]:
+    concatenation f(23, 79) = 23 || 79 = 2379 wrong
+    reverse concatenation f(29, 58) = 58 || 29 = 5829 wrong
+    addition f(23, 79) = 23 + 79 = 102 wrong
+    absolute difference f(29, 58) = |29 - 58| = 29 wrong
+    negated absolute difference f(23, 79) = -|23 - 79| = -56 wrong
+    subtraction (a-b) f(29, 58) = 29 - 58 = -29 wrong
+    reverse subtraction (b-a) f(23, 79) = 79 - 23 = 56 match, f(29,58) -> 58 - 29 = 29 wrong
+    multiplication f(29, 58) = (20 + 9) * 58 = 20 * 58 + 9 * 58 = 1160 + 522 = 1682 wrong
+  Trying common operations reversed operands [23->32 79->97, 29->92 58->85] [expected (32,97)->56, (92,85)->7]:
+    concatenation f(32, 97) = 32 || 97 = 3297 wrong
+    reverse concatenation f(92, 85) = 85 || 92 = 8592 wrong
+    addition f(32, 97) = 32 + 97 = 129 wrong
+    absolute difference f(92, 85) = |92 - 85| = 7 match, f(32,97) -> |32 - 97| = 65 wrong
+    negated absolute difference f(32, 97) = -|32 - 97| = -65 wrong
+    subtraction (a-b) f(92, 85) = 92 - 85 = 7 match, f(32,97) -> 32 - 97 = -65 wrong
+    reverse subtraction (b-a) f(32, 97) = 97 - 32 = 65 wrong
+    multiplication f(92, 85) = (90 + 2) * 85 = 90 * 85 + 2 * 85 = 7650 + 170 = 7820 wrong
+  Trying common operations identity operands [23 79, 29 58] reversed result [expected (23,79)->56, (29,58)->7]:
+    concatenation f(23, 79) = 23 || 79 = 2379 -rev-> 9732 wrong
+    reverse concatenation f(29, 58) = 58 || 29 = 5829 -rev-> 9285 wrong
+    addition f(23, 79) = 23 + 79 = 102 -rev-> 201 wrong
+    absolute difference f(29, 58) = |29 - 58| = 29 -rev-> 92 wrong
+    negated absolute difference f(23, 79) = -|23 - 79| = -56 -rev-> -65 wrong
+    subtraction (a-b) f(29, 58) = 29 - 58 = -29 -rev-> -92 wrong
+    reverse subtraction (b-a) f(23, 79) = 79 - 23 = 56 -rev-> 65 wrong
+    multiplication f(29, 58) = (20 + 9) * 58 = 20 * 58 + 9 * 58 = 1160 + 522 = 1682 -rev-> 2861 wrong
+  Trying rare operations reversed operands [23->32 79->97, 29->92 58->85] and reversed result [expected (32,97)->56, (92,85)->7]:
+    multiply+1 f(32, 97) = (30 + 2) * 97 + 1 = 30 * 97 + 2 * 97 + 1 = 2910 + 194 + 1 = 3104 + 1 = 3105 -rev-> 5013 wrong
+    multiply-1 f(92, 85) = (90 + 2) * 85 - 1 = 90 * 85 + 2 * 85 - 1 = 7650 + 170 - 1 = 7820 - 1 = 7819 -rev-> 9187 wrong
+    add+1 f(32, 97) = 32 + 97 + 1 = 130 -rev-> 031 wrong
+    add-1 f(92, 85) = 92 + 85 - 1 = 176 -rev-> 671 wrong
+    sub+1 f(32, 97) = 32 - 97 + 1 = -64 -rev-> -46 wrong
+    sub-1 f(92, 85) = 92 - 85 - 1 = 6 -rev-> 6 wrong
+    max mod min f(32, 97) = max(32,97) mod min(32,97) = 97 mod 32 = 1 -rev-> 1 wrong
+    integer division (a/b) f(92, 85) = 92 / 85 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(32, 97) = 32 mod 97 = 32 -rev-> 23 wrong
+    reverse division (b/a) f(92, 85) = 85 / 92 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(32, 97) = 97 mod 32 = 1 -rev-> 1 wrong
+    digit absolute diff f(92, 85) = |9-8| || |2-5| = 13 -rev-> 31 wrong
+    digit add mod10 f(32, 97) = (3+9)%10 || (2+7)%10 = 29 -rev-> 92 wrong
+    digit sub mod10 f(92, 85) = (9-8)%10 || (2-5)%10 = 17 -rev-> 71 wrong
+    cross multiply f(32, 97) = 3*9 + 2*7 = 27 + 14 = 41 -rev-> 14 wrong
+    cross multiply rev f(92, 85) = 9*5 + 2*8 = 45 + 16 = 61 -rev-> 16 wrong
+    digit multiply f(32, 97) = 3*9 || 2*7 = 27 || 14 = 2714 -rev-> 4172 wrong
+    digit multiply rev f(92, 85) = 9*5 || 2*8 = 45 || 16 = 4516 -rev-> 6154 wrong
+    digit sum diff f(32, 97) = (3+2) - (9+7) = -11 -rev-> -11 wrong
+    digit sum sum f(92, 85) = (9+2) + (8+5) = 24 -rev-> 42 wrong
+    digit product diff f(32, 97) = 3*2 - 9*7 = 6 - 63 = -57 -rev-> -75 wrong
+    digit product sum f(92, 85) = 9*2 + 8*5 = 18 + 40 = 58 -rev-> 85 wrong
+    determinant f(32, 97) = 3*7 - 2*9 = 21 - 18 = 3 -rev-> 3 wrong
+    abs determinant f(92, 85) = |9*5 - 2*8| = |45 - 16| = 29 -rev-> 92 wrong
+  Trying rare operations on identity [23 79, 29 58] [expected (23,79)->56, (29,58)->7]:
+    multiply+1 f(23, 79) = (20 + 3) * 79 + 1 = 20 * 79 + 3 * 79 + 1 = 1580 + 237 + 1 = 1817 + 1 = 1818 wrong
+    multiply-1 f(29, 58) = (20 + 9) * 58 - 1 = 20 * 58 + 9 * 58 - 1 = 1160 + 522 - 1 = 1682 - 1 = 1681 wrong
+    add+1 f(23, 79) = 23 + 79 + 1 = 103 wrong
+    add-1 f(29, 58) = 29 + 58 - 1 = 86 wrong
+    sub+1 f(23, 79) = 23 - 79 + 1 = -55 wrong
+    sub-1 f(29, 58) = 29 - 58 - 1 = -30 wrong
+    max mod min f(23, 79) = max(23,79) mod min(23,79) = 79 mod 23 = 10 wrong
+    integer division (a/b) f(29, 58) = 29 / 58 = 0 wrong
+    modulo (a mod b) f(23, 79) = 23 mod 79 = 23 wrong
+    reverse division (b/a) f(29, 58) = 58 / 29 = 2 wrong
+    reverse modulo (b mod a) f(23, 79) = 79 mod 23 = 10 wrong
+    digit absolute diff f(29, 58) = |2-5| || |9-8| = 31 wrong
+    digit add mod10 f(23, 79) = (2+7)%10 || (3+9)%10 = 92 wrong
+    digit sub mod10 f(29, 58) = (2-5)%10 || (9-8)%10 = 71 wrong
+    cross multiply f(23, 79) = 2*7 + 3*9 = 14 + 27 = 41 wrong
+    cross multiply rev f(29, 58) = 2*8 + 9*5 = 16 + 45 = 61 wrong
+    digit multiply f(23, 79) = 2*7 || 3*9 = 14 || 27 = 1427 wrong
+    digit multiply rev f(29, 58) = 2*8 || 9*5 = 16 || 45 = 1645 wrong
+    digit sum diff f(23, 79) = (2+3) - (7+9) = -11 wrong
+    digit sum sum f(29, 58) = (2+9) + (5+8) = 24 wrong
+    digit product diff f(23, 79) = 2*3 - 7*9 = 6 - 63 = -57 wrong
+    digit product sum f(29, 58) = 2*9 + 5*8 = 18 + 40 = 58 wrong
+    determinant f(23, 79) = 2*9 - 3*7 = 18 - 21 = -3 wrong
+    abs determinant f(29, 58) = |2*8 - 9*5| = |16 - 45| = 29 wrong
+  Trying rare operations reversed operands [23->32 79->97, 29->92 58->85] [expected (32,97)->56, (92,85)->7]:
+    multiply+1 f(32, 97) = (30 + 2) * 97 + 1 = 30 * 97 + 2 * 97 + 1 = 2910 + 194 + 1 = 3104 + 1 = 3105 wrong
+    multiply-1 f(92, 85) = (90 + 2) * 85 - 1 = 90 * 85 + 2 * 85 - 1 = 7650 + 170 - 1 = 7820 - 1 = 7819 wrong
+    add+1 f(32, 97) = 32 + 97 + 1 = 130 wrong
+    add-1 f(92, 85) = 92 + 85 - 1 = 176 wrong
+    sub+1 f(32, 97) = 32 - 97 + 1 = -64 wrong
+    sub-1 f(92, 85) = 92 - 85 - 1 = 6 wrong
+    max mod min f(32, 97) = max(32,97) mod min(32,97) = 97 mod 32 = 1 wrong
+    integer division (a/b) f(92, 85) = 92 / 85 = 1 wrong
+    modulo (a mod b) f(32, 97) = 32 mod 97 = 32 wrong
+    reverse division (b/a) f(92, 85) = 85 / 92 = 0 wrong
+    reverse modulo (b mod a) f(32, 97) = 97 mod 32 = 1 wrong
+    digit absolute diff f(92, 85) = |9-8| || |2-5| = 13 wrong
+    digit add mod10 f(32, 97) = (3+9)%10 || (2+7)%10 = 29 wrong
+    digit sub mod10 f(92, 85) = (9-8)%10 || (2-5)%10 = 17 wrong
+    cross multiply f(32, 97) = 3*9 + 2*7 = 27 + 14 = 41 wrong
+    cross multiply rev f(92, 85) = 9*5 + 2*8 = 45 + 16 = 61 wrong
+    digit multiply f(32, 97) = 3*9 || 2*7 = 27 || 14 = 2714 wrong
+    digit multiply rev f(92, 85) = 9*5 || 2*8 = 45 || 16 = 4516 wrong
+    digit sum diff f(32, 97) = (3+2) - (9+7) = -11 wrong
+    digit sum sum f(92, 85) = (9+2) + (8+5) = 24 wrong
+    digit product diff f(32, 97) = 3*2 - 9*7 = 6 - 63 = -57 wrong
+    digit product sum f(92, 85) = 9*2 + 8*5 = 18 + 40 = 58 wrong
+    determinant f(32, 97) = 3*7 - 2*9 = 21 - 18 = 3 wrong
+    abs determinant f(92, 85) = |9*5 - 2*8| = |45 - 16| = 29 wrong
+  Trying rare operations identity operands [23 79, 29 58] reversed result [expected (23,79)->56, (29,58)->7]:
+    multiply+1 f(23, 79) = (20 + 3) * 79 + 1 = 20 * 79 + 3 * 79 + 1 = 1580 + 237 + 1 = 1817 + 1 = 1818 -rev-> 8181 wrong
+    multiply-1 f(29, 58) = (20 + 9) * 58 - 1 = 20 * 58 + 9 * 58 - 1 = 1160 + 522 - 1 = 1682 - 1 = 1681 -rev-> 1861 wrong
+    add+1 f(23, 79) = 23 + 79 + 1 = 103 -rev-> 301 wrong
+    add-1 f(29, 58) = 29 + 58 - 1 = 86 -rev-> 68 wrong
+    sub+1 f(23, 79) = 23 - 79 + 1 = -55 -rev-> -55 wrong
+    sub-1 f(29, 58) = 29 - 58 - 1 = -30 -rev-> -03 wrong
+    max mod min f(23, 79) = max(23,79) mod min(23,79) = 79 mod 23 = 10 -rev-> 01 wrong
+    integer division (a/b) f(29, 58) = 29 / 58 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(23, 79) = 23 mod 79 = 23 -rev-> 32 wrong
+    reverse division (b/a) f(29, 58) = 58 / 29 = 2 -rev-> 2 wrong
+    reverse modulo (b mod a) f(23, 79) = 79 mod 23 = 10 -rev-> 01 wrong
+    digit absolute diff f(29, 58) = |2-5| || |9-8| = 31 -rev-> 13 wrong
+    digit add mod10 f(23, 79) = (2+7)%10 || (3+9)%10 = 92 -rev-> 29 wrong
+    digit sub mod10 f(29, 58) = (2-5)%10 || (9-8)%10 = 71 -rev-> 17 wrong
+    cross multiply f(23, 79) = 2*7 + 3*9 = 14 + 27 = 41 -rev-> 14 wrong
+    cross multiply rev f(29, 58) = 2*8 + 9*5 = 16 + 45 = 61 -rev-> 16 wrong
+    digit multiply f(23, 79) = 2*7 || 3*9 = 14 || 27 = 1427 -rev-> 7241 wrong
+    digit multiply rev f(29, 58) = 2*8 || 9*5 = 16 || 45 = 1645 -rev-> 5461 wrong
+    digit sum diff f(23, 79) = (2+3) - (7+9) = -11 -rev-> -11 wrong
+    digit sum sum f(29, 58) = (2+9) + (5+8) = 24 -rev-> 42 wrong
+    digit product diff f(23, 79) = 2*3 - 7*9 = 6 - 63 = -57 -rev-> -75 wrong
+    digit product sum f(29, 58) = 2*9 + 5*8 = 18 + 40 = 58 -rev-> 85 wrong
+    determinant f(23, 79) = 2*9 - 3*7 = 18 - 21 = -3 -rev-> -3 wrong
+    abs determinant f(29, 58) = |2*8 - 9*5| = |16 - 45| = 29 -rev-> 92 wrong
+
+Applying to 56-91:
+  reversed operands [56->65, 91->19] and reversed result
+  absolute difference f(65, 19) = |65 - 19| = 46 -rev-> 64
+  Result: 【64】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{64}

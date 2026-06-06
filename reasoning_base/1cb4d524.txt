@@ -1,0 +1,176 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  37@72 = 64
+  58!05 = 0524
+  71!56 = 5011
+  65?73 = 49
+  82!61 = 844
+
+The inputs are 37, 72, 58, 05, 71, 56, 65, 73, 82, 61
+
+The outputs are 64, 0524, 5011, 49, 844
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+37@72 -> @
+58!05 -> !
+71!56 -> !
+65?73 -> ?
+82!61 -> !
+
+The operators
+@
+!
+?
+
+Looking at the question
+74!88 -> !
+The question operator is found in the examples.
+
+Looking at operator 【!】 [58!05 = 0524, 71!56 = 5011, 82!61 = 844]:
+  Trying common operations reversed operands [58->85 05->50, 71->17 56->65, 82->28 61->16] and reversed result [expected (85,50)->0524, (17,65)->5011, (28,16)->844]:
+    concatenation f(85, 50) = 85 || 50 = 8550 -rev-> 0558 wrong
+    reverse concatenation f(17, 65) = 65 || 17 = 6517 -rev-> 7156 wrong
+    addition f(28, 16) = 28 + 16 = 44 -rev-> 44 wrong
+    absolute difference f(85, 50) = |85 - 50| = 35 -rev-> 53 wrong
+    negated absolute difference f(17, 65) = -|17 - 65| = -48 -rev-> -84 wrong
+    subtraction (a-b) f(28, 16) = 28 - 16 = 12 -rev-> 21 wrong
+    reverse subtraction (b-a) f(85, 50) = 50 - 85 = -35 -rev-> -53 wrong
+    multiplication f(17, 65) = (10 + 7) * 65 = 10 * 65 + 7 * 65 = 650 + 455 = 1105 -rev-> 5011 match, f(28,16) -> (20 + 8) * 16 = 20 * 16 + 8 * 16 = 320 + 128 = 448 -rev-> 844 match, f(85,50) -> (80 + 5) * 50 = 80 * 50 + 5 * 50 = 4000 + 250 = 4250 -rev-> 0524 match, correct, actions: reversed operands, reversed result, multiplication
+  Trying common operations on identity [58 05, 71 56, 82 61] [expected (58,05)->0524, (71,56)->5011, (82,61)->844]:
+    concatenation f(58, 05) = 58 || 05 = 5805 wrong
+    reverse concatenation f(71, 56) = 56 || 71 = 5671 wrong
+    addition f(82, 61) = 82 + 61 = 143 wrong
+    absolute difference f(58, 05) = |58 - 05| = 53 wrong
+    negated absolute difference f(71, 56) = -|71 - 56| = -15 wrong
+    subtraction (a-b) f(82, 61) = 82 - 61 = 21 wrong
+    reverse subtraction (b-a) f(58, 05) = 05 - 58 = -53 wrong
+    multiplication f(71, 56) = (70 + 1) * 56 = 70 * 56 + 1 * 56 = 3920 + 56 = 3976 wrong
+  Trying common operations reversed operands [58->85 05->50, 71->17 56->65, 82->28 61->16] [expected (85,50)->0524, (17,65)->5011, (28,16)->844]:
+    concatenation f(85, 50) = 85 || 50 = 8550 wrong
+    reverse concatenation f(17, 65) = 65 || 17 = 6517 wrong
+    addition f(28, 16) = 28 + 16 = 44 wrong
+    absolute difference f(85, 50) = |85 - 50| = 35 wrong
+    negated absolute difference f(17, 65) = -|17 - 65| = -48 wrong
+    subtraction (a-b) f(28, 16) = 28 - 16 = 12 wrong
+    reverse subtraction (b-a) f(85, 50) = 50 - 85 = -35 wrong
+    multiplication f(17, 65) = (10 + 7) * 65 = 10 * 65 + 7 * 65 = 650 + 455 = 1105 wrong
+  Trying common operations identity operands [58 05, 71 56, 82 61] reversed result [expected (58,05)->0524, (71,56)->5011, (82,61)->844]:
+    concatenation f(58, 05) = 58 || 05 = 5805 -rev-> 5085 wrong
+    reverse concatenation f(71, 56) = 56 || 71 = 5671 -rev-> 1765 wrong
+    addition f(82, 61) = 82 + 61 = 143 -rev-> 341 wrong
+    absolute difference f(58, 05) = |58 - 05| = 53 -rev-> 35 wrong
+    negated absolute difference f(71, 56) = -|71 - 56| = -15 -rev-> -51 wrong
+    subtraction (a-b) f(82, 61) = 82 - 61 = 21 -rev-> 12 wrong
+    reverse subtraction (b-a) f(58, 05) = 05 - 58 = -53 -rev-> -35 wrong
+    multiplication f(71, 56) = (70 + 1) * 56 = 70 * 56 + 1 * 56 = 3920 + 56 = 3976 -rev-> 6793 wrong
+  Trying rare operations reversed operands [58->85 05->50, 71->17 56->65, 82->28 61->16] and reversed result [expected (85,50)->0524, (17,65)->5011, (28,16)->844]:
+    multiply+1 f(85, 50) = (80 + 5) * 50 + 1 = 80 * 50 + 5 * 50 + 1 = 4000 + 250 + 1 = 4250 + 1 = 4251 -rev-> 1524 wrong
+    multiply-1 f(17, 65) = (10 + 7) * 65 - 1 = 10 * 65 + 7 * 65 - 1 = 650 + 455 - 1 = 1105 - 1 = 1104 -rev-> 4011 wrong
+    add+1 f(28, 16) = 28 + 16 + 1 = 45 -rev-> 54 wrong
+    add-1 f(85, 50) = 85 + 50 - 1 = 134 -rev-> 431 wrong
+    sub+1 f(17, 65) = 17 - 65 + 1 = -47 -rev-> -74 wrong
+    sub-1 f(28, 16) = 28 - 16 - 1 = 11 -rev-> 11 wrong
+    max mod min f(85, 50) = max(85,50) mod min(85,50) = 85 mod 50 = 35 -rev-> 53 wrong
+    integer division (a/b) f(17, 65) = 17 / 65 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(28, 16) = 28 mod 16 = 12 -rev-> 21 wrong
+    reverse division (b/a) f(85, 50) = 50 / 85 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(17, 65) = 65 mod 17 = 14 -rev-> 41 wrong
+    digit absolute diff f(28, 16) = |2-1| || |8-6| = 12 -rev-> 21 wrong
+    digit add mod10 f(85, 50) = (8+5)%10 || (5+0)%10 = 35 -rev-> 53 wrong
+    digit sub mod10 f(17, 65) = (1-6)%10 || (7-5)%10 = 52 -rev-> 25 wrong
+    cross multiply f(28, 16) = 2*1 + 8*6 = 2 + 48 = 50 -rev-> 05 wrong
+    cross multiply rev f(85, 50) = 8*0 + 5*5 = 0 + 25 = 25 -rev-> 52 wrong
+    digit multiply f(17, 65) = 1*6 || 7*5 = 6 || 35 = 635 -rev-> 536 wrong
+    digit multiply rev f(28, 16) = 2*6 || 8*1 = 12 || 8 = 128 -rev-> 821 wrong
+    digit sum diff f(85, 50) = (8+5) - (5+0) = 8 -rev-> 8 wrong
+    digit sum sum f(17, 65) = (1+7) + (6+5) = 19 -rev-> 91 wrong
+    digit product diff f(28, 16) = 2*8 - 1*6 = 16 - 6 = 10 -rev-> 01 wrong
+    digit product sum f(85, 50) = 8*5 + 5*0 = 40 + 0 = 40 -rev-> 04 wrong
+    determinant f(17, 65) = 1*5 - 7*6 = 5 - 42 = -37 -rev-> -73 wrong
+    abs determinant f(28, 16) = |2*6 - 8*1| = |12 - 8| = 4 -rev-> 4 wrong
+  Trying rare operations on identity [58 05, 71 56, 82 61] [expected (58,05)->0524, (71,56)->5011, (82,61)->844]:
+    multiply+1 f(58, 05) = (50 + 8) * 05 + 1 = 50 * 05 + 8 * 05 + 1 = 250 + 40 + 1 = 290 + 1 = 291 wrong
+    multiply-1 f(71, 56) = (70 + 1) * 56 - 1 = 70 * 56 + 1 * 56 - 1 = 3920 + 56 - 1 = 3976 - 1 = 3975 wrong
+    add+1 f(82, 61) = 82 + 61 + 1 = 144 wrong
+    add-1 f(58, 05) = 58 + 05 - 1 = 62 wrong
+    sub+1 f(71, 56) = 71 - 56 + 1 = 16 wrong
+    sub-1 f(82, 61) = 82 - 61 - 1 = 20 wrong
+    max mod min f(58, 05) = max(58,05) mod min(58,05) = 58 mod 05 = 3 wrong
+    integer division (a/b) f(71, 56) = 71 / 56 = 1 wrong
+    modulo (a mod b) f(82, 61) = 82 mod 61 = 21 wrong
+    reverse division (b/a) f(58, 05) = 05 / 58 = 0 wrong
+    reverse modulo (b mod a) f(71, 56) = 56 mod 71 = 56 wrong
+    digit absolute diff f(82, 61) = |8-6| || |2-1| = 21 wrong
+    digit add mod10 f(58, 05) = (5+0)%10 || (8+5)%10 = 53 wrong
+    digit sub mod10 f(71, 56) = (7-5)%10 || (1-6)%10 = 25 wrong
+    cross multiply f(82, 61) = 8*6 + 2*1 = 48 + 2 = 50 wrong
+    cross multiply rev f(58, 05) = 5*5 + 8*0 = 25 + 0 = 25 wrong
+    digit multiply f(71, 56) = 7*5 || 1*6 = 35 || 6 = 356 wrong
+    digit multiply rev f(82, 61) = 8*1 || 2*6 = 8 || 12 = 812 wrong
+    digit sum diff f(58, 05) = (5+8) - (0+5) = 8 wrong
+    digit sum sum f(71, 56) = (7+1) + (5+6) = 19 wrong
+    digit product diff f(82, 61) = 8*2 - 6*1 = 16 - 6 = 10 wrong
+    digit product sum f(58, 05) = 5*8 + 0*5 = 40 + 0 = 40 wrong
+    determinant f(71, 56) = 7*6 - 1*5 = 42 - 5 = 37 wrong
+    abs determinant f(82, 61) = |8*1 - 2*6| = |8 - 12| = 4 wrong
+  Trying rare operations reversed operands [58->85 05->50, 71->17 56->65, 82->28 61->16] [expected (85,50)->0524, (17,65)->5011, (28,16)->844]:
+    multiply+1 f(85, 50) = (80 + 5) * 50 + 1 = 80 * 50 + 5 * 50 + 1 = 4000 + 250 + 1 = 4250 + 1 = 4251 wrong
+    multiply-1 f(17, 65) = (10 + 7) * 65 - 1 = 10 * 65 + 7 * 65 - 1 = 650 + 455 - 1 = 1105 - 1 = 1104 wrong
+    add+1 f(28, 16) = 28 + 16 + 1 = 45 wrong
+    add-1 f(85, 50) = 85 + 50 - 1 = 134 wrong
+    sub+1 f(17, 65) = 17 - 65 + 1 = -47 wrong
+    sub-1 f(28, 16) = 28 - 16 - 1 = 11 wrong
+    max mod min f(85, 50) = max(85,50) mod min(85,50) = 85 mod 50 = 35 wrong
+    integer division (a/b) f(17, 65) = 17 / 65 = 0 wrong
+    modulo (a mod b) f(28, 16) = 28 mod 16 = 12 wrong
+    reverse division (b/a) f(85, 50) = 50 / 85 = 0 wrong
+    reverse modulo (b mod a) f(17, 65) = 65 mod 17 = 14 wrong
+    digit absolute diff f(28, 16) = |2-1| || |8-6| = 12 wrong
+    digit add mod10 f(85, 50) = (8+5)%10 || (5+0)%10 = 35 wrong
+    digit sub mod10 f(17, 65) = (1-6)%10 || (7-5)%10 = 52 wrong
+    cross multiply f(28, 16) = 2*1 + 8*6 = 2 + 48 = 50 wrong
+    cross multiply rev f(85, 50) = 8*0 + 5*5 = 0 + 25 = 25 wrong
+    digit multiply f(17, 65) = 1*6 || 7*5 = 6 || 35 = 635 wrong
+    digit multiply rev f(28, 16) = 2*6 || 8*1 = 12 || 8 = 128 wrong
+    digit sum diff f(85, 50) = (8+5) - (5+0) = 8 wrong
+    digit sum sum f(17, 65) = (1+7) + (6+5) = 19 wrong
+    digit product diff f(28, 16) = 2*8 - 1*6 = 16 - 6 = 10 wrong
+    digit product sum f(85, 50) = 8*5 + 5*0 = 40 + 0 = 40 wrong
+    determinant f(17, 65) = 1*5 - 7*6 = 5 - 42 = -37 wrong
+    abs determinant f(28, 16) = |2*6 - 8*1| = |12 - 8| = 4 wrong
+  Trying rare operations identity operands [58 05, 71 56, 82 61] reversed result [expected (58,05)->0524, (71,56)->5011, (82,61)->844]:
+    multiply+1 f(58, 05) = (50 + 8) * 05 + 1 = 50 * 05 + 8 * 05 + 1 = 250 + 40 + 1 = 290 + 1 = 291 -rev-> 192 wrong
+    multiply-1 f(71, 56) = (70 + 1) * 56 - 1 = 70 * 56 + 1 * 56 - 1 = 3920 + 56 - 1 = 3976 - 1 = 3975 -rev-> 5793 wrong
+    add+1 f(82, 61) = 82 + 61 + 1 = 144 -rev-> 441 wrong
+    add-1 f(58, 05) = 58 + 05 - 1 = 62 -rev-> 26 wrong
+    sub+1 f(71, 56) = 71 - 56 + 1 = 16 -rev-> 61 wrong
+    sub-1 f(82, 61) = 82 - 61 - 1 = 20 -rev-> 02 wrong
+    max mod min f(58, 05) = max(58,05) mod min(58,05) = 58 mod 05 = 3 -rev-> 3 wrong
+    integer division (a/b) f(71, 56) = 71 / 56 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(82, 61) = 82 mod 61 = 21 -rev-> 12 wrong
+    reverse division (b/a) f(58, 05) = 05 / 58 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(71, 56) = 56 mod 71 = 56 -rev-> 65 wrong
+    digit absolute diff f(82, 61) = |8-6| || |2-1| = 21 -rev-> 12 wrong
+    digit add mod10 f(58, 05) = (5+0)%10 || (8+5)%10 = 53 -rev-> 35 wrong
+    digit sub mod10 f(71, 56) = (7-5)%10 || (1-6)%10 = 25 -rev-> 52 wrong
+    cross multiply f(82, 61) = 8*6 + 2*1 = 48 + 2 = 50 -rev-> 05 wrong
+    cross multiply rev f(58, 05) = 5*5 + 8*0 = 25 + 0 = 25 -rev-> 52 wrong
+    digit multiply f(71, 56) = 7*5 || 1*6 = 35 || 6 = 356 -rev-> 653 wrong
+    digit multiply rev f(82, 61) = 8*1 || 2*6 = 8 || 12 = 812 -rev-> 218 wrong
+    digit sum diff f(58, 05) = (5+8) - (0+5) = 8 -rev-> 8 wrong
+    digit sum sum f(71, 56) = (7+1) + (5+6) = 19 -rev-> 91 wrong
+    digit product diff f(82, 61) = 8*2 - 6*1 = 16 - 6 = 10 -rev-> 01 wrong
+    digit product sum f(58, 05) = 5*8 + 0*5 = 40 + 0 = 40 -rev-> 04 wrong
+    determinant f(71, 56) = 7*6 - 1*5 = 42 - 5 = 37 -rev-> 73 wrong
+    abs determinant f(82, 61) = |8*1 - 2*6| = |8 - 12| = 4 -rev-> 4 wrong
+
+Applying to 74!88:
+  reversed operands [74->47, 88->88] and reversed result
+  multiplication f(47, 88) = (40 + 7) * 88 = 40 * 88 + 7 * 88 = 3520 + 616 = 4136 -rev-> 6314
+  Result: 【6314】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{6314}

@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  22"20 = 43
+  84"52 = 137
+  69|71 = |2
+
+The inputs are 22, 20, 84, 52, 69, 71
+
+The outputs are 43, 137, |2
+Some outputs have the operator symbol as prefix 【|】.
+We now consider the outputs to be 43, 137, -2
+We will add back the operator prefix if our answer is negative.
+
+Looking at the input of the examples
+22"20 -> "
+84"52 -> "
+69|71 -> |
+
+The operators
+"
+|
+
+Looking at the question
+91%84 -> %
+The question operator is not found in the examples. Investigating the most common example operator 【"】 instead. We will use absolute difference for the question operator.
+
+Looking at operator 【"】 [22"20 = 43, 84"52 = 137]:
+  Trying common operations reversed operands [22->22 20->02, 84->48 52->25] and reversed result [expected (22,02)->43, (48,25)->137]:
+    concatenation f(22, 02) = 22 || 02 = 2202 -rev-> 2022 wrong
+    reverse concatenation f(48, 25) = 25 || 48 = 2548 -rev-> 8452 wrong
+    addition f(22, 02) = 22 + 02 = 24 -rev-> 42 wrong
+    absolute difference f(48, 25) = |48 - 25| = 23 -rev-> 32 wrong
+    negated absolute difference f(22, 02) = -|22 - 02| = -20 -rev-> -02 wrong
+    subtraction (a-b) f(48, 25) = 48 - 25 = 23 -rev-> 32 wrong
+    reverse subtraction (b-a) f(22, 02) = 02 - 22 = -20 -rev-> -02 wrong
+    multiplication f(48, 25) = (40 + 8) * 25 = 40 * 25 + 8 * 25 = 1000 + 200 = 1200 -rev-> 0021 wrong
+  Trying common operations on identity [22 20, 84 52] [expected (22,20)->43, (84,52)->137]:
+    concatenation f(22, 20) = 22 || 20 = 2220 wrong
+    reverse concatenation f(84, 52) = 52 || 84 = 5284 wrong
+    addition f(22, 20) = 22 + 20 = 42 wrong
+    absolute difference f(84, 52) = |84 - 52| = 32 wrong
+    negated absolute difference f(22, 20) = -|22 - 20| = -2 wrong
+    subtraction (a-b) f(84, 52) = 84 - 52 = 32 wrong
+    reverse subtraction (b-a) f(22, 20) = 20 - 22 = -2 wrong
+    multiplication f(84, 52) = (80 + 4) * 52 = 80 * 52 + 4 * 52 = 4160 + 208 = 4368 wrong
+  Trying common operations reversed operands [22->22 20->02, 84->48 52->25] [expected (22,02)->43, (48,25)->137]:
+    concatenation f(22, 02) = 22 || 02 = 2202 wrong
+    reverse concatenation f(48, 25) = 25 || 48 = 2548 wrong
+    addition f(22, 02) = 22 + 02 = 24 wrong
+    absolute difference f(48, 25) = |48 - 25| = 23 wrong
+    negated absolute difference f(22, 02) = -|22 - 02| = -20 wrong
+    subtraction (a-b) f(48, 25) = 48 - 25 = 23 wrong
+    reverse subtraction (b-a) f(22, 02) = 02 - 22 = -20 wrong
+    multiplication f(48, 25) = (40 + 8) * 25 = 40 * 25 + 8 * 25 = 1000 + 200 = 1200 wrong
+  Trying common operations identity operands [22 20, 84 52] reversed result [expected (22,20)->43, (84,52)->137]:
+    concatenation f(22, 20) = 22 || 20 = 2220 -rev-> 0222 wrong
+    reverse concatenation f(84, 52) = 52 || 84 = 5284 -rev-> 4825 wrong
+    addition f(22, 20) = 22 + 20 = 42 -rev-> 24 wrong
+    absolute difference f(84, 52) = |84 - 52| = 32 -rev-> 23 wrong
+    negated absolute difference f(22, 20) = -|22 - 20| = -2 -rev-> -2 wrong
+    subtraction (a-b) f(84, 52) = 84 - 52 = 32 -rev-> 23 wrong
+    reverse subtraction (b-a) f(22, 20) = 20 - 22 = -2 -rev-> -2 wrong
+    multiplication f(84, 52) = (80 + 4) * 52 = 80 * 52 + 4 * 52 = 4160 + 208 = 4368 -rev-> 8634 wrong
+  Trying rare operations reversed operands [22->22 20->02, 84->48 52->25] and reversed result [expected (22,02)->43, (48,25)->137]:
+    multiply+1 f(22, 02) = (20 + 2) * 02 + 1 = 20 * 02 + 2 * 02 + 1 = 40 + 4 + 1 = 44 + 1 = 45 -rev-> 54 wrong
+    multiply-1 f(48, 25) = (40 + 8) * 25 - 1 = 40 * 25 + 8 * 25 - 1 = 1000 + 200 - 1 = 1200 - 1 = 1199 -rev-> 9911 wrong
+    add+1 f(22, 02) = 22 + 02 + 1 = 25 -rev-> 52 wrong
+    add-1 f(48, 25) = 48 + 25 - 1 = 72 -rev-> 27 wrong
+    sub+1 f(22, 02) = 22 - 02 + 1 = 21 -rev-> 12 wrong
+    sub-1 f(48, 25) = 48 - 25 - 1 = 22 -rev-> 22 wrong
+    max mod min f(22, 02) = max(22,02) mod min(22,02) = 22 mod 02 = 0 -rev-> 0 wrong
+    integer division (a/b) f(48, 25) = 48 / 25 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(22, 02) = 22 mod 02 = 0 -rev-> 0 wrong
+    reverse division (b/a) f(48, 25) = 25 / 48 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(22, 02) = 02 mod 22 = 2 -rev-> 2 wrong
+    digit absolute diff f(48, 25) = |4-2| || |8-5| = 23 -rev-> 32 wrong
+    digit add mod10 f(22, 02) = (2+0)%10 || (2+2)%10 = 24 -rev-> 42 wrong
+    digit sub mod10 f(48, 25) = (4-2)%10 || (8-5)%10 = 23 -rev-> 32 wrong
+    cross multiply f(22, 02) = 2*0 + 2*2 = 0 + 4 = 4 -rev-> 4 wrong
+    cross multiply rev f(48, 25) = 4*5 + 8*2 = 20 + 16 = 36 -rev-> 63 wrong
+    digit multiply f(22, 02) = 2*0 || 2*2 = 0 || 4 = 04 -rev-> 40 wrong
+    digit multiply rev f(48, 25) = 4*5 || 8*2 = 20 || 16 = 2016 -rev-> 6102 wrong
+    digit sum diff f(22, 02) = (2+2) - (0+2) = 2 -rev-> 2 wrong
+    digit sum sum f(48, 25) = (4+8) + (2+5) = 19 -rev-> 91 wrong
+    digit product diff f(22, 02) = 2*2 - 0*2 = 4 - 0 = 4 -rev-> 4 wrong
+    digit product sum f(48, 25) = 4*8 + 2*5 = 32 + 10 = 42 -rev-> 24 wrong
+    determinant f(22, 02) = 2*2 - 2*0 = 4 - 0 = 4 -rev-> 4 wrong
+    abs determinant f(48, 25) = |4*5 - 8*2| = |20 - 16| = 4 -rev-> 4 wrong
+  Trying rare operations on identity [22 20, 84 52] [expected (22,20)->43, (84,52)->137]:
+    multiply+1 f(22, 20) = (20 + 2) * 20 + 1 = 20 * 20 + 2 * 20 + 1 = 400 + 40 + 1 = 440 + 1 = 441 wrong
+    multiply-1 f(84, 52) = (80 + 4) * 52 - 1 = 80 * 52 + 4 * 52 - 1 = 4160 + 208 - 1 = 4368 - 1 = 4367 wrong
+    add+1 f(22, 20) = 22 + 20 + 1 = 43 match, f(84,52) -> 84 + 52 + 1 = 137 match, correct, actions: add+1
+    add-1 f(84, 52) = 84 + 52 - 1 = 135 wrong
+    sub+1 f(22, 20) = 22 - 20 + 1 = 3 wrong
+    sub-1 f(84, 52) = 84 - 52 - 1 = 31 wrong
+    max mod min f(22, 20) = max(22,20) mod min(22,20) = 22 mod 20 = 2 wrong
+    integer division (a/b) f(84, 52) = 84 / 52 = 1 wrong
+    modulo (a mod b) f(22, 20) = 22 mod 20 = 2 wrong
+    reverse division (b/a) f(84, 52) = 52 / 84 = 0 wrong
+    reverse modulo (b mod a) f(22, 20) = 20 mod 22 = 20 wrong
+    digit absolute diff f(84, 52) = |8-5| || |4-2| = 32 wrong
+    digit add mod10 f(22, 20) = (2+2)%10 || (2+0)%10 = 42 wrong
+    digit sub mod10 f(84, 52) = (8-5)%10 || (4-2)%10 = 32 wrong
+    cross multiply f(22, 20) = 2*2 + 2*0 = 4 + 0 = 4 wrong
+    cross multiply rev f(84, 52) = 8*2 + 4*5 = 16 + 20 = 36 wrong
+    digit multiply f(22, 20) = 2*2 || 2*0 = 4 || 0 = 40 wrong
+    digit multiply rev f(84, 52) = 8*2 || 4*5 = 16 || 20 = 1620 wrong
+    digit sum diff f(22, 20) = (2+2) - (2+0) = 2 wrong
+    digit sum sum f(84, 52) = (8+4) + (5+2) = 19 wrong
+    digit product diff f(22, 20) = 2*2 - 2*0 = 4 - 0 = 4 wrong
+    digit product sum f(84, 52) = 8*4 + 5*2 = 32 + 10 = 42 wrong
+    determinant f(22, 20) = 2*0 - 2*2 = 0 - 4 = -4 wrong
+    abs determinant f(84, 52) = |8*2 - 4*5| = |16 - 20| = 4 wrong
+  Trying rare operations reversed operands [22->22 20->02, 84->48 52->25] [expected (22,02)->43, (48,25)->137]:
+    multiply+1 f(22, 02) = (20 + 2) * 02 + 1 = 20 * 02 + 2 * 02 + 1 = 40 + 4 + 1 = 44 + 1 = 45 wrong
+    multiply-1 f(48, 25) = (40 + 8) * 25 - 1 = 40 * 25 + 8 * 25 - 1 = 1000 + 200 - 1 = 1200 - 1 = 1199 wrong
+    add+1 f(22, 02) = 22 + 02 + 1 = 25 wrong
+    add-1 f(48, 25) = 48 + 25 - 1 = 72 wrong
+    sub+1 f(22, 02) = 22 - 02 + 1 = 21 wrong
+    sub-1 f(48, 25) = 48 - 25 - 1 = 22 wrong
+    max mod min f(22, 02) = max(22,02) mod min(22,02) = 22 mod 02 = 0 wrong
+    integer division (a/b) f(48, 25) = 48 / 25 = 1 wrong
+    modulo (a mod b) f(22, 02) = 22 mod 02 = 0 wrong
+    reverse division (b/a) f(48, 25) = 25 / 48 = 0 wrong
+    reverse modulo (b mod a) f(22, 02) = 02 mod 22 = 2 wrong
+    digit absolute diff f(48, 25) = |4-2| || |8-5| = 23 wrong
+    digit add mod10 f(22, 02) = (2+0)%10 || (2+2)%10 = 24 wrong
+    digit sub mod10 f(48, 25) = (4-2)%10 || (8-5)%10 = 23 wrong
+    cross multiply f(22, 02) = 2*0 + 2*2 = 0 + 4 = 4 wrong
+    cross multiply rev f(48, 25) = 4*5 + 8*2 = 20 + 16 = 36 wrong
+    digit multiply f(22, 02) = 2*0 || 2*2 = 0 || 4 = 04 wrong
+    digit multiply rev f(48, 25) = 4*5 || 8*2 = 20 || 16 = 2016 wrong
+    digit sum diff f(22, 02) = (2+2) - (0+2) = 2 wrong
+    digit sum sum f(48, 25) = (4+8) + (2+5) = 19 wrong
+    digit product diff f(22, 02) = 2*2 - 0*2 = 4 - 0 = 4 wrong
+    digit product sum f(48, 25) = 4*8 + 2*5 = 32 + 10 = 42 wrong
+    determinant f(22, 02) = 2*2 - 2*0 = 4 - 0 = 4 wrong
+    abs determinant f(48, 25) = |4*5 - 8*2| = |20 - 16| = 4 wrong
+  Trying rare operations identity operands [22 20, 84 52] reversed result [expected (22,20)->43, (84,52)->137]:
+    multiply+1 f(22, 20) = (20 + 2) * 20 + 1 = 20 * 20 + 2 * 20 + 1 = 400 + 40 + 1 = 440 + 1 = 441 -rev-> 144 wrong
+    multiply-1 f(84, 52) = (80 + 4) * 52 - 1 = 80 * 52 + 4 * 52 - 1 = 4160 + 208 - 1 = 4368 - 1 = 4367 -rev-> 7634 wrong
+    add+1 f(22, 20) = 22 + 20 + 1 = 43 -rev-> 34 wrong
+    add-1 f(84, 52) = 84 + 52 - 1 = 135 -rev-> 531 wrong
+    sub+1 f(22, 20) = 22 - 20 + 1 = 3 -rev-> 3 wrong
+    sub-1 f(84, 52) = 84 - 52 - 1 = 31 -rev-> 13 wrong
+    max mod min f(22, 20) = max(22,20) mod min(22,20) = 22 mod 20 = 2 -rev-> 2 wrong
+    integer division (a/b) f(84, 52) = 84 / 52 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(22, 20) = 22 mod 20 = 2 -rev-> 2 wrong
+    reverse division (b/a) f(84, 52) = 52 / 84 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(22, 20) = 20 mod 22 = 20 -rev-> 02 wrong
+    digit absolute diff f(84, 52) = |8-5| || |4-2| = 32 -rev-> 23 wrong
+    digit add mod10 f(22, 20) = (2+2)%10 || (2+0)%10 = 42 -rev-> 24 wrong
+    digit sub mod10 f(84, 52) = (8-5)%10 || (4-2)%10 = 32 -rev-> 23 wrong
+    cross multiply f(22, 20) = 2*2 + 2*0 = 4 + 0 = 4 -rev-> 4 wrong
+    cross multiply rev f(84, 52) = 8*2 + 4*5 = 16 + 20 = 36 -rev-> 63 wrong
+    digit multiply f(22, 20) = 2*2 || 2*0 = 4 || 0 = 40 -rev-> 04 wrong
+    digit multiply rev f(84, 52) = 8*2 || 4*5 = 16 || 20 = 1620 -rev-> 0261 wrong
+    digit sum diff f(22, 20) = (2+2) - (2+0) = 2 -rev-> 2 wrong
+    digit sum sum f(84, 52) = (8+4) + (5+2) = 19 -rev-> 91 wrong
+    digit product diff f(22, 20) = 2*2 - 2*0 = 4 - 0 = 4 -rev-> 4 wrong
+    digit product sum f(84, 52) = 8*4 + 5*2 = 32 + 10 = 42 -rev-> 24 wrong
+    determinant f(22, 20) = 2*0 - 2*2 = 0 - 4 = -4 -rev-> -4 wrong
+    abs determinant f(84, 52) = |8*2 - 4*5| = |16 - 20| = 4 -rev-> 4 wrong
+
+Applying to 91%84:
+  We recall that the question operator is not found in the examples. We will use the absolute difference as the operator.
+  identity
+  absolute difference f(91, 84) = |91 - 84| = 7
+  Result: 【7】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{7}

@@ -1,0 +1,171 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  88-12 = 76
+  32+44 = 4432
+  32+72 = 7232
+
+The inputs are 88, 12, 32, 44, 32, 72
+
+The outputs are 76, 4432, 7232
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+88-12 -> -
+32+44 -> +
+32+72 -> +
+
+The operators
+-
++
+
+Looking at the question
+39-72 -> -
+The question operator is found in the examples.
+
+Looking at operator 【-】 [88-12 = 76]:
+  Trying common operations reversed operands [88->88 12->21] and reversed result [expected (88,21)->76]:
+    concatenation f(88, 21) = 88 || 21 = 8821 -rev-> 1288 wrong
+    reverse concatenation f(88, 21) = 21 || 88 = 2188 -rev-> 8812 wrong
+    addition f(88, 21) = 88 + 21 = 109 -rev-> 901 wrong
+    absolute difference f(88, 21) = |88 - 21| = 67 -rev-> 76 match, correct, actions: reversed operands, reversed result, absolute difference
+    negated absolute difference f(88, 21) = -|88 - 21| = -67 -rev-> -76 wrong
+    subtraction (a-b) f(88, 21) = 88 - 21 = 67 -rev-> 76 match, correct, but skipping
+    reverse subtraction (b-a) f(88, 21) = 21 - 88 = -67 -rev-> -76 wrong
+    multiplication f(88, 21) = (80 + 8) * 21 = 80 * 21 + 8 * 21 = 1680 + 168 = 1848 -rev-> 8481 wrong
+  Trying common operations on identity [88 12] [expected (88,12)->76]:
+    concatenation f(88, 12) = 88 || 12 = 8812 wrong
+    reverse concatenation f(88, 12) = 12 || 88 = 1288 wrong
+    addition f(88, 12) = 88 + 12 = 100 wrong
+    absolute difference f(88, 12) = |88 - 12| = 76 match, correct, but skipping
+    negated absolute difference f(88, 12) = -|88 - 12| = -76 wrong
+    subtraction (a-b) f(88, 12) = 88 - 12 = 76 match, correct, but skipping
+    reverse subtraction (b-a) f(88, 12) = 12 - 88 = -76 wrong
+    multiplication f(88, 12) = (80 + 8) * 12 = 80 * 12 + 8 * 12 = 960 + 96 = 1056 wrong
+  Trying common operations reversed operands [88->88 12->21] [expected (88,21)->76]:
+    concatenation f(88, 21) = 88 || 21 = 8821 wrong
+    reverse concatenation f(88, 21) = 21 || 88 = 2188 wrong
+    addition f(88, 21) = 88 + 21 = 109 wrong
+    absolute difference f(88, 21) = |88 - 21| = 67 wrong
+    negated absolute difference f(88, 21) = -|88 - 21| = -67 wrong
+    subtraction (a-b) f(88, 21) = 88 - 21 = 67 wrong
+    reverse subtraction (b-a) f(88, 21) = 21 - 88 = -67 wrong
+    multiplication f(88, 21) = (80 + 8) * 21 = 80 * 21 + 8 * 21 = 1680 + 168 = 1848 wrong
+  Trying common operations identity operands [88 12] reversed result [expected (88,12)->76]:
+    concatenation f(88, 12) = 88 || 12 = 8812 -rev-> 2188 wrong
+    reverse concatenation f(88, 12) = 12 || 88 = 1288 -rev-> 8821 wrong
+    addition f(88, 12) = 88 + 12 = 100 -rev-> 001 wrong
+    absolute difference f(88, 12) = |88 - 12| = 76 -rev-> 67 wrong
+    negated absolute difference f(88, 12) = -|88 - 12| = -76 -rev-> -67 wrong
+    subtraction (a-b) f(88, 12) = 88 - 12 = 76 -rev-> 67 wrong
+    reverse subtraction (b-a) f(88, 12) = 12 - 88 = -76 -rev-> -67 wrong
+    multiplication f(88, 12) = (80 + 8) * 12 = 80 * 12 + 8 * 12 = 960 + 96 = 1056 -rev-> 6501 wrong
+  Trying rare operations reversed operands [88->88 12->21] and reversed result [expected (88,21)->76]:
+    multiply+1 f(88, 21) = (80 + 8) * 21 + 1 = 80 * 21 + 8 * 21 + 1 = 1680 + 168 + 1 = 1848 + 1 = 1849 -rev-> 9481 wrong
+    multiply-1 f(88, 21) = (80 + 8) * 21 - 1 = 80 * 21 + 8 * 21 - 1 = 1680 + 168 - 1 = 1848 - 1 = 1847 -rev-> 7481 wrong
+    add+1 f(88, 21) = 88 + 21 + 1 = 110 -rev-> 011 wrong
+    add-1 f(88, 21) = 88 + 21 - 1 = 108 -rev-> 801 wrong
+    sub+1 f(88, 21) = 88 - 21 + 1 = 68 -rev-> 86 wrong
+    sub-1 f(88, 21) = 88 - 21 - 1 = 66 -rev-> 66 wrong
+    max mod min f(88, 21) = max(88,21) mod min(88,21) = 88 mod 21 = 4 -rev-> 4 wrong
+    integer division (a/b) f(88, 21) = 88 / 21 = 4 -rev-> 4 wrong
+    modulo (a mod b) f(88, 21) = 88 mod 21 = 4 -rev-> 4 wrong
+    reverse division (b/a) f(88, 21) = 21 / 88 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(88, 21) = 21 mod 88 = 21 -rev-> 12 wrong
+    digit absolute diff f(88, 21) = |8-2| || |8-1| = 67 -rev-> 76 match, correct, but skipping
+    digit add mod10 f(88, 21) = (8+2)%10 || (8+1)%10 = 09 -rev-> 90 wrong
+    digit sub mod10 f(88, 21) = (8-2)%10 || (8-1)%10 = 67 -rev-> 76 match, correct, but skipping
+    cross multiply f(88, 21) = 8*2 + 8*1 = 16 + 8 = 24 -rev-> 42 wrong
+    cross multiply rev f(88, 21) = 8*1 + 8*2 = 8 + 16 = 24 -rev-> 42 wrong
+    digit multiply f(88, 21) = 8*2 || 8*1 = 16 || 8 = 168 -rev-> 861 wrong
+    digit multiply rev f(88, 21) = 8*1 || 8*2 = 8 || 16 = 816 -rev-> 618 wrong
+    digit sum diff f(88, 21) = (8+8) - (2+1) = 13 -rev-> 31 wrong
+    digit sum sum f(88, 21) = (8+8) + (2+1) = 19 -rev-> 91 wrong
+    digit product diff f(88, 21) = 8*8 - 2*1 = 64 - 2 = 62 -rev-> 26 wrong
+    digit product sum f(88, 21) = 8*8 + 2*1 = 64 + 2 = 66 -rev-> 66 wrong
+    determinant f(88, 21) = 8*1 - 8*2 = 8 - 16 = -8 -rev-> -8 wrong
+    abs determinant f(88, 21) = |8*1 - 8*2| = |8 - 16| = 8 -rev-> 8 wrong
+  Trying rare operations on identity [88 12] [expected (88,12)->76]:
+    multiply+1 f(88, 12) = (80 + 8) * 12 + 1 = 80 * 12 + 8 * 12 + 1 = 960 + 96 + 1 = 1056 + 1 = 1057 wrong
+    multiply-1 f(88, 12) = (80 + 8) * 12 - 1 = 80 * 12 + 8 * 12 - 1 = 960 + 96 - 1 = 1056 - 1 = 1055 wrong
+    add+1 f(88, 12) = 88 + 12 + 1 = 101 wrong
+    add-1 f(88, 12) = 88 + 12 - 1 = 99 wrong
+    sub+1 f(88, 12) = 88 - 12 + 1 = 77 wrong
+    sub-1 f(88, 12) = 88 - 12 - 1 = 75 wrong
+    max mod min f(88, 12) = max(88,12) mod min(88,12) = 88 mod 12 = 4 wrong
+    integer division (a/b) f(88, 12) = 88 / 12 = 7 wrong
+    modulo (a mod b) f(88, 12) = 88 mod 12 = 4 wrong
+    reverse division (b/a) f(88, 12) = 12 / 88 = 0 wrong
+    reverse modulo (b mod a) f(88, 12) = 12 mod 88 = 12 wrong
+    digit absolute diff f(88, 12) = |8-1| || |8-2| = 76 match, correct, but skipping
+    digit add mod10 f(88, 12) = (8+1)%10 || (8+2)%10 = 90 wrong
+    digit sub mod10 f(88, 12) = (8-1)%10 || (8-2)%10 = 76 match, correct, but skipping
+    cross multiply f(88, 12) = 8*1 + 8*2 = 8 + 16 = 24 wrong
+    cross multiply rev f(88, 12) = 8*2 + 8*1 = 16 + 8 = 24 wrong
+    digit multiply f(88, 12) = 8*1 || 8*2 = 8 || 16 = 816 wrong
+    digit multiply rev f(88, 12) = 8*2 || 8*1 = 16 || 8 = 168 wrong
+    digit sum diff f(88, 12) = (8+8) - (1+2) = 13 wrong
+    digit sum sum f(88, 12) = (8+8) + (1+2) = 19 wrong
+    digit product diff f(88, 12) = 8*8 - 1*2 = 64 - 2 = 62 wrong
+    digit product sum f(88, 12) = 8*8 + 1*2 = 64 + 2 = 66 wrong
+    determinant f(88, 12) = 8*2 - 8*1 = 16 - 8 = 8 wrong
+    abs determinant f(88, 12) = |8*2 - 8*1| = |16 - 8| = 8 wrong
+  Trying rare operations reversed operands [88->88 12->21] [expected (88,21)->76]:
+    multiply+1 f(88, 21) = (80 + 8) * 21 + 1 = 80 * 21 + 8 * 21 + 1 = 1680 + 168 + 1 = 1848 + 1 = 1849 wrong
+    multiply-1 f(88, 21) = (80 + 8) * 21 - 1 = 80 * 21 + 8 * 21 - 1 = 1680 + 168 - 1 = 1848 - 1 = 1847 wrong
+    add+1 f(88, 21) = 88 + 21 + 1 = 110 wrong
+    add-1 f(88, 21) = 88 + 21 - 1 = 108 wrong
+    sub+1 f(88, 21) = 88 - 21 + 1 = 68 wrong
+    sub-1 f(88, 21) = 88 - 21 - 1 = 66 wrong
+    max mod min f(88, 21) = max(88,21) mod min(88,21) = 88 mod 21 = 4 wrong
+    integer division (a/b) f(88, 21) = 88 / 21 = 4 wrong
+    modulo (a mod b) f(88, 21) = 88 mod 21 = 4 wrong
+    reverse division (b/a) f(88, 21) = 21 / 88 = 0 wrong
+    reverse modulo (b mod a) f(88, 21) = 21 mod 88 = 21 wrong
+    digit absolute diff f(88, 21) = |8-2| || |8-1| = 67 wrong
+    digit add mod10 f(88, 21) = (8+2)%10 || (8+1)%10 = 09 wrong
+    digit sub mod10 f(88, 21) = (8-2)%10 || (8-1)%10 = 67 wrong
+    cross multiply f(88, 21) = 8*2 + 8*1 = 16 + 8 = 24 wrong
+    cross multiply rev f(88, 21) = 8*1 + 8*2 = 8 + 16 = 24 wrong
+    digit multiply f(88, 21) = 8*2 || 8*1 = 16 || 8 = 168 wrong
+    digit multiply rev f(88, 21) = 8*1 || 8*2 = 8 || 16 = 816 wrong
+    digit sum diff f(88, 21) = (8+8) - (2+1) = 13 wrong
+    digit sum sum f(88, 21) = (8+8) + (2+1) = 19 wrong
+    digit product diff f(88, 21) = 8*8 - 2*1 = 64 - 2 = 62 wrong
+    digit product sum f(88, 21) = 8*8 + 2*1 = 64 + 2 = 66 wrong
+    determinant f(88, 21) = 8*1 - 8*2 = 8 - 16 = -8 wrong
+    abs determinant f(88, 21) = |8*1 - 8*2| = |8 - 16| = 8 wrong
+  Trying rare operations identity operands [88 12] reversed result [expected (88,12)->76]:
+    multiply+1 f(88, 12) = (80 + 8) * 12 + 1 = 80 * 12 + 8 * 12 + 1 = 960 + 96 + 1 = 1056 + 1 = 1057 -rev-> 7501 wrong
+    multiply-1 f(88, 12) = (80 + 8) * 12 - 1 = 80 * 12 + 8 * 12 - 1 = 960 + 96 - 1 = 1056 - 1 = 1055 -rev-> 5501 wrong
+    add+1 f(88, 12) = 88 + 12 + 1 = 101 -rev-> 101 wrong
+    add-1 f(88, 12) = 88 + 12 - 1 = 99 -rev-> 99 wrong
+    sub+1 f(88, 12) = 88 - 12 + 1 = 77 -rev-> 77 wrong
+    sub-1 f(88, 12) = 88 - 12 - 1 = 75 -rev-> 57 wrong
+    max mod min f(88, 12) = max(88,12) mod min(88,12) = 88 mod 12 = 4 -rev-> 4 wrong
+    integer division (a/b) f(88, 12) = 88 / 12 = 7 -rev-> 7 wrong
+    modulo (a mod b) f(88, 12) = 88 mod 12 = 4 -rev-> 4 wrong
+    reverse division (b/a) f(88, 12) = 12 / 88 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(88, 12) = 12 mod 88 = 12 -rev-> 21 wrong
+    digit absolute diff f(88, 12) = |8-1| || |8-2| = 76 -rev-> 67 wrong
+    digit add mod10 f(88, 12) = (8+1)%10 || (8+2)%10 = 90 -rev-> 09 wrong
+    digit sub mod10 f(88, 12) = (8-1)%10 || (8-2)%10 = 76 -rev-> 67 wrong
+    cross multiply f(88, 12) = 8*1 + 8*2 = 8 + 16 = 24 -rev-> 42 wrong
+    cross multiply rev f(88, 12) = 8*2 + 8*1 = 16 + 8 = 24 -rev-> 42 wrong
+    digit multiply f(88, 12) = 8*1 || 8*2 = 8 || 16 = 816 -rev-> 618 wrong
+    digit multiply rev f(88, 12) = 8*2 || 8*1 = 16 || 8 = 168 -rev-> 861 wrong
+    digit sum diff f(88, 12) = (8+8) - (1+2) = 13 -rev-> 31 wrong
+    digit sum sum f(88, 12) = (8+8) + (1+2) = 19 -rev-> 91 wrong
+    digit product diff f(88, 12) = 8*8 - 1*2 = 64 - 2 = 62 -rev-> 26 wrong
+    digit product sum f(88, 12) = 8*8 + 1*2 = 64 + 2 = 66 -rev-> 66 wrong
+    determinant f(88, 12) = 8*2 - 8*1 = 16 - 8 = 8 -rev-> 8 wrong
+    abs determinant f(88, 12) = |8*2 - 8*1| = |16 - 8| = 8 -rev-> 8 wrong
+
+Applying to 39-72:
+  reversed operands [39->93, 72->27] and reversed result
+  absolute difference f(93, 27) = |93 - 27| = 66 -rev-> 66
+  Result: 【66】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{66}

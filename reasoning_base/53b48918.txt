@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  70|42 = 7042
+  51#94 = 4794
+  56#88 = 4928
+  22+71 = 49
+
+The inputs are 70, 42, 51, 94, 56, 88, 22, 71
+
+The outputs are 7042, 4794, 4928, 49
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+70|42 -> |
+51#94 -> #
+56#88 -> #
+22+71 -> +
+
+The operators
+|
+#
++
+
+Looking at the question
+91+10 -> +
+The question operator is found in the examples.
+
+Looking at operator 【+】 [22+71 = 49]:
+  Trying common operations reversed operands [22->22 71->17] and reversed result [expected (22,17)->49]:
+    concatenation f(22, 17) = 22 || 17 = 2217 -rev-> 7122 wrong
+    reverse concatenation f(22, 17) = 17 || 22 = 1722 -rev-> 2271 wrong
+    addition f(22, 17) = 22 + 17 = 39 -rev-> 93 wrong
+    absolute difference f(22, 17) = |22 - 17| = 5 -rev-> 5 wrong
+    negated absolute difference f(22, 17) = -|22 - 17| = -5 -rev-> -5 wrong
+    subtraction (a-b) f(22, 17) = 22 - 17 = 5 -rev-> 5 wrong
+    reverse subtraction (b-a) f(22, 17) = 17 - 22 = -5 -rev-> -5 wrong
+    multiplication f(22, 17) = (20 + 2) * 17 = 20 * 17 + 2 * 17 = 340 + 34 = 374 -rev-> 473 wrong
+  Trying common operations on identity [22 71] [expected (22,71)->49]:
+    concatenation f(22, 71) = 22 || 71 = 2271 wrong
+    reverse concatenation f(22, 71) = 71 || 22 = 7122 wrong
+    addition f(22, 71) = 22 + 71 = 93 wrong
+    absolute difference f(22, 71) = |22 - 71| = 49 match, correct, actions: absolute difference
+    negated absolute difference f(22, 71) = -|22 - 71| = -49 wrong
+    subtraction (a-b) f(22, 71) = 22 - 71 = -49 wrong
+    reverse subtraction (b-a) f(22, 71) = 71 - 22 = 49 match, correct, but skipping
+    multiplication f(22, 71) = (20 + 2) * 71 = 20 * 71 + 2 * 71 = 1420 + 142 = 1562 wrong
+  Trying common operations reversed operands [22->22 71->17] [expected (22,17)->49]:
+    concatenation f(22, 17) = 22 || 17 = 2217 wrong
+    reverse concatenation f(22, 17) = 17 || 22 = 1722 wrong
+    addition f(22, 17) = 22 + 17 = 39 wrong
+    absolute difference f(22, 17) = |22 - 17| = 5 wrong
+    negated absolute difference f(22, 17) = -|22 - 17| = -5 wrong
+    subtraction (a-b) f(22, 17) = 22 - 17 = 5 wrong
+    reverse subtraction (b-a) f(22, 17) = 17 - 22 = -5 wrong
+    multiplication f(22, 17) = (20 + 2) * 17 = 20 * 17 + 2 * 17 = 340 + 34 = 374 wrong
+  Trying common operations identity operands [22 71] reversed result [expected (22,71)->49]:
+    concatenation f(22, 71) = 22 || 71 = 2271 -rev-> 1722 wrong
+    reverse concatenation f(22, 71) = 71 || 22 = 7122 -rev-> 2217 wrong
+    addition f(22, 71) = 22 + 71 = 93 -rev-> 39 wrong
+    absolute difference f(22, 71) = |22 - 71| = 49 -rev-> 94 wrong
+    negated absolute difference f(22, 71) = -|22 - 71| = -49 -rev-> -94 wrong
+    subtraction (a-b) f(22, 71) = 22 - 71 = -49 -rev-> -94 wrong
+    reverse subtraction (b-a) f(22, 71) = 71 - 22 = 49 -rev-> 94 wrong
+    multiplication f(22, 71) = (20 + 2) * 71 = 20 * 71 + 2 * 71 = 1420 + 142 = 1562 -rev-> 2651 wrong
+  Trying rare operations reversed operands [22->22 71->17] and reversed result [expected (22,17)->49]:
+    multiply+1 f(22, 17) = (20 + 2) * 17 + 1 = 20 * 17 + 2 * 17 + 1 = 340 + 34 + 1 = 374 + 1 = 375 -rev-> 573 wrong
+    multiply-1 f(22, 17) = (20 + 2) * 17 - 1 = 20 * 17 + 2 * 17 - 1 = 340 + 34 - 1 = 374 - 1 = 373 -rev-> 373 wrong
+    add+1 f(22, 17) = 22 + 17 + 1 = 40 -rev-> 04 wrong
+    add-1 f(22, 17) = 22 + 17 - 1 = 38 -rev-> 83 wrong
+    sub+1 f(22, 17) = 22 - 17 + 1 = 6 -rev-> 6 wrong
+    sub-1 f(22, 17) = 22 - 17 - 1 = 4 -rev-> 4 wrong
+    max mod min f(22, 17) = max(22,17) mod min(22,17) = 22 mod 17 = 5 -rev-> 5 wrong
+    integer division (a/b) f(22, 17) = 22 / 17 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(22, 17) = 22 mod 17 = 5 -rev-> 5 wrong
+    reverse division (b/a) f(22, 17) = 17 / 22 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(22, 17) = 17 mod 22 = 17 -rev-> 71 wrong
+    digit absolute diff f(22, 17) = |2-1| || |2-7| = 15 -rev-> 51 wrong
+    digit add mod10 f(22, 17) = (2+1)%10 || (2+7)%10 = 39 -rev-> 93 wrong
+    digit sub mod10 f(22, 17) = (2-1)%10 || (2-7)%10 = 15 -rev-> 51 wrong
+    cross multiply f(22, 17) = 2*1 + 2*7 = 2 + 14 = 16 -rev-> 61 wrong
+    cross multiply rev f(22, 17) = 2*7 + 2*1 = 14 + 2 = 16 -rev-> 61 wrong
+    digit multiply f(22, 17) = 2*1 || 2*7 = 2 || 14 = 214 -rev-> 412 wrong
+    digit multiply rev f(22, 17) = 2*7 || 2*1 = 14 || 2 = 142 -rev-> 241 wrong
+    digit sum diff f(22, 17) = (2+2) - (1+7) = -4 -rev-> -4 wrong
+    digit sum sum f(22, 17) = (2+2) + (1+7) = 12 -rev-> 21 wrong
+    digit product diff f(22, 17) = 2*2 - 1*7 = 4 - 7 = -3 -rev-> -3 wrong
+    digit product sum f(22, 17) = 2*2 + 1*7 = 4 + 7 = 11 -rev-> 11 wrong
+    determinant f(22, 17) = 2*7 - 2*1 = 14 - 2 = 12 -rev-> 21 wrong
+    abs determinant f(22, 17) = |2*7 - 2*1| = |14 - 2| = 12 -rev-> 21 wrong
+  Trying rare operations on identity [22 71] [expected (22,71)->49]:
+    multiply+1 f(22, 71) = (20 + 2) * 71 + 1 = 20 * 71 + 2 * 71 + 1 = 1420 + 142 + 1 = 1562 + 1 = 1563 wrong
+    multiply-1 f(22, 71) = (20 + 2) * 71 - 1 = 20 * 71 + 2 * 71 - 1 = 1420 + 142 - 1 = 1562 - 1 = 1561 wrong
+    add+1 f(22, 71) = 22 + 71 + 1 = 94 wrong
+    add-1 f(22, 71) = 22 + 71 - 1 = 92 wrong
+    sub+1 f(22, 71) = 22 - 71 + 1 = -48 wrong
+    sub-1 f(22, 71) = 22 - 71 - 1 = -50 wrong
+    max mod min f(22, 71) = max(22,71) mod min(22,71) = 71 mod 22 = 5 wrong
+    integer division (a/b) f(22, 71) = 22 / 71 = 0 wrong
+    modulo (a mod b) f(22, 71) = 22 mod 71 = 22 wrong
+    reverse division (b/a) f(22, 71) = 71 / 22 = 3 wrong
+    reverse modulo (b mod a) f(22, 71) = 71 mod 22 = 5 wrong
+    digit absolute diff f(22, 71) = |2-7| || |2-1| = 51 wrong
+    digit add mod10 f(22, 71) = (2+7)%10 || (2+1)%10 = 93 wrong
+    digit sub mod10 f(22, 71) = (2-7)%10 || (2-1)%10 = 51 wrong
+    cross multiply f(22, 71) = 2*7 + 2*1 = 14 + 2 = 16 wrong
+    cross multiply rev f(22, 71) = 2*1 + 2*7 = 2 + 14 = 16 wrong
+    digit multiply f(22, 71) = 2*7 || 2*1 = 14 || 2 = 142 wrong
+    digit multiply rev f(22, 71) = 2*1 || 2*7 = 2 || 14 = 214 wrong
+    digit sum diff f(22, 71) = (2+2) - (7+1) = -4 wrong
+    digit sum sum f(22, 71) = (2+2) + (7+1) = 12 wrong
+    digit product diff f(22, 71) = 2*2 - 7*1 = 4 - 7 = -3 wrong
+    digit product sum f(22, 71) = 2*2 + 7*1 = 4 + 7 = 11 wrong
+    determinant f(22, 71) = 2*1 - 2*7 = 2 - 14 = -12 wrong
+    abs determinant f(22, 71) = |2*1 - 2*7| = |2 - 14| = 12 wrong
+  Trying rare operations reversed operands [22->22 71->17] [expected (22,17)->49]:
+    multiply+1 f(22, 17) = (20 + 2) * 17 + 1 = 20 * 17 + 2 * 17 + 1 = 340 + 34 + 1 = 374 + 1 = 375 wrong
+    multiply-1 f(22, 17) = (20 + 2) * 17 - 1 = 20 * 17 + 2 * 17 - 1 = 340 + 34 - 1 = 374 - 1 = 373 wrong
+    add+1 f(22, 17) = 22 + 17 + 1 = 40 wrong
+    add-1 f(22, 17) = 22 + 17 - 1 = 38 wrong
+    sub+1 f(22, 17) = 22 - 17 + 1 = 6 wrong
+    sub-1 f(22, 17) = 22 - 17 - 1 = 4 wrong
+    max mod min f(22, 17) = max(22,17) mod min(22,17) = 22 mod 17 = 5 wrong
+    integer division (a/b) f(22, 17) = 22 / 17 = 1 wrong
+    modulo (a mod b) f(22, 17) = 22 mod 17 = 5 wrong
+    reverse division (b/a) f(22, 17) = 17 / 22 = 0 wrong
+    reverse modulo (b mod a) f(22, 17) = 17 mod 22 = 17 wrong
+    digit absolute diff f(22, 17) = |2-1| || |2-7| = 15 wrong
+    digit add mod10 f(22, 17) = (2+1)%10 || (2+7)%10 = 39 wrong
+    digit sub mod10 f(22, 17) = (2-1)%10 || (2-7)%10 = 15 wrong
+    cross multiply f(22, 17) = 2*1 + 2*7 = 2 + 14 = 16 wrong
+    cross multiply rev f(22, 17) = 2*7 + 2*1 = 14 + 2 = 16 wrong
+    digit multiply f(22, 17) = 2*1 || 2*7 = 2 || 14 = 214 wrong
+    digit multiply rev f(22, 17) = 2*7 || 2*1 = 14 || 2 = 142 wrong
+    digit sum diff f(22, 17) = (2+2) - (1+7) = -4 wrong
+    digit sum sum f(22, 17) = (2+2) + (1+7) = 12 wrong
+    digit product diff f(22, 17) = 2*2 - 1*7 = 4 - 7 = -3 wrong
+    digit product sum f(22, 17) = 2*2 + 1*7 = 4 + 7 = 11 wrong
+    determinant f(22, 17) = 2*7 - 2*1 = 14 - 2 = 12 wrong
+    abs determinant f(22, 17) = |2*7 - 2*1| = |14 - 2| = 12 wrong
+  Trying rare operations identity operands [22 71] reversed result [expected (22,71)->49]:
+    multiply+1 f(22, 71) = (20 + 2) * 71 + 1 = 20 * 71 + 2 * 71 + 1 = 1420 + 142 + 1 = 1562 + 1 = 1563 -rev-> 3651 wrong
+    multiply-1 f(22, 71) = (20 + 2) * 71 - 1 = 20 * 71 + 2 * 71 - 1 = 1420 + 142 - 1 = 1562 - 1 = 1561 -rev-> 1651 wrong
+    add+1 f(22, 71) = 22 + 71 + 1 = 94 -rev-> 49 match, correct, but skipping
+    add-1 f(22, 71) = 22 + 71 - 1 = 92 -rev-> 29 wrong
+    sub+1 f(22, 71) = 22 - 71 + 1 = -48 -rev-> -84 wrong
+    sub-1 f(22, 71) = 22 - 71 - 1 = -50 -rev-> -05 wrong
+    max mod min f(22, 71) = max(22,71) mod min(22,71) = 71 mod 22 = 5 -rev-> 5 wrong
+    integer division (a/b) f(22, 71) = 22 / 71 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(22, 71) = 22 mod 71 = 22 -rev-> 22 wrong
+    reverse division (b/a) f(22, 71) = 71 / 22 = 3 -rev-> 3 wrong
+    reverse modulo (b mod a) f(22, 71) = 71 mod 22 = 5 -rev-> 5 wrong
+    digit absolute diff f(22, 71) = |2-7| || |2-1| = 51 -rev-> 15 wrong
+    digit add mod10 f(22, 71) = (2+7)%10 || (2+1)%10 = 93 -rev-> 39 wrong
+    digit sub mod10 f(22, 71) = (2-7)%10 || (2-1)%10 = 51 -rev-> 15 wrong
+    cross multiply f(22, 71) = 2*7 + 2*1 = 14 + 2 = 16 -rev-> 61 wrong
+    cross multiply rev f(22, 71) = 2*1 + 2*7 = 2 + 14 = 16 -rev-> 61 wrong
+    digit multiply f(22, 71) = 2*7 || 2*1 = 14 || 2 = 142 -rev-> 241 wrong
+    digit multiply rev f(22, 71) = 2*1 || 2*7 = 2 || 14 = 214 -rev-> 412 wrong
+    digit sum diff f(22, 71) = (2+2) - (7+1) = -4 -rev-> -4 wrong
+    digit sum sum f(22, 71) = (2+2) + (7+1) = 12 -rev-> 21 wrong
+    digit product diff f(22, 71) = 2*2 - 7*1 = 4 - 7 = -3 -rev-> -3 wrong
+    digit product sum f(22, 71) = 2*2 + 7*1 = 4 + 7 = 11 -rev-> 11 wrong
+    determinant f(22, 71) = 2*1 - 2*7 = 2 - 14 = -12 -rev-> -21 wrong
+    abs determinant f(22, 71) = |2*1 - 2*7| = |2 - 14| = 12 -rev-> 21 wrong
+
+Applying to 91+10:
+  identity
+  absolute difference f(91, 10) = |91 - 10| = 81
+  Result: 【81】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{81}
