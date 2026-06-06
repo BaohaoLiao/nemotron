@@ -1,57 +1,64 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【?(*}|】 = 【?&@&】
-  input: 【?】【(】【*】【}】【|】
-  left:【?】【(】
-  operator: 【*】
-  right:【}】【|】
-  output: 【?】【&】【@】【&】
-  concatenation: 【?】【(】【}】【|】 mismatch
-  reverse concatenation: 【}】【|】【?】【(】 mismatch
-  operator: 【*】unknown
+remap (index 2 is the operator):
+fact0 [?(*}|] = [?&@&]: AB * CD = AEFE  (r.len=4, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [|(*?$] = [&]:]]: DB * AG = EHJH  (r.len=4, sym=['A', 'B', 'D', 'E', 'G', 'H', 'J'], |sym|=7)
+fact2 [$:+]$] = [(]]: GJ + HG = BH  (r.len=2, sym=['B', 'G', 'H', 'J'], |sym|=4)
+fact3 [(:-$/] = [$]]: BJ - GK = GH  (r.len=2, sym=['B', 'G', 'H', 'J', 'K'], |sym|=5)
+query [((-:@]: BB - JF = ?
 
-【|(*?$】 = 【&]:]】
-  input: 【|】【(】【*】【?】【$】
-  left:【|】【(】
-  operator: 【*】
-  right:【?】【$】
-  output: 【&】【]】【:】【]】
-  concatenation: 【|】【(】【?】【$】 mismatch
-  reverse concatenation: 【?】【$】【|】【(】 mismatch
-  operator: 【*】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
 
-【$:+]$】 = 【(]】
-  input: 【$】【:】【+】【]】【$】
-  left:【$】【:】
-  operator: 【+】
-  right:【]】【$】
-  output: 【(】【]】
-  concatenation: 【$】【:】【]】【$】 mismatch
-  reverse concatenation: 【]】【$】【$】【:】 mismatch
-  operator: 【+】unknown
+Mul anchor: fact1 [|(*?$] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern DB * AG = EHJH -> 106 candidates:
+  R0: 26 * 73 = 1898 -> G=3,E=1,B=6,J=9,A=7,H=8,D=2
+  R1: 29 * 47 = 1363 -> G=7,E=1,B=9,J=6,A=4,H=3,D=2
+  R2: 34 * 79 = 2686 -> G=9,E=2,B=4,J=8,A=7,H=6,D=3
+  R3: 47 * 29 = 1363 -> G=9,E=1,B=7,J=6,A=2,H=3,D=4
+  R4: 52 * 67 = 3484 -> G=7,E=3,B=2,J=8,A=6,H=4,D=5
+  R5: 53 * 89 = 4717 -> G=9,E=4,B=3,J=1,A=8,H=7,D=5
+  R6: 63 * 84 = 5292 -> G=4,E=5,B=3,J=9,A=8,H=2,D=6
+  R7: 67 * 52 = 3484 -> G=2,E=3,B=7,J=8,A=5,H=4,D=6
+  R8: 67 * 82 = 5494 -> G=2,E=5,B=7,J=9,A=8,H=4,D=6
+  R9: 69 * 83 = 5727 -> G=3,E=5,B=9,J=2,A=8,H=7,D=6
+  R10: 73 * 26 = 1898 -> G=6,E=1,B=3,J=9,A=2,H=8,D=7
+  R11: 74 * 92 = 6808 -> G=2,E=6,B=4,J=0,A=9,H=8,D=7
+  R12: 79 * 34 = 2686 -> G=4,E=2,B=9,J=8,A=3,H=6,D=7
+  R13: 82 * 67 = 5494 -> G=7,E=5,B=2,J=9,A=6,H=4,D=8
+  R14: 83 * 69 = 5727 -> G=9,E=5,B=3,J=2,A=6,H=7,D=8
+  R15: 84 * 63 = 5292 -> G=3,E=5,B=4,J=9,A=6,H=2,D=8
+  R16: 89 * 53 = 4717 -> G=3,E=4,B=9,J=1,A=5,H=7,D=8
+  R17: 92 * 74 = 6808 -> G=4,E=6,B=2,J=0,A=7,H=8,D=9
+  R18: 23 * 86 + 1 = 1979 -> G=6,E=1,B=3,J=7,A=8,H=9,D=2
+  R19: 24 * 58 + 1 = 1393 -> G=8,E=1,B=4,J=9,A=5,H=3,D=2
+  R20: 28 * 49 + 1 = 1373 -> G=9,E=1,B=8,J=7,A=4,H=3,D=2
+  R21: 32 * 47 + 1 = 1505 -> G=7,E=1,B=2,J=0,A=4,H=5,D=3
+  R22: 34 * 76 + 1 = 2585 -> G=6,E=2,B=4,J=8,A=7,H=5,D=3
+  R23: 34 * 87 + 1 = 2959 -> G=7,E=2,B=4,J=5,A=8,H=9,D=3
+  ... 82 more candidates
 
-【(:-$/】 = 【$]】
-  input: 【(】【:】【-】【$】【/】
-  left:【(】【:】
-  operator: 【-】
-  right:【$】【/】
-  output: 【$】【]】
-  concatenation: 【(】【:】【$】【/】 mismatch
-  reverse concatenation: 【$】【/】【(】【:】 mismatch
-  operator: 【-】unknown
+Candidates are tried in order; R33 is the first that extends to every fact. Propagate it:
+fact1 [|(*?$] = [&]:]]:
+  try mul: 58 * 24 = 1392 -> encodes &]:? != &]:] NG
+  try concat: concat(58,24) = 5824 -> encodes |(?$ != &]:] NG
+  try rconcat: concat(24,58) = 2458 -> encodes ?$|( != &]:] NG
+  try mul1: 58 * 24 + 1 = 1393 -> encodes &]:] = &]:] OK -> accept
+fact0 [?(*}|] = [?&@&]:
+  operator '*' already fixed = mul1
+  try mul1: 28 * 75 + 1 = 2101 -> encodes ?&@& = ?&@& OK -> accept
+fact2 [$:+]$] = [(]]:
+  try add: 49 + 34 = 83 -> encodes (] = (] OK -> accept
+fact3 [(:-$/] = [$]]:
+  try add: 89 + 46 = 135 (length/sign off) NG
+  try sub: 89 - 46 = 43 -> encodes $] = $] OK -> accept
 
-Question【((-:@】
-  input: 【(】【(】【-】【:】【@】
-  left:【(】【(】
-  operator:【-】
-  right:【:】【@】
-
-The question operator is 【-】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【(】【(】, 【:】【@】) = 【(】【(】【:】【@】
-  output: 【((:@】-> 【{((:@}】
+Recovered cipher: G($)=4, E(&)=1, B(()=8, K(/)=6, J(:)=9, A(?)=2, F(@)=0, H(])=3, D(|)=5, C(})=7
+Query ((-:@: BB=88, JF=90, '-' = sub: 88 - 90 = -2.
+Encode 2 back to original symbols -> -?.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{((:@}
+The answer in \boxed{-} is \boxed{-?}

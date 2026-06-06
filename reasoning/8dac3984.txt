@@ -1,56 +1,64 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【>&-|&】 = 【-#&】
-  input: 【>】【&】【-】【|】【&】
-  left:【>】【&】
-  operator: 【-】
-  right:【|】【&】
-  output: 【-】【#】【&】
-  concatenation: 【>】【&】【|】【&】 mismatch
-  reverse concatenation: 【|】【&】【>】【&】 mismatch
-  operator: 【-】unknown
+remap (index 2 is the operator):
+fact0 [>&-|&] = [-#&]: AB - CB = -DB  (r.len=2 neg, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [>|*!>] = [>|!>]: AC * EA = ACEA  (r.len=4, sym=['A', 'C', 'E'], |sym|=3)
+fact2 [|>+%!] = [>/%]: CA + FE = AGF  (r.len=3, sym=['A', 'C', 'E', 'F', 'G'], |sym|=5)
+fact3 [!%+[%] = [:@]: EF + HF = JK  (r.len=2, sym=['E', 'F', 'H', 'J', 'K'], |sym|=5)
+query [:!*:|]: JE * JC = ?
 
-【>|*!>】 = 【>|!>】
-  input: 【>】【|】【*】【!】【>】
-  left:【>】【|】
-  operator: 【*】
-  right:【!】【>】
-  output: 【>】【|】【!】【>】
-  concatenation: 【>】【|】【!】【>】 match
-  reverse concatenation: 【!】【>】【>】【|】 mismatch
-  operator: 【*】concatenation
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add1, addm1}
+  '-' -> {sub, rsub, negabs}
 
-【|>+%!】 = 【>/%】
-  input: 【|】【>】【+】【%】【!】
-  left:【|】【>】
-  operator: 【+】
-  right:【%】【!】
-  output: 【>】【/】【%】
-  concatenation: 【|】【>】【%】【!】 mismatch
-  reverse concatenation: 【%】【!】【|】【>】 mismatch
-  operator: 【+】unknown
+Mul anchor: fact1 [>|*!>] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AC * EA = ACEA -> 720 candidates:
+  R0: concat(01,20) = 0120 -> E=2,A=0,C=1
+  R1: concat(01,30) = 0130 -> E=3,A=0,C=1
+  R2: concat(01,40) = 0140 -> E=4,A=0,C=1
+  R3: concat(01,50) = 0150 -> E=5,A=0,C=1
+  R4: concat(01,60) = 0160 -> E=6,A=0,C=1
+  R5: concat(01,70) = 0170 -> E=7,A=0,C=1
+  R6: concat(01,80) = 0180 -> E=8,A=0,C=1
+  R7: concat(01,90) = 0190 -> E=9,A=0,C=1
+  R8: concat(02,10) = 0210 -> E=1,A=0,C=2
+  R9: concat(02,30) = 0230 -> E=3,A=0,C=2
+  R10: concat(02,40) = 0240 -> E=4,A=0,C=2
+  R11: concat(02,50) = 0250 -> E=5,A=0,C=2
+  R12: concat(02,60) = 0260 -> E=6,A=0,C=2
+  R13: concat(02,70) = 0270 -> E=7,A=0,C=2
+  R14: concat(02,80) = 0280 -> E=8,A=0,C=2
+  R15: concat(02,90) = 0290 -> E=9,A=0,C=2
+  R16: concat(03,10) = 0310 -> E=1,A=0,C=3
+  R17: concat(03,20) = 0320 -> E=2,A=0,C=3
+  R18: concat(03,40) = 0340 -> E=4,A=0,C=3
+  R19: concat(03,50) = 0350 -> E=5,A=0,C=3
+  R20: concat(03,60) = 0360 -> E=6,A=0,C=3
+  R21: concat(03,70) = 0370 -> E=7,A=0,C=3
+  R22: concat(03,80) = 0380 -> E=8,A=0,C=3
+  R23: concat(03,90) = 0390 -> E=9,A=0,C=3
+  ... 696 more candidates
 
-【!%+[%】 = 【:@】
-  input: 【!】【%】【+】【[】【%】
-  left:【!】【%】
-  operator: 【+】
-  right:【[】【%】
-  output: 【:】【@】
-  concatenation: 【!】【%】【[】【%】 mismatch
-  reverse concatenation: 【[】【%】【!】【%】 mismatch
-  operator: 【+】unknown
+Candidates are tried in order; R108 is the first that extends to every fact. Propagate it:
+fact1 [>|*!>] = [>|!>]:
+  try mul: 15 * 61 = 915 (length/sign off) NG
+  try concat: concat(15,61) = 1561 -> encodes >|!> = >|!> OK -> accept
+fact0 [>&-|&] = [-#&]:
+  try sub: 10 - 50 = -40 -> encodes -#& = -#& OK -> accept
+fact2 [|>+%!] = [>/%]:
+  try mul: 51 * 86 = 4386 (length/sign off) NG
+  try mul1: 51 * 86 + 1 = 4387 (length/sign off) NG
+  try mulm1: 51 * 86 - 1 = 4385 (length/sign off) NG
+  try add1: 51 + 86 + 1 = 138 -> encodes >/% = >/% OK -> accept
+fact3 [!%+[%] = [:@]:
+  operator '+' already fixed = add1
+  try add1: 68 + 28 + 1 = 97 -> encodes :@ = :@ OK -> accept
 
-Question【:!*:|】
-  input: 【:】【!】【*】【:】【|】
-  left:【:】【!】
-  operator:【*】
-  right:【:】【|】
-
-The question operator is 【*】, which is concatenation.
-
-  concatenation(【:】【!】, 【:】【|】) = 【:】【!】【:】【|】
-  output: 【:!:|】-> 【{:!:|}】
+Recovered cipher: E(!)=6, D(#)=4, F(%)=8, B(&)=0, G(/)=3, J(:)=9, A(>)=1, K(@)=7, H([)=2, C(|)=5
+Query :!*:|: JE=96, JC=95, '*' = concat: concat(96,95) = 9695.
+Encode 9695 back to original symbols -> :!:|.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{:!:|}
+The answer in \boxed{-} is \boxed{:!:|}

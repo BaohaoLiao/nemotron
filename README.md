@@ -36,3 +36,40 @@ uv run python3 corpus.py
 uv run python3 train_sft.py
 uv run modal run upload_adapter.py
 ```
+
+
+## Solver accuracy (v1 → v2)
+
+Per-category rule-recovery accuracy of the original solvers (v1) versus the
+improved solvers (v2). Categories marked `*` are the only ones whose solver
+changed between v1 and v2; all other categories are identical.
+
+### test_500
+
+| Category | n | v1 | v2 | Δ |
+| --- | ---: | ---: | ---: | ---: |
+| bit_manipulation * | 84 | 90.5% (76) | 98.8% (83) | +8.3% |
+| cipher | 83 | 100.0% (83) | 100.0% (83) | +0.0% |
+| cryptarithm_deduce * | 35 | 14.3% (5) | 28.6% (10) | +14.3% |
+| cryptarithm_guess * | 9 | 11.1% (1) | 11.1% (1) | +0.0% |
+| equation_numeric_deduce * | 31 | 96.8% (30) | 93.5% (29) | −3.2% |
+| equation_numeric_guess * | 7 | 14.3% (1) | 14.3% (1) | +0.0% |
+| gravity | 84 | 100.0% (84) | 100.0% (84) | +0.0% |
+| numeral | 83 | 100.0% (83) | 100.0% (83) | +0.0% |
+| unit_conversion | 84 | 100.0% (84) | 100.0% (84) | +0.0% |
+| **Overall** | **500** | **89.4% (447)** | **91.6% (458)** | **+2.2%** |
+
+### train_9000
+
+| Category | n | v1 | v2 | Δ |
+| --- | ---: | ---: | ---: | ---: |
+| bit_manipulation * | 1518 | 84.8% (1288) | 97.9% (1486) | +13.0% |
+| cipher | 1493 | 100.0% (1493) | 100.0% (1493) | +0.0% |
+| cryptarithm_deduce * | 624 | 7.9% (49) | 24.8% (155) | +17.0% |
+| cryptarithm_guess * | 155 | 6.5% (10) | 6.5% (10) | +0.0% |
+| equation_numeric_deduce * | 565 | 90.3% (510) | 92.7% (524) | +2.5% |
+| equation_numeric_guess * | 129 | 15.5% (20) | 15.5% (20) | +0.0% |
+| gravity | 1513 | 100.0% (1513) | 100.0% (1513) | +0.0% |
+| numeral | 1493 | 100.0% (1493) | 100.0% (1493) | +0.0% |
+| unit_conversion | 1510 | 100.0% (1510) | 100.0% (1510) | +0.0% |
+| **Overall** | **9000** | **87.6% (7886)** | **91.2% (8204)** | **+3.5%** |

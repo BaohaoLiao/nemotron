@@ -1,47 +1,56 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【`"-`%】 = 【"】
-  input: 【`】【"】【-】【`】【%】
-  left:【`】【"】
-  operator: 【-】
-  right:【`】【%】
-  output: 【"】
-  concatenation: 【`】【"】【`】【%】 mismatch
-  reverse concatenation: 【`】【%】【`】【"】 mismatch
-  operator: 【-】unknown
+remap (index 2 is the operator):
+fact0 [`"-`%] = ["]: AB - AC = B  (r.len=1, sym=['A', 'B', 'C'], |sym|=3)
+fact1 [`|*|!] = [``%:]: AD * DE = AACF  (r.len=4, sym=['A', 'C', 'D', 'E', 'F'], |sym|=5)
+fact2 [?!+\:] = [?!\:]: GE + HF = GEHF  (r.len=4, sym=['E', 'F', 'G', 'H'], |sym|=4)
+query [|?-?`]: DG - GA = ?
 
-【`|*|!】 = 【``%:】
-  input: 【`】【|】【*】【|】【!】
-  left:【`】【|】
-  operator: 【*】
-  right:【|】【!】
-  output: 【`】【`】【%】【:】
-  concatenation: 【`】【|】【|】【!】 mismatch
-  reverse concatenation: 【|】【!】【`】【|】 mismatch
-  operator: 【*】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {mul, concat, rconcat, add, sub, rsub, mul1, mulm1, add1, addm1, absdiff, negabs, maxmod}
 
-【?!+\:】 = 【?!\:】
-  input: 【?】【!】【+】【\】【:】
-  left:【?】【!】
-  operator: 【+】
-  right:【\】【:】
-  output: 【?】【!】【\】【:】
-  concatenation: 【?】【!】【\】【:】 match
-  reverse concatenation: 【\】【:】【?】【!】 mismatch
-  operator: 【+】concatenation
+Mul anchor: fact1 [`|*|!] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AD * DE = AACF -> 15 candidates:
+  R0: 16 * 69 = 1104 -> E=9,C=0,F=4,A=1,D=6
+  R1: 38 * 87 = 3306 -> E=7,C=0,F=6,A=3,D=8
+  R2: 79 * 98 = 7742 -> E=8,C=4,F=2,A=7,D=9
+  R3: 16 * 69 + 1 = 1105 -> E=9,C=0,F=5,A=1,D=6
+  R4: 28 * 80 + 1 = 2241 -> E=0,C=4,F=1,A=2,D=8
+  R5: 28 * 81 + 1 = 2269 -> E=1,C=6,F=9,A=2,D=8
+  R6: 49 * 91 + 1 = 4460 -> E=1,C=6,F=0,A=4,D=9
+  R7: 79 * 98 + 1 = 7743 -> E=8,C=4,F=3,A=7,D=9
+  R8: 16 * 69 - 1 = 1103 -> E=9,C=0,F=3,A=1,D=6
+  R9: 17 * 70 - 1 = 1189 -> E=0,C=8,F=9,A=1,D=7
+  R10: 28 * 80 - 1 = 2239 -> E=0,C=3,F=9,A=2,D=8
+  R11: 28 * 81 - 1 = 2267 -> E=1,C=6,F=7,A=2,D=8  <-- consistent with all facts
+  R12: 38 * 87 - 1 = 3305 -> E=7,C=0,F=5,A=3,D=8
+  R13: 49 * 91 - 1 = 4458 -> E=1,C=5,F=8,A=4,D=9
+  R14: 79 * 98 - 1 = 7741 -> E=8,C=4,F=1,A=7,D=9
 
-Question【|?-?`】
-  input: 【|】【?】【-】【?】【`】
-  left:【|】【?】
-  operator:【-】
-  right:【?】【`】
+Candidates are tried in order; R11 is the first that extends to every fact. Propagate it:
+fact1 [`|*|!] = [``%:]:
+  try mul: 28 * 81 = 2268 -> encodes ``%| != ``%: NG
+  try concat: concat(28,81) = 2881 -> encodes `||! != ``%: NG
+  try rconcat: concat(81,28) = 8128 -> encodes |!`| != ``%: NG
+  try mul1: 28 * 81 + 1 = 2269 -> encodes ``%? != ``%: NG
+  try mulm1: 28 * 81 - 1 = 2267 -> encodes ``%: = ``%: OK -> accept
+fact0 [`"-`%] = ["]:
+  try mul: 23 * 26 = 598 (length/sign off) NG
+  try concat: concat(23,26) = 2326 (length/sign off) NG
+  try rconcat: concat(26,23) = 2623 (length/sign off) NG
+  try add: 23 + 26 = 49 (length/sign off) NG
+  try sub: 23 - 26 = -3 (length/sign off) NG
+  try rsub: 26 - 23 = 3 -> encodes " = " OK -> accept
+fact2 [?!+\:] = [?!\:]:
+  try mul: 1 * 47 = 47 (length/sign off) NG
+  try concat: concat(01,47) = 0147 -> encodes ?!\: = ?!\: OK -> accept
 
-The question operator is 【-】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【|】【?】, 【?】【`】) = 【|】【?】【?】【`】
-  output: 【|??`】-> 【{|??`}】
+Recovered cipher: E(!)=1, B(")=3, C(%)=6, F(:)=7, G(?)=0, H(\)=4, A(`)=2, D(|)=8
+Query |?-?`: DG=80, GA=2, '-' = rsub: 2 - 80 = -78.
+Encode 78 back to original symbols -> -:|.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{|??`}
+The answer in \boxed{-} is \boxed{-:|}

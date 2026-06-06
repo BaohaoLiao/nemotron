@@ -1,57 +1,46 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【#[!}}】 = 【>#】
-  input: 【#】【[】【!】【}】【}】
-  left:【#】【[】
-  operator: 【!】
-  right:【}】【}】
-  output: 【>】【#】
-  concatenation: 【#】【[】【}】【}】 mismatch
-  reverse concatenation: 【}】【}】【#】【[】 mismatch
-  operator: 【!】unknown
+remap (index 2 is the operator):
+fact0 [#[!}}] = [>#]: AB ! CC = DA  (r.len=2, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 []]-?<] = [>"]]: EE - FG = DHE  (r.len=3, sym=['D', 'E', 'F', 'G', 'H'], |sym|=5)
+fact2 []](>>] = [<<]: EE ( DD = GG  (r.len=2, sym=['D', 'E', 'G'], |sym|=3)
+fact3 [>#-<}] = [<#>}]: DA - GC = GADC  (r.len=4, sym=['A', 'C', 'D', 'G'], |sym|=4)
+query [>}-<"]: DC - GH = ?
 
-【]]-?<】 = 【>"]】
-  input: 【]】【]】【-】【?】【<】
-  left:【]】【]】
-  operator: 【-】
-  right:【?】【<】
-  output: 【>】【"】【]】
-  concatenation: 【]】【]】【?】【<】 mismatch
-  reverse concatenation: 【?】【<】【]】【]】 mismatch
-  operator: 【-】unknown
+narrowing operator candidates by result length:
+  '!' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '(' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {mul, mul1, mulm1}
 
-【]](>>】 = 【<<】
-  input: 【]】【]】【(】【>】【>】
-  left:【]】【]】
-  operator: 【(】
-  right:【>】【>】
-  output: 【<】【<】
-  concatenation: 【]】【]】【>】【>】 mismatch
-  reverse concatenation: 【>】【>】【]】【]】 mismatch
-  operator: 【(】unknown
+Mul anchor: fact3 [>#-<}] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern DA - GC = GADC -> 2 candidates:
+  R0: 81 * 27 = 2187 -> A=1,G=2,D=8,C=7
+  R1: 93 * 15 = 1395 -> A=3,G=1,D=9,C=5  <-- consistent with all facts
 
-【>#-<}】 = 【<#>}】
-  input: 【>】【#】【-】【<】【}】
-  left:【>】【#】
-  operator: 【-】
-  right:【<】【}】
-  output: 【<】【#】【>】【}】
-  concatenation: 【>】【#】【<】【}】 mismatch
-  reverse concatenation: 【<】【}】【>】【#】 mismatch
-  operator: 【-】unknown
+Candidates are tried in order; R1 is the first that extends to every fact. Propagate it:
+fact3 [>#-<}] = [<#>}]:
+  try mul: 93 * 15 = 1395 -> encodes <#>} = <#>} OK -> accept
+fact0 [#[!}}] = [>#]:
+  try add: 37 + 55 = 92 -> encodes >] != ># NG
+  try sub: 37 - 55 = -18 (length/sign off) NG
+  try rsub: 55 - 37 = 18 -> encodes <? != ># NG
+  try add1: 37 + 55 + 1 = 93 -> encodes ># = ># OK -> accept
+fact1 []]-?<] = [>"]]:
+  operator '-' already fixed = mul
+  try mul: 22 * 41 = 902 -> encodes >"] = >"] OK -> accept
+fact2 []](>>] = [<<]:
+  try add: 22 + 99 = 121 (length/sign off) NG
+  try sub: 22 - 99 = -77 (length/sign off) NG
+  try rsub: 99 - 22 = 77 -> encodes [[ != << NG
+  try add1: 22 + 99 + 1 = 122 (length/sign off) NG
+  try addm1: 22 + 99 - 1 = 120 (length/sign off) NG
+  try absdiff: |22 - 99| = 77 -> encodes [[ != << NG
+  try maxmod: max(22,99) mod min(22,99) = 11 -> encodes << = << OK -> accept
 
-Question【>}-<"】
-  input: 【>】【}】【-】【<】【"】
-  left:【>】【}】
-  operator:【-】
-  right:【<】【"】
-
-The question operator is 【-】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【>】【}】, 【<】【"】) = 【>】【}】【<】【"】
-  output: 【>}<"】-> 【{>}<"}】
+Recovered cipher: H(")=0, A(#)=3, G(<)=1, D(>)=9, F(?)=4, B([)=7, E(])=2, C(})=5
+Query >}-<": DC=95, GH=10, '-' = mul: 95 * 10 = 950.
+Encode 950 back to original symbols -> >}".
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{>}<"}
+The answer in \boxed{-} is \boxed{>}"}

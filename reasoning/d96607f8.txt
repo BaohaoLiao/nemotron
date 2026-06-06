@@ -1,66 +1,66 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【!<#"?】 = 【?>】
-  input: 【!】【<】【#】【"】【?】
-  left:【!】【<】
-  operator: 【#】
-  right:【"】【?】
-  output: 【?】【>】
-  concatenation: 【!】【<】【"】【?】 mismatch
-  reverse concatenation: 【"】【?】【!】【<】 mismatch
-  operator: 【#】unknown
+remap (index 2 is the operator):
+fact0 [!<#"?] = [?>]: AB # CD = DE  (r.len=2, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 [<?*{{] = [<?{{]: BD * FF = BDFF  (r.len=4, sym=['B', 'D', 'F'], |sym|=3)
+fact2 ['!#^"] = ["?]: GA # HC = CD  (r.len=2, sym=['A', 'C', 'D', 'G', 'H'], |sym|=5)
+fact3 [}{#<<] = ["<]: JF # BB = CB  (r.len=2, sym=['B', 'C', 'F', 'J'], |sym|=4)
+fact4 [^!#<!] = [?:]: HA # BA = DK  (r.len=2, sym=['A', 'B', 'D', 'H', 'K'], |sym|=5)
+query ["!*<}]: CA * BJ = ?
 
-【<?*{{】 = 【<?{{】
-  input: 【<】【?】【*】【{】【{】
-  left:【<】【?】
-  operator: 【*】
-  right:【{】【{】
-  output: 【<】【?】【{】【{】
-  concatenation: 【<】【?】【{】【{】 match
-  reverse concatenation: 【{】【{】【<】【?】 mismatch
-  operator: 【*】concatenation
+narrowing operator candidates by result length:
+  '#' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
 
-【'!#^"】 = 【"?】
-  input: 【'】【!】【#】【^】【"】
-  left:【'】【!】
-  operator: 【#】
-  right:【^】【"】
-  output: 【"】【?】
-  concatenation: 【'】【!】【^】【"】 mismatch
-  reverse concatenation: 【^】【"】【'】【!】 mismatch
-  operator: 【#】unknown
+Mul anchor: fact1 [<?*{{] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern BD * FF = BDFF -> 720 candidates:
+  R0: concat(01,22) = 0122 -> B=0,D=1,F=2
+  R1: concat(01,33) = 0133 -> B=0,D=1,F=3
+  R2: concat(01,44) = 0144 -> B=0,D=1,F=4
+  R3: concat(01,55) = 0155 -> B=0,D=1,F=5
+  R4: concat(01,66) = 0166 -> B=0,D=1,F=6
+  R5: concat(01,77) = 0177 -> B=0,D=1,F=7
+  R6: concat(01,88) = 0188 -> B=0,D=1,F=8
+  R7: concat(01,99) = 0199 -> B=0,D=1,F=9
+  R8: concat(02,11) = 0211 -> B=0,D=2,F=1
+  R9: concat(02,33) = 0233 -> B=0,D=2,F=3
+  R10: concat(02,44) = 0244 -> B=0,D=2,F=4
+  R11: concat(02,55) = 0255 -> B=0,D=2,F=5
+  R12: concat(02,66) = 0266 -> B=0,D=2,F=6
+  R13: concat(02,77) = 0277 -> B=0,D=2,F=7
+  R14: concat(02,88) = 0288 -> B=0,D=2,F=8
+  R15: concat(02,99) = 0299 -> B=0,D=2,F=9
+  R16: concat(03,11) = 0311 -> B=0,D=3,F=1
+  R17: concat(03,22) = 0322 -> B=0,D=3,F=2
+  R18: concat(03,44) = 0344 -> B=0,D=3,F=4
+  R19: concat(03,55) = 0355 -> B=0,D=3,F=5
+  R20: concat(03,66) = 0366 -> B=0,D=3,F=6
+  R21: concat(03,77) = 0377 -> B=0,D=3,F=7
+  R22: concat(03,88) = 0388 -> B=0,D=3,F=8
+  R23: concat(03,99) = 0399 -> B=0,D=3,F=9
+  ... 696 more candidates
 
-【}{#<<】 = 【"<】
-  input: 【}】【{】【#】【<】【<】
-  left:【}】【{】
-  operator: 【#】
-  right:【<】【<】
-  output: 【"】【<】
-  concatenation: 【}】【{】【<】【<】 mismatch
-  reverse concatenation: 【<】【<】【}】【{】 mismatch
-  operator: 【#】unknown
+Candidates are tried in order; R318 is the first that extends to every fact. Propagate it:
+fact1 [<?*{{] = [<?{{]:
+  try mul: 43 * 88 = 3784 -> encodes ?^{< != <?{{ NG
+  try concat: concat(43,88) = 4388 -> encodes <?{{ = <?{{ OK -> accept
+fact0 [!<#"?] = [?>]:
+  try add: 54 + 23 = 77 -> encodes ^^ != ?> NG
+  try sub: 54 - 23 = 31 -> encodes ?> = ?> OK -> accept
+fact2 ['!#^"] = ["?]:
+  operator '#' already fixed = sub
+  try sub: 95 - 72 = 23 -> encodes "? = "? OK -> accept
+fact3 [}{#<<] = ["<]:
+  operator '#' already fixed = sub
+  try sub: 68 - 44 = 24 -> encodes "< = "< OK -> accept
+fact4 [^!#<!] = [?:]:
+  operator '#' already fixed = sub
+  try sub: 75 - 45 = 30 -> encodes ?: = ?: OK -> accept
 
-【^!#<!】 = 【?:】
-  input: 【^】【!】【#】【<】【!】
-  left:【^】【!】
-  operator: 【#】
-  right:【<】【!】
-  output: 【?】【:】
-  concatenation: 【^】【!】【<】【!】 mismatch
-  reverse concatenation: 【<】【!】【^】【!】 mismatch
-  operator: 【#】unknown
-
-Question【"!*<}】
-  input: 【"】【!】【*】【<】【}】
-  left:【"】【!】
-  operator:【*】
-  right:【<】【}】
-
-The question operator is 【*】, which is concatenation.
-
-  concatenation(【"】【!】, 【<】【}】) = 【"】【!】【<】【}】
-  output: 【"!<}】-> 【{"!<}}】
+Recovered cipher: A(!)=5, C(")=2, G(')=9, K(:)=0, B(<)=4, E(>)=1, D(?)=3, H(^)=7, F({)=8, J(})=6
+Query "!*<}: CA=25, BJ=46, '*' = concat: concat(25,46) = 2546.
+Encode 2546 back to original symbols -> "!<}.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{"!<}}
+The answer in \boxed{-} is \boxed{"!<}}

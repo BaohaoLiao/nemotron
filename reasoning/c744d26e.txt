@@ -1,67 +1,68 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【'[*|}】 = 【'[|}】
-  input: 【'】【[】【*】【|】【}】
-  left:【'】【[】
-  operator: 【*】
-  right:【|】【}】
-  output: 【'】【[】【|】【}】
-  concatenation: 【'】【[】【|】【}】 match
-  reverse concatenation: 【|】【}】【'】【[】 mismatch
-  operator: 【*】concatenation
+remap (index 2 is the operator):
+fact0 ['[*|}] = ['[|}]: AB * CD = ABCD  (r.len=4, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [|>*>>] = [|>>>]: CE * EE = CEEE  (r.len=4, sym=['C', 'E'], |sym|=2)
+fact2 [}|+##] = ['/]: DC + FF = AG  (r.len=2, sym=['A', 'C', 'D', 'F', 'G'], |sym|=5)
+fact3 [?`+>#] = [#`>]: HJ + EF = FJE  (r.len=3, sym=['E', 'F', 'H', 'J'], |sym|=4)
+fact4 [|>*%`] = [|>%`]: CE * KJ = CEKJ  (r.len=4, sym=['C', 'E', 'J', 'K'], |sym|=4)
+query [%'+?>]: KA + HE = ?
 
-【|>*>>】 = 【|>>>】
-  input: 【|】【>】【*】【>】【>】
-  left:【|】【>】
-  operator: 【*】
-  right:【>】【>】
-  output: 【|】【>】【>】【>】
-  concatenation: 【|】【>】【>】【>】 match
-  reverse concatenation: 【>】【>】【|】【>】 mismatch
-  operator: 【*】concatenation
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add1, addm1}
 
-【}|+##】 = 【'/】
-  input: 【}】【|】【+】【#】【#】
-  left:【}】【|】
-  operator: 【+】
-  right:【#】【#】
-  output: 【'】【/】
-  concatenation: 【}】【|】【#】【#】 mismatch
-  reverse concatenation: 【#】【#】【}】【|】 mismatch
-  operator: 【+】unknown
+Mul anchor: fact0 ['[*|}] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB * CD = ABCD -> 5040 candidates:
+  R0: concat(01,23) = 0123 -> A=0,B=1,C=2,D=3
+  R1: concat(01,24) = 0124 -> A=0,B=1,C=2,D=4
+  R2: concat(01,25) = 0125 -> A=0,B=1,C=2,D=5
+  R3: concat(01,26) = 0126 -> A=0,B=1,C=2,D=6
+  R4: concat(01,27) = 0127 -> A=0,B=1,C=2,D=7
+  R5: concat(01,28) = 0128 -> A=0,B=1,C=2,D=8
+  R6: concat(01,29) = 0129 -> A=0,B=1,C=2,D=9
+  R7: concat(01,32) = 0132 -> A=0,B=1,C=3,D=2
+  R8: concat(01,34) = 0134 -> A=0,B=1,C=3,D=4
+  R9: concat(01,35) = 0135 -> A=0,B=1,C=3,D=5
+  R10: concat(01,36) = 0136 -> A=0,B=1,C=3,D=6
+  R11: concat(01,37) = 0137 -> A=0,B=1,C=3,D=7
+  R12: concat(01,38) = 0138 -> A=0,B=1,C=3,D=8
+  R13: concat(01,39) = 0139 -> A=0,B=1,C=3,D=9
+  R14: concat(01,42) = 0142 -> A=0,B=1,C=4,D=2
+  R15: concat(01,43) = 0143 -> A=0,B=1,C=4,D=3
+  R16: concat(01,45) = 0145 -> A=0,B=1,C=4,D=5
+  R17: concat(01,46) = 0146 -> A=0,B=1,C=4,D=6
+  R18: concat(01,47) = 0147 -> A=0,B=1,C=4,D=7
+  R19: concat(01,48) = 0148 -> A=0,B=1,C=4,D=8
+  R20: concat(01,49) = 0149 -> A=0,B=1,C=4,D=9
+  R21: concat(01,52) = 0152 -> A=0,B=1,C=5,D=2
+  R22: concat(01,53) = 0153 -> A=0,B=1,C=5,D=3
+  R23: concat(01,54) = 0154 -> A=0,B=1,C=5,D=4
+  ... 5016 more candidates
 
-【?`+>#】 = 【#`>】
-  input: 【?】【`】【+】【>】【#】
-  left:【?】【`】
-  operator: 【+】
-  right:【>】【#】
-  output: 【#】【`】【>】
-  concatenation: 【?】【`】【>】【#】 mismatch
-  reverse concatenation: 【>】【#】【?】【`】 mismatch
-  operator: 【+】unknown
+Candidates are tried in order; R3756 is the first that extends to every fact. Propagate it:
+fact0 ['[*|}] = ['[|}]:
+  try mul: 74 * 6 = 444 (length/sign off) NG
+  try concat: concat(74,06) = 7406 -> encodes '[|} = '[|} OK -> accept
+fact1 [|>*>>] = [|>>>]:
+  operator '*' already fixed = concat
+  try concat: concat(05,55) = 0555 -> encodes |>>> = |>>> OK -> accept
+fact2 [}|+##] = ['/]:
+  try add: 60 + 11 = 71 -> encodes '# != '/ NG
+  try sub: 60 - 11 = 49 -> encodes [% != '/ NG
+  try rsub: 11 - 60 = -49 (length/sign off) NG
+  try add1: 60 + 11 + 1 = 72 -> encodes '/ = '/ OK -> accept
+fact3 [?`+>#] = [#`>]:
+  operator '+' already fixed = add1
+  try add1: 83 + 51 + 1 = 135 -> encodes #`> = #`> OK -> accept
+fact4 [|>*%`] = [|>%`]:
+  operator '*' already fixed = concat
+  try concat: concat(05,93) = 0593 -> encodes |>%` = |>%` OK -> accept
 
-【|>*%`】 = 【|>%`】
-  input: 【|】【>】【*】【%】【`】
-  left:【|】【>】
-  operator: 【*】
-  right:【%】【`】
-  output: 【|】【>】【%】【`】
-  concatenation: 【|】【>】【%】【`】 match
-  reverse concatenation: 【%】【`】【|】【>】 mismatch
-  operator: 【*】concatenation
-
-Question【%'+?>】
-  input: 【%】【'】【+】【?】【>】
-  left:【%】【'】
-  operator:【+】
-  right:【?】【>】
-
-The question operator is 【+】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【%】【'】, 【?】【>】) = 【%】【'】【?】【>】
-  output: 【%'?>】-> 【{%'?>}】
+Recovered cipher: F(#)=1, K(%)=9, A(')=7, G(/)=2, E(>)=5, H(?)=8, B([)=4, J(`)=3, C(|)=0, D(})=6
+Query %'+?>: KA=97, HE=85, '+' = add1: 97 + 85 + 1 = 183.
+Encode 183 back to original symbols -> #?`.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{%'?>}
+The answer in \boxed{-} is \boxed{#?`}

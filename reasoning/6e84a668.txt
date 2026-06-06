@@ -1,47 +1,65 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【!)%)#】 = 【|^{】
-  input: 【!】【)】【%】【)】【#】
-  left:【!】【)】
-  operator: 【%】
-  right:【)】【#】
-  output: 【|】【^】【{】
-  concatenation: 【!】【)】【)】【#】 mismatch
-  reverse concatenation: 【)】【#】【!】【)】 mismatch
-  operator: 【%】unknown
+remap (index 2 is the operator):
+fact0 [!)%)#] = [|^{]: AB % BC = DEF  (r.len=3, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [#<?<#] = [)<]: CG ? GC = BG  (r.len=2, sym=['B', 'C', 'G'], |sym|=3)
+fact2 [{)(</] = [<'^{]: FB ( GH = GJEF  (r.len=4, sym=['B', 'E', 'F', 'G', 'H', 'J'], |sym|=6)
+query [</(|)]: GH ( DB = ?
 
-【#<?<#】 = 【)<】
-  input: 【#】【<】【?】【<】【#】
-  left:【#】【<】
-  operator: 【?】
-  right:【<】【#】
-  output: 【)】【<】
-  concatenation: 【#】【<】【<】【#】 mismatch
-  reverse concatenation: 【<】【#】【#】【<】 mismatch
-  operator: 【?】unknown
+narrowing operator candidates by result length:
+  '%' -> {mul, mul1, mulm1, add1, addm1}
+  '(' -> {concat, rconcat, mul, mul1, mulm1}
+  '?' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
 
-【{)(</】 = 【<'^{】
-  input: 【{】【)】【(】【<】【/】
-  left:【{】【)】
-  operator: 【(】
-  right:【<】【/】
-  output: 【<】【'】【^】【{】
-  concatenation: 【{】【)】【<】【/】 mismatch
-  reverse concatenation: 【<】【/】【{】【)】 mismatch
-  operator: 【(】unknown
+Mul anchor: fact2 [{)(</] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern FB ( GH = GJEF -> 66 candidates:
+  R0: 67 * 18 = 1206 -> J=2,B=7,H=8,G=1,E=0,F=6
+  R1: 79 * 13 = 1027 -> J=0,B=9,H=3,G=1,E=2,F=7
+  R2: 82 * 49 = 4018 -> J=0,B=2,H=9,G=4,E=1,F=8
+  R3: 83 * 26 = 2158 -> J=1,B=3,H=6,G=2,E=5,F=8
+  R4: 84 * 37 = 3108 -> J=1,B=4,H=7,G=3,E=0,F=8
+  R5: 89 * 12 = 1068 -> J=0,B=9,H=2,G=1,E=6,F=8
+  R6: 65 * 19 + 1 = 1236 -> J=2,B=5,H=9,G=1,E=3,F=6
+  R7: 69 * 15 + 1 = 1036 -> J=0,B=9,H=5,G=1,E=3,F=6
+  R8: 83 * 19 + 1 = 1578 -> J=5,B=3,H=9,G=1,E=7,F=8
+  R9: 83 * 29 + 1 = 2408 -> J=4,B=3,H=9,G=2,E=0,F=8
+  R10: 83 * 49 + 1 = 4068 -> J=0,B=3,H=9,G=4,E=6,F=8
+  R11: 89 * 23 + 1 = 2048 -> J=0,B=9,H=3,G=2,E=4,F=8
+  R12: 91 * 28 + 1 = 2549 -> J=5,B=1,H=8,G=2,E=4,F=9
+  R13: 91 * 38 + 1 = 3459 -> J=4,B=1,H=8,G=3,E=5,F=9
+  R14: 91 * 48 + 1 = 4369 -> J=3,B=1,H=8,G=4,E=6,F=9
+  R15: 91 * 58 + 1 = 5279 -> J=2,B=1,H=8,G=5,E=7,F=9
+  R16: 93 * 16 + 1 = 1489 -> J=4,B=3,H=6,G=1,E=8,F=9
+  R17: 93 * 26 + 1 = 2419 -> J=4,B=3,H=6,G=2,E=1,F=9
+  R18: 93 * 46 + 1 = 4279 -> J=2,B=3,H=6,G=4,E=7,F=9
+  R19: 93 * 56 + 1 = 5209 -> J=2,B=3,H=6,G=5,E=0,F=9
+  R20: 94 * 27 + 1 = 2539 -> J=5,B=4,H=7,G=2,E=3,F=9
+  R21: 96 * 13 + 1 = 1249 -> J=2,B=6,H=3,G=1,E=4,F=9
+  R22: 96 * 18 + 1 = 1729 -> J=7,B=6,H=8,G=1,E=2,F=9
+  R23: 96 * 43 + 1 = 4129 -> J=1,B=6,H=3,G=4,E=2,F=9
+  ... 42 more candidates
 
-Question【</(|)】
-  input: 【<】【/】【(】【|】【)】
-  left:【<】【/】
-  operator:【(】
-  right:【|】【)】
+Candidates are tried in order; R65 is the first that extends to every fact. Propagate it:
+fact2 [{)(</] = [<'^{]:
+  try mul: 98 * 75 = 7350 -> encodes <'/! != <'^{ NG
+  try concat: concat(98,75) = 9875 -> encodes {)</ != <'^{ NG
+  try rconcat: concat(75,98) = 7598 -> encodes </{) != <'^{ NG
+  try mul1: 98 * 75 + 1 = 7351 -> encodes <'/# != <'^{ NG
+  try mulm1: 98 * 75 - 1 = 7349 -> encodes <'^{ = <'^{ OK -> accept
+fact0 [!)%)#] = [|^{]:
+  try mul: 8 * 81 = 648 -> encodes |^) != |^{ NG
+  try mul1: 8 * 81 + 1 = 649 -> encodes |^{ = |^{ OK -> accept
+fact1 [#<?<#] = [)<]:
+  try add: 17 + 71 = 88 -> encodes )) != )< NG
+  try sub: 17 - 71 = -54 (length/sign off) NG
+  try rsub: 71 - 17 = 54 -> encodes /^ != )< NG
+  try add1: 17 + 71 + 1 = 89 -> encodes ){ != )< NG
+  try addm1: 17 + 71 - 1 = 87 -> encodes )< = )< OK -> accept
 
-The question operator is 【(】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【<】【/】, 【|】【)】) = 【<】【/】【|】【)】
-  output: 【</|)】-> 【{</|)}】
+Recovered cipher: A(!)=0, C(#)=1, J(')=3, B())=8, H(/)=5, G(<)=7, E(^)=4, F({)=9, D(|)=6
+Query </(|): GH=75, DB=68, '(' = mulm1: 75 * 68 - 1 = 5099.
+Encode 5099 back to original symbols -> /!{{.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{</|)}
+The answer in \boxed{-} is \boxed{/!{{}

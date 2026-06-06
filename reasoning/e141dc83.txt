@@ -1,57 +1,66 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【>:*/`】 = 【#/`】
-  input: 【>】【:】【*】【/】【`】
-  left:【>】【:】
-  operator: 【*】
-  right:【/】【`】
-  output: 【#】【/】【`】
-  concatenation: 【>】【:】【/】【`】 mismatch
-  reverse concatenation: 【/】【`】【>】【:】 mismatch
-  operator: 【*】unknown
+remap (index 2 is the operator):
+fact0 [>:*/`] = [#/`]: AB * CD = ECD  (r.len=3, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 [(\-:/] = [/>]: FG - BC = CA  (r.len=2, sym=['A', 'B', 'C', 'F', 'G'], |sym|=5)
+fact2 ['/+#>] = [&>']: HC + EA = JAH  (r.len=3, sym=['A', 'C', 'E', 'H', 'J'], |sym|=5)
+fact3 ['\*:`] = [(>\`]: HG * BD = FAGD  (r.len=4, sym=['A', 'B', 'D', 'F', 'G', 'H'], |sym|=6)
+query [&#+>:]: JE + AB = ?
 
-【(\-:/】 = 【/>】
-  input: 【(】【\】【-】【:】【/】
-  left:【(】【\】
-  operator: 【-】
-  right:【:】【/】
-  output: 【/】【>】
-  concatenation: 【(】【\】【:】【/】 mismatch
-  reverse concatenation: 【:】【/】【(】【\】 mismatch
-  operator: 【-】unknown
+narrowing operator candidates by result length:
+  '*' -> {mul, mul1, mulm1}
+  '+' -> {mul, mul1, mulm1, add1, addm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
 
-【'/+#>】 = 【&>'】
-  input: 【'】【/】【+】【#】【>】
-  left:【'】【/】
-  operator: 【+】
-  right:【#】【>】
-  output: 【&】【>】【'】
-  concatenation: 【'】【/】【#】【>】 mismatch
-  reverse concatenation: 【#】【>】【'】【/】 mismatch
-  operator: 【+】unknown
+Mul anchor: fact3 ['\*:`] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern HG * BD = FAGD -> 29 candidates:
+  R0: 23 * 45 = 1035 -> H=2,F=1,B=4,A=0,G=3,D=5
+  R1: 31 * 65 = 2015 -> H=3,F=2,B=6,A=0,G=1,D=5
+  R2: 31 * 78 = 2418 -> H=3,F=2,B=7,A=4,G=1,D=8
+  R3: 32 * 60 = 1920 -> H=3,F=1,B=6,A=9,G=2,D=0
+  R4: 35 * 70 = 2450 -> H=3,F=2,B=7,A=4,G=5,D=0
+  R5: 45 * 70 = 3150 -> H=4,F=3,B=7,A=1,G=5,D=0
+  R6: 51 * 67 = 3417 -> H=5,F=3,B=6,A=4,G=1,D=7
+  R7: 52 * 60 = 3120 -> H=5,F=3,B=6,A=1,G=2,D=0
+  R8: 54 * 60 = 3240 -> H=5,F=3,B=6,A=2,G=4,D=0
+  R9: 56 * 78 = 4368 -> H=5,F=4,B=7,A=3,G=6,D=8
+  R10: 58 * 60 = 3480 -> H=5,F=3,B=6,A=4,G=8,D=0  <-- consistent with all facts
+  R11: 61 * 79 = 4819 -> H=6,F=4,B=7,A=8,G=1,D=9
+  R12: 63 * 45 = 2835 -> H=6,F=2,B=4,A=8,G=3,D=5
+  R13: 65 * 30 = 1950 -> H=6,F=1,B=3,A=9,G=5,D=0
+  R14: 71 * 89 = 6319 -> H=7,F=6,B=8,A=3,G=1,D=9
+  R15: 72 * 60 = 4320 -> H=7,F=4,B=6,A=3,G=2,D=0
+  R16: 81 * 36 = 2916 -> H=8,F=2,B=3,A=9,G=1,D=6
+  R17: 81 * 57 = 4617 -> H=8,F=4,B=5,A=6,G=1,D=7
+  R18: 81 * 73 = 5913 -> H=8,F=5,B=7,A=9,G=1,D=3
+  R19: 81 * 94 = 7614 -> H=8,F=7,B=9,A=6,G=1,D=4
+  R20: 82 * 60 = 4920 -> H=8,F=4,B=6,A=9,G=2,D=0
+  R21: 85 * 90 = 7650 -> H=8,F=7,B=9,A=6,G=5,D=0
+  R22: 95 * 30 = 2850 -> H=9,F=2,B=3,A=8,G=5,D=0
+  R23: 52 * 89 + 1 = 4629 -> H=5,F=4,B=8,A=6,G=2,D=9
+  ... 5 more candidates
 
-【'\*:`】 = 【(>\`】
-  input: 【'】【\】【*】【:】【`】
-  left:【'】【\】
-  operator: 【*】
-  right:【:】【`】
-  output: 【(】【>】【\】【`】
-  concatenation: 【'】【\】【:】【`】 mismatch
-  reverse concatenation: 【:】【`】【'】【\】 mismatch
-  operator: 【*】unknown
+Candidates are tried in order; R10 is the first that extends to every fact. Propagate it:
+fact3 ['\*:`] = [(>\`]:
+  try mul: 58 * 60 = 3480 -> encodes (>\` = (>\` OK -> accept
+fact0 [>:*/`] = [#/`]:
+  operator '*' already fixed = mul
+  try mul: 46 * 20 = 920 -> encodes #/` = #/` OK -> accept
+fact1 [(\-:/] = [/>]:
+  try add: 38 + 62 = 100 (length/sign off) NG
+  try sub: 38 - 62 = -24 (length/sign off) NG
+  try rsub: 62 - 38 = 24 -> encodes /> = /> OK -> accept
+fact2 ['/+#>] = [&>']:
+  try mul: 52 * 94 = 4888 (length/sign off) NG
+  try mul1: 52 * 94 + 1 = 4889 (length/sign off) NG
+  try mulm1: 52 * 94 - 1 = 4887 (length/sign off) NG
+  try add1: 52 + 94 + 1 = 147 -> encodes &>? != &>' NG
+  try addm1: 52 + 94 - 1 = 145 -> encodes &>' = &>' OK -> accept
 
-Question【&#+>:】
-  input: 【&】【#】【+】【>】【:】
-  left:【&】【#】
-  operator:【+】
-  right:【>】【:】
-
-The question operator is 【+】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【&】【#】, 【>】【:】) = 【&】【#】【>】【:】
-  output: 【&#>:】-> 【{&#>:}】
+Recovered cipher: E(#)=9, J(&)=1, H(')=5, F(()=3, C(/)=2, B(:)=6, A(>)=4, G(\)=8, D(`)=0
+Query &#+>:: JE=19, AB=46, '+' = addm1: 19 + 46 - 1 = 64.
+Encode 64 back to original symbols -> :>.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{&#>:}
+The answer in \boxed{-} is \boxed{:>}

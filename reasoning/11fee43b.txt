@@ -1,67 +1,69 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【@]*?}】 = 【[?'"】
-  input: 【@】【]】【*】【?】【}】
-  left:【@】【]】
-  operator: 【*】
-  right:【?】【}】
-  output: 【[】【?】【'】【"】
-  concatenation: 【@】【]】【?】【}】 mismatch
-  reverse concatenation: 【?】【}】【@】【]】 mismatch
-  operator: 【*】unknown
+remap (index 2 is the operator):
+fact0 [@]*?}] = [[?'"]: AB * CD = ECFG  (r.len=4, sym=['A', 'B', 'C', 'D', 'E', 'F', 'G'], |sym|=7)
+fact1 ['?-]"] = [-&]: FC - BG = -H  (r.len=1 neg, sym=['B', 'C', 'F', 'G', 'H'], |sym|=5)
+fact2 [[/+&/] = ["/]: EJ + HJ = GJ  (r.len=2, sym=['E', 'G', 'H', 'J'], |sym|=4)
+fact3 [@]+[?] = ['/]: AB + EC = FJ  (r.len=2, sym=['A', 'B', 'C', 'E', 'F', 'J'], |sym|=6)
+fact4 [[[-&'] = [-?]]: EE - HF = -CB  (r.len=2 neg, sym=['B', 'C', 'E', 'F', 'H'], |sym|=5)
+query [&/*'&]: HJ * FH = ?
 
-【'?-]"】 = 【-&】
-  input: 【'】【?】【-】【]】【"】
-  left:【'】【?】
-  operator: 【-】
-  right:【]】【"】
-  output: 【-】【&】
-  concatenation: 【'】【?】【]】【"】 mismatch
-  reverse concatenation: 【]】【"】【'】【?】 mismatch
-  operator: 【-】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {sub, rsub, negabs}
 
-【[/+&/】 = 【"/】
-  input: 【[】【/】【+】【&】【/】
-  left:【[】【/】
-  operator: 【+】
-  right:【&】【/】
-  output: 【"】【/】
-  concatenation: 【[】【/】【&】【/】 mismatch
-  reverse concatenation: 【&】【/】【[】【/】 mismatch
-  operator: 【+】unknown
+Mul anchor: fact0 [@]*?}] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB * CD = ECFG -> 109 candidates:
+  R0: 23 * 76 = 1748 -> G=8,F=4,C=7,A=2,E=1,B=3,D=6
+  R1: 23 * 78 = 1794 -> G=4,F=9,C=7,A=2,E=1,B=3,D=8
+  R2: 24 * 67 = 1608 -> G=8,F=0,C=6,A=2,E=1,B=4,D=7
+  R3: 26 * 59 = 1534 -> G=4,F=3,C=5,A=2,E=1,B=6,D=9
+  R4: 28 * 57 = 1596 -> G=6,F=9,C=5,A=2,E=1,B=8,D=7
+  R5: 34 * 85 = 2890 -> G=0,F=9,C=8,A=3,E=2,B=4,D=5
+  R6: 35 * 42 = 1470 -> G=0,F=7,C=4,A=3,E=1,B=5,D=2
+  R7: 45 * 28 = 1260 -> G=0,F=6,C=2,A=4,E=1,B=5,D=8
+  R8: 45 * 86 = 3870 -> G=0,F=7,C=8,A=4,E=3,B=5,D=6
+  R9: 48 * 27 = 1296 -> G=6,F=9,C=2,A=4,E=1,B=8,D=7
+  R10: 53 * 47 = 2491 -> G=1,F=9,C=4,A=5,E=2,B=3,D=7
+  R11: 54 * 67 = 3618 -> G=8,F=1,C=6,A=5,E=3,B=4,D=7
+  R12: 54 * 68 = 3672 -> G=2,F=7,C=6,A=5,E=3,B=4,D=8
+  R13: 56 * 43 = 2408 -> G=8,F=0,C=4,A=5,E=2,B=6,D=3
+  R14: 72 * 48 = 3456 -> G=6,F=5,C=4,A=7,E=3,B=2,D=8
+  R15: 72 * 65 = 4680 -> G=0,F=8,C=6,A=7,E=4,B=2,D=5
+  R16: 76 * 45 = 3420 -> G=0,F=2,C=4,A=7,E=3,B=6,D=5
+  R17: 89 * 63 = 5607 -> G=7,F=0,C=6,A=8,E=5,B=9,D=3
+  R18: 93 * 84 = 7812 -> G=2,F=1,C=8,A=9,E=7,B=3,D=4
+  R19: 94 * 83 = 7802 -> G=2,F=0,C=8,A=9,E=7,B=4,D=3
+  R20: 23 * 76 + 1 = 1749 -> G=9,F=4,C=7,A=2,E=1,B=3,D=6  <-- consistent with all facts
+  R21: 23 * 78 + 1 = 1795 -> G=5,F=9,C=7,A=2,E=1,B=3,D=8
+  R22: 24 * 67 + 1 = 1609 -> G=9,F=0,C=6,A=2,E=1,B=4,D=7
+  R23: 24 * 69 + 1 = 1657 -> G=7,F=5,C=6,A=2,E=1,B=4,D=9
+  ... 85 more candidates
 
-【@]+[?】 = 【'/】
-  input: 【@】【]】【+】【[】【?】
-  left:【@】【]】
-  operator: 【+】
-  right:【[】【?】
-  output: 【'】【/】
-  concatenation: 【@】【]】【[】【?】 mismatch
-  reverse concatenation: 【[】【?】【@】【]】 mismatch
-  operator: 【+】unknown
+Candidates are tried in order; R20 is the first that extends to every fact. Propagate it:
+fact0 [@]*?}] = [[?'"]:
+  try mul: 23 * 76 = 1748 -> encodes [?'& != [?'" NG
+  try concat: concat(23,76) = 2376 -> encodes @]?} != [?'" NG
+  try rconcat: concat(76,23) = 7623 -> encodes ?}@] != [?'" NG
+  try mul1: 23 * 76 + 1 = 1749 -> encodes [?'" = [?'" OK -> accept
+fact1 ['?-]"] = [-&]:
+  try sub: 47 - 39 = 8 (length/sign off) NG
+  try rsub: 39 - 47 = -8 -> encodes -& != -& NG
+  try negabs: -|47 - 39| = -8 -> encodes -& = -& OK -> accept
+fact2 [[/+&/] = ["/]:
+  try add: 10 + 80 = 90 -> encodes "/ = "/ OK -> accept
+fact3 [@]+[?] = ['/]:
+  operator '+' already fixed = add
+  try add: 23 + 17 = 40 -> encodes '/ = '/ OK -> accept
+fact4 [[[-&'] = [-?]]:
+  operator '-' already fixed = negabs
+  try negabs: -|11 - 84| = -73 -> encodes -?] = -?] OK -> accept
 
-【[[-&'】 = 【-?]】
-  input: 【[】【[】【-】【&】【'】
-  left:【[】【[】
-  operator: 【-】
-  right:【&】【'】
-  output: 【-】【?】【]】
-  concatenation: 【[】【[】【&】【'】 mismatch
-  reverse concatenation: 【&】【'】【[】【[】 mismatch
-  operator: 【-】unknown
-
-Question【&/*'&】
-  input: 【&】【/】【*】【'】【&】
-  left:【&】【/】
-  operator:【*】
-  right:【'】【&】
-
-The question operator is 【*】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【&】【/】, 【'】【&】) = 【&】【/】【'】【&】
-  output: 【&/'&】-> 【{&/'&}】
+Recovered cipher: G(")=9, H(&)=8, F(')=4, J(/)=0, C(?)=7, A(@)=2, E([)=1, B(])=3, D(})=6
+Query &/*'&: HJ=80, FH=48, '*' = mul1: 80 * 48 + 1 = 3841.
+Encode 3841 back to original symbols -> ]&'[.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{&/'&}
+The answer in \boxed{-} is \boxed{]&'[}

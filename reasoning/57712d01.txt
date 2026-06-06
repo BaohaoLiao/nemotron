@@ -1,67 +1,52 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【$'+``】 = 【"`(】
-  input: 【$】【'】【+】【`】【`】
-  left:【$】【'】
-  operator: 【+】
-  right:【`】【`】
-  output: 【"】【`】【(】
-  concatenation: 【$】【'】【`】【`】 mismatch
-  reverse concatenation: 【`】【`】【$】【'】 mismatch
-  operator: 【+】unknown
+remap (index 2 is the operator):
+fact0 [$'+``] = ["`(]: AB + CC = DCE  (r.len=3, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 [{<*/(] = [""/(]: FG * HE = DDHE  (r.len=4, sym=['D', 'E', 'F', 'G', 'H'], |sym|=5)
+fact2 [!<-``] = [-?]: JG - CC = -K  (r.len=1 neg, sym=['C', 'G', 'J', 'K'], |sym|=4)
+fact3 [{"-'<] = [-{{]: FD - BG = -FF  (r.len=2 neg, sym=['B', 'D', 'F', 'G'], |sym|=4)
+fact4 ['<+"'] = [/?]: BG + DB = HK  (r.len=2, sym=['B', 'D', 'G', 'H', 'K'], |sym|=5)
+query [$/-'{]: AH - BF = ?
 
-【{<*/(】 = 【""/(】
-  input: 【{】【<】【*】【/】【(】
-  left:【{】【<】
-  operator: 【*】
-  right:【/】【(】
-  output: 【"】【"】【/】【(】
-  concatenation: 【{】【<】【/】【(】 mismatch
-  reverse concatenation: 【/】【(】【{】【<】 mismatch
-  operator: 【*】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add1, addm1}
+  '-' -> {sub, rsub, negabs}
 
-【!<-``】 = 【-?】
-  input: 【!】【<】【-】【`】【`】
-  left:【!】【<】
-  operator: 【-】
-  right:【`】【`】
-  output: 【-】【?】
-  concatenation: 【!】【<】【`】【`】 mismatch
-  reverse concatenation: 【`】【`】【!】【<】 mismatch
-  operator: 【-】unknown
+Mul anchor: fact1 [{<*/(] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern FG * HE = DDHE -> 7 candidates:
+  R0: 23 * 50 = 1150 -> D=1,E=0,H=5,G=3,F=2  <-- consistent with all facts
+  R1: 56 * 20 = 1120 -> D=1,E=0,H=2,G=6,F=5
+  R2: 56 * 40 = 2240 -> D=2,E=0,H=4,G=6,F=5
+  R3: 56 * 80 = 4480 -> D=4,E=0,H=8,G=6,F=5
+  R4: 67 * 50 = 3350 -> D=3,E=0,H=5,G=7,F=6
+  R5: 89 * 50 = 4450 -> D=4,E=0,H=5,G=9,F=8
+  R6: 89 * 75 = 6675 -> D=6,E=5,H=7,G=9,F=8
 
-【{"-'<】 = 【-{{】
-  input: 【{】【"】【-】【'】【<】
-  left:【{】【"】
-  operator: 【-】
-  right:【'】【<】
-  output: 【-】【{】【{】
-  concatenation: 【{】【"】【'】【<】 mismatch
-  reverse concatenation: 【'】【<】【{】【"】 mismatch
-  operator: 【-】unknown
+Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
+fact1 [{<*/(] = [""/(]:
+  try mul: 23 * 50 = 1150 -> encodes ""/( = ""/( OK -> accept
+fact0 [$'+``] = ["`(]:
+  try mul: 94 * 77 = 7238 (length/sign off) NG
+  try mul1: 94 * 77 + 1 = 7239 (length/sign off) NG
+  try mulm1: 94 * 77 - 1 = 7237 (length/sign off) NG
+  try add1: 94 + 77 + 1 = 172 -> encodes "`{ != "`( NG
+  try addm1: 94 + 77 - 1 = 170 -> encodes "`( = "`( OK -> accept
+fact2 [!<-``] = [-?]:
+  try sub: 83 - 77 = 6 (length/sign off) NG
+  try rsub: 77 - 83 = -6 -> encodes -? != -? NG
+  try negabs: -|83 - 77| = -6 -> encodes -? = -? OK -> accept
+fact3 [{"-'<] = [-{{]:
+  operator '-' already fixed = negabs
+  try negabs: -|21 - 43| = -22 -> encodes -{{ = -{{ OK -> accept
+fact4 ['<+"'] = [/?]:
+  operator '+' already fixed = addm1
+  try addm1: 43 + 14 - 1 = 56 -> encodes /? = /? OK -> accept
 
-【'<+"'】 = 【/?】
-  input: 【'】【<】【+】【"】【'】
-  left:【'】【<】
-  operator: 【+】
-  right:【"】【'】
-  output: 【/】【?】
-  concatenation: 【'】【<】【"】【'】 mismatch
-  reverse concatenation: 【"】【'】【'】【<】 mismatch
-  operator: 【+】unknown
-
-Question【$/-'{】
-  input: 【$】【/】【-】【'】【{】
-  left:【$】【/】
-  operator:【-】
-  right:【'】【{】
-
-The question operator is 【-】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【$】【/】, 【'】【{】) = 【$】【/】【'】【{】
-  output: 【$/'{】-> 【{$/'{}】
+Recovered cipher: J(!)=8, D(")=1, A($)=9, B(')=4, E(()=0, H(/)=5, G(<)=3, K(?)=6, C(`)=7, F({)=2
+Query $/-'{: AH=95, BF=42, '-' = negabs: -|95 - 42| = -53.
+Encode 53 back to original symbols -> -/<.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{$/'{}
+The answer in \boxed{-} is \boxed{-/<}

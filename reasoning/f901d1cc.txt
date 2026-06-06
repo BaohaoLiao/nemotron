@@ -1,47 +1,47 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【<[+}&】 = 【`[<】
-  input: 【<】【[】【+】【}】【&】
-  left:【<】【[】
-  operator: 【+】
-  right:【}】【&】
-  output: 【`】【[】【<】
-  concatenation: 【<】【[】【}】【&】 mismatch
-  reverse concatenation: 【}】【&】【<】【[】 mismatch
-  operator: 【+】unknown
+remap (index 2 is the operator):
+fact0 [<[+}&] = [`[<]: AB + CD = EBA  (r.len=3, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 ["[*%'] = [&%&']: FB * GH = DGDH  (r.len=4, sym=['B', 'D', 'F', 'G', 'H'], |sym|=5)
+fact2 [#[-<&] = [)#]: JB - AD = KJ  (r.len=2, sym=['A', 'B', 'D', 'J', 'K'], |sym|=5)
+query [&#-"`]: DJ - FE = ?
 
-【"[*%'】 = 【&%&'】
-  input: 【"】【[】【*】【%】【'】
-  left:【"】【[】
-  operator: 【*】
-  right:【%】【'】
-  output: 【&】【%】【&】【'】
-  concatenation: 【"】【[】【%】【'】 mismatch
-  reverse concatenation: 【%】【'】【"】【[】 mismatch
-  operator: 【*】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {mul, mul1, mulm1, add1, addm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
 
-【#[-<&】 = 【)#】
-  input: 【#】【[】【-】【<】【&】
-  left:【#】【[】
-  operator: 【-】
-  right:【<】【&】
-  output: 【)】【#】
-  concatenation: 【#】【[】【<】【&】 mismatch
-  reverse concatenation: 【<】【&】【#】【[】 mismatch
-  operator: 【-】unknown
+Mul anchor: fact1 ["[*%'] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern FB * GH = DGDH -> 7 candidates:
+  R0: 41 * 96 = 3936 -> F=4,G=9,D=3,H=6,B=1
+  R1: 51 * 97 = 4947 -> F=5,G=9,D=4,H=7,B=1
+  R2: 61 * 58 = 3538 -> F=6,G=5,D=3,H=8,B=1
+  R3: 96 * 82 = 7872 -> F=9,G=8,D=7,H=2,B=6
+  R4: 64 * 93 + 1 = 5953 -> F=6,G=9,D=5,H=3,B=4
+  R5: 82 * 69 + 1 = 5659 -> F=8,G=6,D=5,H=9,B=2
+  R6: 60 * 59 - 1 = 3539 -> F=6,G=5,D=3,H=9,B=0  <-- consistent with all facts
 
-Question【&#-"`】
-  input: 【&】【#】【-】【"】【`】
-  left:【&】【#】
-  operator:【-】
-  right:【"】【`】
+Candidates are tried in order; R6 is the first that extends to every fact. Propagate it:
+fact1 ["[*%'] = [&%&']:
+  try mul: 60 * 59 = 3540 -> encodes &%)[ != &%&' NG
+  try concat: concat(60,59) = 6059 -> encodes "[%' != &%&' NG
+  try rconcat: concat(59,60) = 5960 -> encodes %'"[ != &%&' NG
+  try mul1: 60 * 59 + 1 = 3541 -> encodes &%)` != &%&' NG
+  try mulm1: 60 * 59 - 1 = 3539 -> encodes &%&' = &%&' OK -> accept
+fact0 [<[+}&] = [`[<]:
+  try mul: 20 * 83 = 1660 (length/sign off) NG
+  try mul1: 20 * 83 + 1 = 1661 (length/sign off) NG
+  try mulm1: 20 * 83 - 1 = 1659 (length/sign off) NG
+  try add1: 20 + 83 + 1 = 104 -> encodes `[) != `[< NG
+  try addm1: 20 + 83 - 1 = 102 -> encodes `[< = `[< OK -> accept
+fact2 [#[-<&] = [)#]:
+  try add: 70 + 23 = 93 -> encodes '& != )# NG
+  try sub: 70 - 23 = 47 -> encodes )# = )# OK -> accept
 
-The question operator is 【-】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【&】【#】, 【"】【`】) = 【&】【#】【"】【`】
-  output: 【&#"`】-> 【{&#"`}】
+Recovered cipher: F(")=6, J(#)=7, G(%)=5, D(&)=3, H(')=9, K())=4, A(<)=2, B([)=0, E(`)=1, C(})=8
+Query &#-"`: DJ=37, FE=61, '-' = sub: 37 - 61 = -24.
+Encode 24 back to original symbols -> -<).
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{&#"`}
+The answer in \boxed{-} is \boxed{-<)}

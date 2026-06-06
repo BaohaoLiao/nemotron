@@ -1,56 +1,62 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【#{-'\】 = 【-{<】
-  input: 【#】【{】【-】【'】【\】
-  left:【#】【{】
-  operator: 【-】
-  right:【'】【\】
-  output: 【-】【{】【<】
-  concatenation: 【#】【{】【'】【\】 mismatch
-  reverse concatenation: 【'】【\】【#】【{】 mismatch
-  operator: 【-】unknown
+remap (index 2 is the operator):
+fact0 [#{-'\] = [-{<]: AB - CD = -BE  (r.len=2 neg, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 []<+{{] = []<{{]: FE + BB = FEBB  (r.len=4, sym=['B', 'E', 'F'], |sym|=3)
+fact2 [$\+{'] = [$\{']: GD + BC = GDBC  (r.len=4, sym=['B', 'C', 'D', 'G'], |sym|=4)
+fact3 [!!-'\] = [}]: HH - CD = J  (r.len=1, sym=['C', 'D', 'H', 'J'], |sym|=4)
+query [\$+'<]: DG + CE = ?
 
-【]<+{{】 = 【]<{{】
-  input: 【]】【<】【+】【{】【{】
-  left:【]】【<】
-  operator: 【+】
-  right:【{】【{】
-  output: 【]】【<】【{】【{】
-  concatenation: 【]】【<】【{】【{】 match
-  reverse concatenation: 【{】【{】【]】【<】 mismatch
-  operator: 【+】concatenation
+narrowing operator candidates by result length:
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {sub, rsub, negabs}
 
-【$\+{'】 = 【$\{'】
-  input: 【$】【\】【+】【{】【'】
-  left:【$】【\】
-  operator: 【+】
-  right:【{】【'】
-  output: 【$】【\】【{】【'】
-  concatenation: 【$】【\】【{】【'】 match
-  reverse concatenation: 【{】【'】【$】【\】 mismatch
-  operator: 【+】concatenation
+Mul anchor: fact2 [$\+{'] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern GD + BC = GDBC -> 5040 candidates:
+  R0: concat(01,23) = 0123 -> G=0,C=3,D=1,B=2
+  R1: concat(01,24) = 0124 -> G=0,C=4,D=1,B=2
+  R2: concat(01,25) = 0125 -> G=0,C=5,D=1,B=2
+  R3: concat(01,26) = 0126 -> G=0,C=6,D=1,B=2
+  R4: concat(01,27) = 0127 -> G=0,C=7,D=1,B=2
+  R5: concat(01,28) = 0128 -> G=0,C=8,D=1,B=2
+  R6: concat(01,29) = 0129 -> G=0,C=9,D=1,B=2
+  R7: concat(01,32) = 0132 -> G=0,C=2,D=1,B=3
+  R8: concat(01,34) = 0134 -> G=0,C=4,D=1,B=3
+  R9: concat(01,35) = 0135 -> G=0,C=5,D=1,B=3
+  R10: concat(01,36) = 0136 -> G=0,C=6,D=1,B=3
+  R11: concat(01,37) = 0137 -> G=0,C=7,D=1,B=3
+  R12: concat(01,38) = 0138 -> G=0,C=8,D=1,B=3
+  R13: concat(01,39) = 0139 -> G=0,C=9,D=1,B=3
+  R14: concat(01,42) = 0142 -> G=0,C=2,D=1,B=4
+  R15: concat(01,43) = 0143 -> G=0,C=3,D=1,B=4
+  R16: concat(01,45) = 0145 -> G=0,C=5,D=1,B=4
+  R17: concat(01,46) = 0146 -> G=0,C=6,D=1,B=4
+  R18: concat(01,47) = 0147 -> G=0,C=7,D=1,B=4
+  R19: concat(01,48) = 0148 -> G=0,C=8,D=1,B=4
+  R20: concat(01,49) = 0149 -> G=0,C=9,D=1,B=4
+  R21: concat(01,52) = 0152 -> G=0,C=2,D=1,B=5
+  R22: concat(01,53) = 0153 -> G=0,C=3,D=1,B=5
+  R23: concat(01,54) = 0154 -> G=0,C=4,D=1,B=5
+  ... 5016 more candidates
 
-【!!-'\】 = 【}】
-  input: 【!】【!】【-】【'】【\】
-  left:【!】【!】
-  operator: 【-】
-  right:【'】【\】
-  output: 【}】
-  concatenation: 【!】【!】【'】【\】 mismatch
-  reverse concatenation: 【'】【\】【!】【!】 mismatch
-  operator: 【-】unknown
+Candidates are tried in order; R2145 is the first that extends to every fact. Propagate it:
+fact2 [$\+{'] = [$\{']:
+  try mul: 42 * 36 = 1512 -> encodes <!<\ != $\{' NG
+  try concat: concat(42,36) = 4236 -> encodes $\{' = $\{' OK -> accept
+fact0 [#{-'\] = [-{<]:
+  try sub: 93 - 62 = 31 (length/sign off) NG
+  try rsub: 62 - 93 = -31 -> encodes -{< = -{< OK -> accept
+fact1 []<+{{] = []<{{]:
+  operator '+' already fixed = concat
+  try concat: concat(01,33) = 0133 -> encodes ]<{{ = ]<{{ OK -> accept
+fact3 [!!-'\] = [}]:
+  operator '-' already fixed = rsub
+  try rsub: 62 - 55 = 7 -> encodes } = } OK -> accept
 
-Question【\$+'<】
-  input: 【\】【$】【+】【'】【<】
-  left:【\】【$】
-  operator:【+】
-  right:【'】【<】
-
-The question operator is 【+】, which is concatenation.
-
-  concatenation(【\】【$】, 【'】【<】) = 【\】【$】【'】【<】
-  output: 【\$'<】-> 【{\$'<}】
+Recovered cipher: H(!)=5, A(#)=9, G($)=4, C(')=6, E(<)=1, D(\)=2, F(])=0, B({)=3, J(})=7
+Query \$+'<: DG=24, CE=61, '+' = concat: concat(24,61) = 2461.
+Encode 2461 back to original symbols -> \$'<.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{\$'<}
+The answer in \boxed{-} is \boxed{\$'<}

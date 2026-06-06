@@ -1,47 +1,59 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【#]*%)】 = 【)%}\】
-  input: 【#】【]】【*】【%】【)】
-  left:【#】【]】
-  operator: 【*】
-  right:【%】【)】
-  output: 【)】【%】【}】【\】
-  concatenation: 【#】【]】【%】【)】 mismatch
-  reverse concatenation: 【%】【)】【#】【]】 mismatch
-  operator: 【*】unknown
+remap (index 2 is the operator):
+fact0 [#]*%)] = [)%}\]: AB * CD = DCEF  (r.len=4, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [)?*!!] = [%}{]: DG * HH = CEJ  (r.len=3, sym=['C', 'D', 'E', 'G', 'H', 'J'], |sym|=6)
+fact2 [?%*#<] = [)}!}]: GC * AK = DEHE  (r.len=4, sym=['A', 'C', 'D', 'E', 'G', 'H', 'K'], |sym|=7)
+query []%*)?]: BC * DG = ?
 
-【)?*!!】 = 【%}{】
-  input: 【)】【?】【*】【!】【!】
-  left:【)】【?】
-  operator: 【*】
-  right:【!】【!】
-  output: 【%】【}】【{】
-  concatenation: 【)】【?】【!】【!】 mismatch
-  reverse concatenation: 【!】【!】【)】【?】 mismatch
-  operator: 【*】unknown
+narrowing operator candidates by result length:
+  '*' -> {mul, mul1, mulm1}
 
-【?%*#<】 = 【)}!}】
-  input: 【?】【%】【*】【#】【<】
-  left:【?】【%】
-  operator: 【*】
-  right:【#】【<】
-  output: 【)】【}】【!】【}】
-  concatenation: 【?】【%】【#】【<】 mismatch
-  reverse concatenation: 【#】【<】【?】【%】 mismatch
-  operator: 【*】unknown
+Mul anchor: fact2 [?%*#<] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern GC * AK = DEHE -> 106 candidates:
+  R0: 26 * 73 = 1898 -> H=9,A=7,C=6,D=1,K=3,G=2,E=8
+  R1: 29 * 47 = 1363 -> H=6,A=4,C=9,D=1,K=7,G=2,E=3
+  R2: 34 * 79 = 2686 -> H=8,A=7,C=4,D=2,K=9,G=3,E=6
+  R3: 47 * 29 = 1363 -> H=6,A=2,C=7,D=1,K=9,G=4,E=3
+  R4: 52 * 67 = 3484 -> H=8,A=6,C=2,D=3,K=7,G=5,E=4
+  R5: 53 * 89 = 4717 -> H=1,A=8,C=3,D=4,K=9,G=5,E=7
+  R6: 63 * 84 = 5292 -> H=9,A=8,C=3,D=5,K=4,G=6,E=2
+  R7: 67 * 52 = 3484 -> H=8,A=5,C=7,D=3,K=2,G=6,E=4
+  R8: 67 * 82 = 5494 -> H=9,A=8,C=7,D=5,K=2,G=6,E=4
+  R9: 69 * 83 = 5727 -> H=2,A=8,C=9,D=5,K=3,G=6,E=7
+  R10: 73 * 26 = 1898 -> H=9,A=2,C=3,D=1,K=6,G=7,E=8
+  R11: 74 * 92 = 6808 -> H=0,A=9,C=4,D=6,K=2,G=7,E=8
+  R12: 79 * 34 = 2686 -> H=8,A=3,C=9,D=2,K=4,G=7,E=6
+  R13: 82 * 67 = 5494 -> H=9,A=6,C=2,D=5,K=7,G=8,E=4
+  R14: 83 * 69 = 5727 -> H=2,A=6,C=3,D=5,K=9,G=8,E=7
+  R15: 84 * 63 = 5292 -> H=9,A=6,C=4,D=5,K=3,G=8,E=2
+  R16: 89 * 53 = 4717 -> H=1,A=5,C=9,D=4,K=3,G=8,E=7
+  R17: 92 * 74 = 6808 -> H=0,A=7,C=2,D=6,K=4,G=9,E=8
+  R18: 23 * 86 + 1 = 1979 -> H=7,A=8,C=3,D=1,K=6,G=2,E=9
+  R19: 24 * 58 + 1 = 1393 -> H=9,A=5,C=4,D=1,K=8,G=2,E=3
+  R20: 28 * 49 + 1 = 1373 -> H=7,A=4,C=8,D=1,K=9,G=2,E=3
+  R21: 32 * 47 + 1 = 1505 -> H=0,A=4,C=2,D=1,K=7,G=3,E=5
+  R22: 34 * 76 + 1 = 2585 -> H=8,A=7,C=4,D=2,K=6,G=3,E=5
+  R23: 34 * 87 + 1 = 2959 -> H=5,A=8,C=4,D=2,K=7,G=3,E=9
+  ... 82 more candidates
 
-Question【]%*)?】
-  input: 【]】【%】【*】【)】【?】
-  left:【]】【%】
-  operator:【*】
-  right:【)】【?】
+Candidates are tried in order; R42 is the first that extends to every fact. Propagate it:
+fact2 [?%*#<] = [)}!}]:
+  try mul: 78 * 40 = 3120 -> encodes )}!< != )}!} NG
+  try concat: concat(78,40) = 7840 -> encodes ?%#< != )}!} NG
+  try rconcat: concat(40,78) = 4078 -> encodes #<?% != )}!} NG
+  try mul1: 78 * 40 + 1 = 3121 -> encodes )}!} = )}!} OK -> accept
+fact0 [#]*%)] = [)%}\]:
+  operator '*' already fixed = mul1
+  try mul1: 46 * 83 + 1 = 3819 -> encodes )%}\ = )%}\ OK -> accept
+fact1 [)?*!!] = [%}{]:
+  operator '*' already fixed = mul1
+  try mul1: 37 * 22 + 1 = 815 -> encodes %}{ = %}{ OK -> accept
 
-The question operator is 【*】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【]】【%】, 【)】【?】) = 【]】【%】【)】【?】
-  output: 【]%)?】-> 【{]%)?}】
+Recovered cipher: H(!)=2, A(#)=4, C(%)=8, D())=3, K(<)=0, G(?)=7, F(\)=9, B(])=6, J({)=5, E(})=1
+Query ]%*)?: BC=68, DG=37, '*' = mul1: 68 * 37 + 1 = 2517.
+Encode 2517 back to original symbols -> !{}?.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{]%)?}
+The answer in \boxed{-} is \boxed{!{}?}

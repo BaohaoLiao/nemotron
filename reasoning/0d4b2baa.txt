@@ -1,46 +1,62 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【:$-:[】 = 【}】
-  input: 【:】【$】【-】【:】【[】
-  left:【:】【$】
-  operator: 【-】
-  right:【:】【[】
-  output: 【}】
-  concatenation: 【:】【$】【:】【[】 mismatch
-  reverse concatenation: 【:】【[】【:】【$】 mismatch
-  operator: 【-】unknown
+remap (index 2 is the operator):
+fact0 [:$-:[] = [}]: AB - AC = D  (r.len=1, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 ['}-|#] = [<|]: ED - FG = HF  (r.len=2, sym=['D', 'E', 'F', 'G', 'H'], |sym|=5)
+fact2 [:<*(}] = [:<(}]: AH * JD = AHJD  (r.len=4, sym=['A', 'D', 'H', 'J'], |sym|=4)
+query [:(*|#]: AJ * FG = ?
 
-【'}-|#】 = 【<|】
-  input: 【'】【}】【-】【|】【#】
-  left:【'】【}】
-  operator: 【-】
-  right:【|】【#】
-  output: 【<】【|】
-  concatenation: 【'】【}】【|】【#】 mismatch
-  reverse concatenation: 【|】【#】【'】【}】 mismatch
-  operator: 【-】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
 
-【:<*(}】 = 【:<(}】
-  input: 【:】【<】【*】【(】【}】
-  left:【:】【<】
-  operator: 【*】
-  right:【(】【}】
-  output: 【:】【<】【(】【}】
-  concatenation: 【:】【<】【(】【}】 match
-  reverse concatenation: 【(】【}】【:】【<】 mismatch
-  operator: 【*】concatenation
+Mul anchor: fact2 [:<*(}] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AH * JD = AHJD -> 5040 candidates:
+  R0: concat(01,23) = 0123 -> J=2,A=0,H=1,D=3  <-- consistent with all facts
+  R1: concat(01,24) = 0124 -> J=2,A=0,H=1,D=4
+  R2: concat(01,25) = 0125 -> J=2,A=0,H=1,D=5
+  R3: concat(01,26) = 0126 -> J=2,A=0,H=1,D=6
+  R4: concat(01,27) = 0127 -> J=2,A=0,H=1,D=7
+  R5: concat(01,28) = 0128 -> J=2,A=0,H=1,D=8
+  R6: concat(01,29) = 0129 -> J=2,A=0,H=1,D=9
+  R7: concat(01,32) = 0132 -> J=3,A=0,H=1,D=2
+  R8: concat(01,34) = 0134 -> J=3,A=0,H=1,D=4
+  R9: concat(01,35) = 0135 -> J=3,A=0,H=1,D=5
+  R10: concat(01,36) = 0136 -> J=3,A=0,H=1,D=6
+  R11: concat(01,37) = 0137 -> J=3,A=0,H=1,D=7
+  R12: concat(01,38) = 0138 -> J=3,A=0,H=1,D=8
+  R13: concat(01,39) = 0139 -> J=3,A=0,H=1,D=9
+  R14: concat(01,42) = 0142 -> J=4,A=0,H=1,D=2
+  R15: concat(01,43) = 0143 -> J=4,A=0,H=1,D=3
+  R16: concat(01,45) = 0145 -> J=4,A=0,H=1,D=5
+  R17: concat(01,46) = 0146 -> J=4,A=0,H=1,D=6
+  R18: concat(01,47) = 0147 -> J=4,A=0,H=1,D=7
+  R19: concat(01,48) = 0148 -> J=4,A=0,H=1,D=8
+  R20: concat(01,49) = 0149 -> J=4,A=0,H=1,D=9
+  R21: concat(01,52) = 0152 -> J=5,A=0,H=1,D=2
+  R22: concat(01,53) = 0153 -> J=5,A=0,H=1,D=3
+  R23: concat(01,54) = 0154 -> J=5,A=0,H=1,D=4
+  ... 5016 more candidates
 
-Question【:(*|#】
-  input: 【:】【(】【*】【|】【#】
-  left:【:】【(】
-  operator:【*】
-  right:【|】【#】
+Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
+fact2 [:<*(}] = [:<(}]:
+  try mul: 1 * 23 = 23 (length/sign off) NG
+  try concat: concat(01,23) = 0123 -> encodes :<(} = :<(} OK -> accept
+fact0 [:$-:[] = [}]:
+  try mul: 4 * 7 = 28 (length/sign off) NG
+  try concat: concat(04,07) = 0407 (length/sign off) NG
+  try rconcat: concat(07,04) = 0704 (length/sign off) NG
+  try add: 4 + 7 = 11 (length/sign off) NG
+  try sub: 4 - 7 = -3 (length/sign off) NG
+  try rsub: 7 - 4 = 3 -> encodes } = } OK -> accept
+fact1 ['}-|#] = [<|]:
+  operator '-' already fixed = rsub
+  try rsub: 69 - 53 = 16 -> encodes <| = <| OK -> accept
 
-The question operator is 【*】, which is concatenation.
-
-  concatenation(【:】【(】, 【|】【#】) = 【:】【(】【|】【#】
-  output: 【:(|#】-> 【{:(|#}】
+Recovered cipher: G(#)=9, B($)=4, E(')=5, J(()=2, A(:)=0, H(<)=1, C([)=7, F(|)=6, D(})=3
+Query :(*|#: AJ=2, FG=69, '*' = concat: concat(02,69) = 0269.
+Encode 0269 back to original symbols -> :(|#.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{:(|#}
+The answer in \boxed{-} is \boxed{:(|#}

@@ -1,67 +1,73 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【">-"?】 = 【?】
-  input: 【"】【>】【-】【"】【?】
-  left:【"】【>】
-  operator: 【-】
-  right:【"】【?】
-  output: 【?】
-  concatenation: 【"】【>】【"】【?】 mismatch
-  reverse concatenation: 【"】【?】【"】【>】 mismatch
-  operator: 【-】unknown
+remap (index 2 is the operator):
+fact0 [">-"?] = [?]: AB - AC = C  (r.len=1, sym=['A', 'B', 'C'], |sym|=3)
+fact1 [%'+'^] = [?\]: DE + EF = CG  (r.len=2, sym=['C', 'D', 'E', 'F', 'G'], |sym|=5)
+fact2 ['?+{^] = [!>]: EC + HF = JB  (r.len=2, sym=['B', 'C', 'E', 'F', 'H', 'J'], |sym|=6)
+fact3 ['{*?>] = [%\`?]: EH * CB = DGKC  (r.len=4, sym=['B', 'C', 'D', 'E', 'G', 'H', 'K'], |sym|=7)
+fact4 [!>+{{] = [^>{]: JB + HH = FBH  (r.len=3, sym=['B', 'F', 'H', 'J'], |sym|=4)
+query [{!+!`]: HJ + JK = ?
 
-【%'+'^】 = 【?\】
-  input: 【%】【'】【+】【'】【^】
-  left:【%】【'】
-  operator: 【+】
-  right:【'】【^】
-  output: 【?】【\】
-  concatenation: 【%】【'】【'】【^】 mismatch
-  reverse concatenation: 【'】【^】【%】【'】 mismatch
-  operator: 【+】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add1, addm1}
+  '-' -> {mul, concat, rconcat, add, sub, rsub, mul1, mulm1, add1, addm1, absdiff, negabs, maxmod}
 
-【'?+{^】 = 【!>】
-  input: 【'】【?】【+】【{】【^】
-  left:【'】【?】
-  operator: 【+】
-  right:【{】【^】
-  output: 【!】【>】
-  concatenation: 【'】【?】【{】【^】 mismatch
-  reverse concatenation: 【{】【^】【'】【?】 mismatch
-  operator: 【+】unknown
+Mul anchor: fact3 ['{*?>] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern EH * CB = DGKC -> 107 candidates:
+  R0: 23 * 86 = 1978 -> D=1,E=2,B=6,C=8,G=9,K=7,H=3
+  R1: 27 * 39 = 1053 -> D=1,E=2,B=9,C=3,G=0,K=5,H=7
+  R2: 29 * 64 = 1856 -> D=1,E=2,B=4,C=6,G=8,K=5,H=9
+  R3: 32 * 47 = 1504 -> D=1,E=3,B=7,C=4,G=5,K=0,H=2
+  R4: 34 * 87 = 2958 -> D=2,E=3,B=7,C=8,G=9,K=5,H=4
+  R5: 37 * 68 = 2516 -> D=2,E=3,B=8,C=6,G=5,K=1,H=7
+  R6: 38 * 67 = 2546 -> D=2,E=3,B=7,C=6,G=5,K=4,H=8
+  R7: 47 * 68 = 3196 -> D=3,E=4,B=8,C=6,G=1,K=9,H=7
+  R8: 48 * 67 = 3216 -> D=3,E=4,B=7,C=6,G=2,K=1,H=8
+  R9: 49 * 28 = 1372 -> D=1,E=4,B=8,C=2,G=3,K=7,H=9
+  R10: 53 * 79 = 4187 -> D=4,E=5,B=9,C=7,G=1,K=8,H=3
+  R11: 54 * 69 = 3726 -> D=3,E=5,B=9,C=6,G=7,K=2,H=4
+  R12: 57 * 26 = 1482 -> D=1,E=5,B=6,C=2,G=4,K=8,H=7
+  R13: 58 * 24 = 1392 -> D=1,E=5,B=4,C=2,G=3,K=9,H=8
+  R14: 59 * 37 = 2183 -> D=2,E=5,B=7,C=3,G=1,K=8,H=9
+  R15: 59 * 46 = 2714 -> D=2,E=5,B=6,C=4,G=7,K=1,H=9
+  R16: 64 * 28 = 1792 -> D=1,E=6,B=8,C=2,G=7,K=9,H=4
+  R17: 72 * 89 = 6408 -> D=6,E=7,B=9,C=8,G=4,K=0,H=2
+  R18: 74 * 69 = 5106 -> D=5,E=7,B=9,C=6,G=1,K=0,H=4
+  R19: 83 * 62 = 5146 -> D=5,E=8,B=2,C=6,G=1,K=4,H=3
+  R20: 87 * 42 = 3654 -> D=3,E=8,B=2,C=4,G=6,K=5,H=7
+  R21: 23 * 65 + 1 = 1496 -> D=1,E=2,B=5,C=6,G=4,K=9,H=3
+  R22: 29 * 47 + 1 = 1364 -> D=1,E=2,B=7,C=4,G=3,K=6,H=9
+  R23: 31 * 87 + 1 = 2698 -> D=2,E=3,B=7,C=8,G=6,K=9,H=1
+  ... 83 more candidates
 
-【'{*?>】 = 【%\`?】
-  input: 【'】【{】【*】【?】【>】
-  left:【'】【{】
-  operator: 【*】
-  right:【?】【>】
-  output: 【%】【\】【`】【?】
-  concatenation: 【'】【{】【?】【>】 mismatch
-  reverse concatenation: 【?】【>】【'】【{】 mismatch
-  operator: 【*】unknown
+Candidates are tried in order; R74 is the first that extends to every fact. Propagate it:
+fact3 ['{*?>] = [%\`?]:
+  try mul: 52 * 90 = 4680 -> encodes %\!> != %\`? NG
+  try concat: concat(52,90) = 5290 -> encodes '{?> != %\`? NG
+  try rconcat: concat(90,52) = 9052 -> encodes ?>'{ != %\`? NG
+  try mul1: 52 * 90 + 1 = 4681 -> encodes %\!^ != %\`? NG
+  try mulm1: 52 * 90 - 1 = 4679 -> encodes %\`? = %\`? OK -> accept
+fact0 [">-"?] = [?]:
+  try mul: 30 * 39 = 1170 (length/sign off) NG
+  try concat: concat(30,39) = 3039 (length/sign off) NG
+  try rconcat: concat(39,30) = 3930 (length/sign off) NG
+  try add: 30 + 39 = 69 (length/sign off) NG
+  try sub: 30 - 39 = -9 (length/sign off) NG
+  try rsub: 39 - 30 = 9 -> encodes ? = ? OK -> accept
+fact1 [%'+'^] = [?\]:
+  try add: 45 + 51 = 96 -> encodes ?\ = ?\ OK -> accept
+fact2 ['?+{^] = [!>]:
+  operator '+' already fixed = add
+  try add: 59 + 21 = 80 -> encodes !> = !> OK -> accept
+fact4 [!>+{{] = [^>{]:
+  operator '+' already fixed = add
+  try add: 80 + 22 = 102 -> encodes ^>{ = ^>{ OK -> accept
 
-【!>+{{】 = 【^>{】
-  input: 【!】【>】【+】【{】【{】
-  left:【!】【>】
-  operator: 【+】
-  right:【{】【{】
-  output: 【^】【>】【{】
-  concatenation: 【!】【>】【{】【{】 mismatch
-  reverse concatenation: 【{】【{】【!】【>】 mismatch
-  operator: 【+】unknown
-
-Question【{!+!`】
-  input: 【{】【!】【+】【!】【`】
-  left:【{】【!】
-  operator:【+】
-  right:【!】【`】
-
-The question operator is 【+】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【{】【!】, 【!】【`】) = 【{】【!】【!】【`】
-  output: 【{!!`】-> 【{{!!`}】
+Recovered cipher: J(!)=8, A(")=3, D(%)=4, E(')=5, B(>)=0, C(?)=9, G(\)=6, F(^)=1, K(`)=7, H({)=2
+Query {!+!`: HJ=28, JK=87, '+' = add: 28 + 87 = 115.
+Encode 115 back to original symbols -> ^^'.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{{!!`}
+The answer in \boxed{-} is \boxed{^^'}

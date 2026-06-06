@@ -1,67 +1,65 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【#(-!"】 = 【%$】
-  input: 【#】【(】【-】【!】【"】
-  left:【#】【(】
-  operator: 【-】
-  right:【!】【"】
-  output: 【%】【$】
-  concatenation: 【#】【(】【!】【"】 mismatch
-  reverse concatenation: 【!】【"】【#】【(】 mismatch
-  operator: 【-】unknown
+remap (index 2 is the operator):
+fact0 [#(-!"] = [%$]: AB - CD = EF  (r.len=2, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [%@*(%] = [##]]: EG * BE = AAH  (r.len=3, sym=['A', 'B', 'E', 'G', 'H'], |sym|=5)
+fact2 ["%-(]] = []>]: DE - BH = HJ  (r.len=2, sym=['B', 'D', 'E', 'H', 'J'], |sym|=5)
+fact3 [!]*$!] = [@%|$]: CH * FC = GEKF  (r.len=4, sym=['C', 'E', 'F', 'G', 'H', 'K'], |sym|=6)
+fact4 ["]*!"] = [@>@(]: DH * CD = GJGB  (r.len=4, sym=['B', 'C', 'D', 'G', 'H', 'J'], |sym|=6)
+query [>(-$>]: JB - FJ = ?
 
-【%@*(%】 = 【##]】
-  input: 【%】【@】【*】【(】【%】
-  left:【%】【@】
-  operator: 【*】
-  right:【(】【%】
-  output: 【#】【#】【]】
-  concatenation: 【%】【@】【(】【%】 mismatch
-  reverse concatenation: 【(】【%】【%】【@】 mismatch
-  operator: 【*】unknown
+narrowing operator candidates by result length:
+  '*' -> {mul, mul1, mulm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
 
-【"%-(]】 = 【]>】
-  input: 【"】【%】【-】【(】【]】
-  left:【"】【%】
-  operator: 【-】
-  right:【(】【]】
-  output: 【]】【>】
-  concatenation: 【"】【%】【(】【]】 mismatch
-  reverse concatenation: 【(】【]】【"】【%】 mismatch
-  operator: 【-】unknown
+Mul anchor: fact3 [!]*$!] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern CH * FC = GEKF -> 21 candidates:
+  R0: 24 * 82 = 1968 -> C=2,F=8,E=9,G=1,H=4,K=6
+  R1: 28 * 62 = 1736 -> C=2,F=6,E=7,G=1,H=8,K=3
+  R2: 39 * 73 = 2847 -> C=3,F=7,E=8,G=2,H=9,K=4
+  R3: 63 * 86 = 5418 -> C=6,F=8,E=4,G=5,H=3,K=1
+  R4: 69 * 46 = 3174 -> C=6,F=4,E=1,G=3,H=9,K=7
+  R5: 87 * 68 = 5916 -> C=8,F=6,E=9,G=5,H=7,K=1
+  R6: 23 * 72 + 1 = 1657 -> C=2,F=7,E=6,G=1,H=3,K=5
+  R7: 27 * 52 + 1 = 1405 -> C=2,F=5,E=4,G=1,H=7,K=0
+  R8: 38 * 53 + 1 = 2015 -> C=3,F=5,E=0,G=2,H=8,K=1
+  R9: 49 * 74 + 1 = 3627 -> C=4,F=7,E=6,G=3,H=9,K=2
+  R10: 67 * 36 + 1 = 2413 -> C=6,F=3,E=4,G=2,H=7,K=1
+  R11: 72 * 57 + 1 = 4105 -> C=7,F=5,E=1,G=4,H=2,K=0
+  R12: 76 * 37 + 1 = 2813 -> C=7,F=3,E=8,G=2,H=6,K=1
+  R13: 82 * 78 + 1 = 6397 -> C=8,F=7,E=3,G=6,H=2,K=9
+  R14: 20 * 92 - 1 = 1839 -> C=2,F=9,E=8,G=1,H=0,K=3
+  R15: 30 * 93 - 1 = 2789 -> C=3,F=9,E=7,G=2,H=0,K=8
+  R16: 32 * 53 - 1 = 1695 -> C=3,F=5,E=6,G=1,H=2,K=9
+  R17: 39 * 63 - 1 = 2456 -> C=3,F=6,E=4,G=2,H=9,K=5
+  R18: 40 * 94 - 1 = 3759 -> C=4,F=9,E=7,G=3,H=0,K=5
+  R19: 42 * 74 - 1 = 3107 -> C=4,F=7,E=1,G=3,H=2,K=0  <-- consistent with all facts
+  R20: 69 * 36 - 1 = 2483 -> C=6,F=3,E=4,G=2,H=9,K=8
 
-【!]*$!】 = 【@%|$】
-  input: 【!】【]】【*】【$】【!】
-  left:【!】【]】
-  operator: 【*】
-  right:【$】【!】
-  output: 【@】【%】【|】【$】
-  concatenation: 【!】【]】【$】【!】 mismatch
-  reverse concatenation: 【$】【!】【!】【]】 mismatch
-  operator: 【*】unknown
+Candidates are tried in order; R19 is the first that extends to every fact. Propagate it:
+fact3 [!]*$!] = [@%|$]:
+  try mul: 42 * 74 = 3108 -> encodes @%|" != @%|$ NG
+  try concat: concat(42,74) = 4274 -> encodes !]$! != @%|$ NG
+  try rconcat: concat(74,42) = 7442 -> encodes $!!] != @%|$ NG
+  try mul1: 42 * 74 + 1 = 3109 -> encodes @%|> != @%|$ NG
+  try mulm1: 42 * 74 - 1 = 3107 -> encodes @%|$ = @%|$ OK -> accept
+fact0 [#(-!"] = [%$]:
+  try add: 65 + 48 = 113 (length/sign off) NG
+  try sub: 65 - 48 = 17 -> encodes %$ = %$ OK -> accept
+fact1 [%@*(%] = [##]]:
+  operator '*' already fixed = mulm1
+  try mulm1: 13 * 51 - 1 = 662 -> encodes ##] = ##] OK -> accept
+fact2 ["%-(]] = []>]:
+  operator '-' already fixed = sub
+  try sub: 81 - 52 = 29 -> encodes ]> = ]> OK -> accept
+fact4 ["]*!"] = [@>@(]:
+  operator '*' already fixed = mulm1
+  try mulm1: 82 * 48 - 1 = 3935 -> encodes @>@( = @>@( OK -> accept
 
-【"]*!"】 = 【@>@(】
-  input: 【"】【]】【*】【!】【"】
-  left:【"】【]】
-  operator: 【*】
-  right:【!】【"】
-  output: 【@】【>】【@】【(】
-  concatenation: 【"】【]】【!】【"】 mismatch
-  reverse concatenation: 【!】【"】【"】【]】 mismatch
-  operator: 【*】unknown
-
-Question【>(-$>】
-  input: 【>】【(】【-】【$】【>】
-  left:【>】【(】
-  operator:【-】
-  right:【$】【>】
-
-The question operator is 【-】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【>】【(】, 【$】【>】) = 【>】【(】【$】【>】
-  output: 【>($>】-> 【{>($>}】
+Recovered cipher: C(!)=4, D(")=8, A(#)=6, F($)=7, E(%)=1, B(()=5, J(>)=9, G(@)=3, H(])=2, K(|)=0
+Query >(-$>: JB=95, FJ=79, '-' = sub: 95 - 79 = 16.
+Encode 16 back to original symbols -> %#.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{>($>}
+The answer in \boxed{-} is \boxed{%#}

@@ -1,57 +1,44 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【'{*#/】 = 【#!''】
-  input: 【'】【{】【*】【#】【/】
-  left:【'】【{】
-  operator: 【*】
-  right:【#】【/】
-  output: 【#】【!】【'】【'】
-  concatenation: 【'】【{】【#】【/】 mismatch
-  reverse concatenation: 【#】【/】【'】【{】 mismatch
-  operator: 【*】unknown
+remap (index 2 is the operator):
+fact0 ['{*#/] = [#!'']: AB * CD = CEAA  (r.len=4, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 [`]-#`] = []{]: FG - CF = GB  (r.len=2, sym=['B', 'C', 'F', 'G'], |sym|=4)
+fact2 [&!*]!] = [?&!!]: HE * GE = JHEE  (r.len=4, sym=['E', 'G', 'H', 'J'], |sym|=4)
+fact3 [?!+//] = [?!//]: JE + DD = JEDD  (r.len=4, sym=['D', 'E', 'J'], |sym|=3)
+query [#?*&`]: CJ * HF = ?
 
-【`]-#`】 = 【]{】
-  input: 【`】【]】【-】【#】【`】
-  left:【`】【]】
-  operator: 【-】
-  right:【#】【`】
-  output: 【]】【{】
-  concatenation: 【`】【]】【#】【`】 mismatch
-  reverse concatenation: 【#】【`】【`】【]】 mismatch
-  operator: 【-】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
 
-【&!*]!】 = 【?&!!】
-  input: 【&】【!】【*】【]】【!】
-  left:【&】【!】
-  operator: 【*】
-  right:【]】【!】
-  output: 【?】【&】【!】【!】
-  concatenation: 【&】【!】【]】【!】 mismatch
-  reverse concatenation: 【]】【!】【&】【!】 mismatch
-  operator: 【*】unknown
+Mul anchor: fact0 ['{*#/] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB * CD = CEAA -> 7 candidates:
+  R0: 87 * 24 = 2088 -> E=0,C=2,A=8,D=4,B=7  <-- consistent with all facts
+  R1: 91 * 78 + 1 = 7099 -> E=0,C=7,A=9,D=8,B=1
+  R2: 94 * 17 + 1 = 1599 -> E=5,C=1,A=9,D=7,B=4
+  R3: 94 * 67 + 1 = 6299 -> E=2,C=6,A=9,D=7,B=4
+  R4: 97 * 34 + 1 = 3299 -> E=2,C=3,A=9,D=4,B=7
+  R5: 96 * 25 - 1 = 2399 -> E=3,C=2,A=9,D=5,B=6
+  R6: 96 * 75 - 1 = 7199 -> E=1,C=7,A=9,D=5,B=6
 
-【?!+//】 = 【?!//】
-  input: 【?】【!】【+】【/】【/】
-  left:【?】【!】
-  operator: 【+】
-  right:【/】【/】
-  output: 【?】【!】【/】【/】
-  concatenation: 【?】【!】【/】【/】 match
-  reverse concatenation: 【/】【/】【?】【!】 mismatch
-  operator: 【+】concatenation
+Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
+fact0 ['{*#/] = [#!'']:
+  try mul: 87 * 24 = 2088 -> encodes #!'' = #!'' OK -> accept
+fact1 [`]-#`] = []{]:
+  try add: 63 + 26 = 89 -> encodes '? != ]{ NG
+  try sub: 63 - 26 = 37 -> encodes ]{ = ]{ OK -> accept
+fact2 [&!*]!] = [?&!!]:
+  operator '*' already fixed = mul
+  try mul: 50 * 30 = 1500 -> encodes ?&!! = ?&!! OK -> accept
+fact3 [?!+//] = [?!//]:
+  try mul: 10 * 44 = 440 (length/sign off) NG
+  try concat: concat(10,44) = 1044 -> encodes ?!// = ?!// OK -> accept
 
-Question【#?*&`】
-  input: 【#】【?】【*】【&】【`】
-  left:【#】【?】
-  operator:【*】
-  right:【&】【`】
-
-The question operator is 【*】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【#】【?】, 【&】【`】) = 【#】【?】【&】【`】
-  output: 【#?&`】-> 【{#?&`}】
+Recovered cipher: E(!)=0, C(#)=2, H(&)=5, A(')=8, D(/)=4, J(?)=1, G(])=3, F(`)=6, B({)=7
+Query #?*&`: CJ=21, HF=56, '*' = mul: 21 * 56 = 1176.
+Encode 1176 back to original symbols -> ??{`.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{#?&`}
+The answer in \boxed{-} is \boxed{??{`}

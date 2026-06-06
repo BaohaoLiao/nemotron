@@ -1,57 +1,61 @@
-We need to infer the transformation rule from the examples.
+We infer the transformation rule from the facts by bounded rule-based trial.
 I will put my final answer inside \boxed{}.
 
-【))+}:】 = 【))}:】
-  input: 【)】【)】【+】【}】【:】
-  left:【)】【)】
-  operator: 【+】
-  right:【}】【:】
-  output: 【)】【)】【}】【:】
-  concatenation: 【)】【)】【}】【:】 match
-  reverse concatenation: 【}】【:】【)】【)】 mismatch
-  operator: 【+】concatenation
+remap (index 2 is the operator):
+fact0 [))+}:] = [))}:]: AA + BC = AABC  (r.len=4, sym=['A', 'B', 'C'], |sym|=3)
+fact1 [{@-'!] = [-{`]: DE - FG = -DH  (r.len=2 neg, sym=['D', 'E', 'F', 'G', 'H'], |sym|=5)
+fact2 ['}+@|] = ['}@|]: FB + EJ = FBEJ  (r.len=4, sym=['B', 'E', 'F', 'J'], |sym|=4)
+fact3 [::*:'] = [{||{]: CC * CF = DJJD  (r.len=4, sym=['C', 'D', 'F', 'J'], |sym|=4)
+query [@`-`:]: EH - HC = ?
 
-【{@-'!】 = 【-{`】
-  input: 【{】【@】【-】【'】【!】
-  left:【{】【@】
-  operator: 【-】
-  right:【'】【!】
-  output: 【-】【{】【`】
-  concatenation: 【{】【@】【'】【!】 mismatch
-  reverse concatenation: 【'】【!】【{】【@】 mismatch
-  operator: 【-】unknown
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {sub, rsub, negabs}
 
-【'}+@|】 = 【'}@|】
-  input: 【'】【}】【+】【@】【|】
-  left:【'】【}】
-  operator: 【+】
-  right:【@】【|】
-  output: 【'】【}】【@】【|】
-  concatenation: 【'】【}】【@】【|】 match
-  reverse concatenation: 【@】【|】【'】【}】 mismatch
-  operator: 【+】concatenation
+Mul anchor: fact2 ['}+@|] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern FB + EJ = FBEJ -> 5040 candidates:
+  R0: concat(01,23) = 0123 -> F=0,E=2,J=3,B=1
+  R1: concat(01,24) = 0124 -> F=0,E=2,J=4,B=1
+  R2: concat(01,25) = 0125 -> F=0,E=2,J=5,B=1
+  R3: concat(01,26) = 0126 -> F=0,E=2,J=6,B=1
+  R4: concat(01,27) = 0127 -> F=0,E=2,J=7,B=1
+  R5: concat(01,28) = 0128 -> F=0,E=2,J=8,B=1
+  R6: concat(01,29) = 0129 -> F=0,E=2,J=9,B=1
+  R7: concat(01,32) = 0132 -> F=0,E=3,J=2,B=1
+  R8: concat(01,34) = 0134 -> F=0,E=3,J=4,B=1
+  R9: concat(01,35) = 0135 -> F=0,E=3,J=5,B=1
+  R10: concat(01,36) = 0136 -> F=0,E=3,J=6,B=1
+  R11: concat(01,37) = 0137 -> F=0,E=3,J=7,B=1
+  R12: concat(01,38) = 0138 -> F=0,E=3,J=8,B=1
+  R13: concat(01,39) = 0139 -> F=0,E=3,J=9,B=1
+  R14: concat(01,42) = 0142 -> F=0,E=4,J=2,B=1
+  R15: concat(01,43) = 0143 -> F=0,E=4,J=3,B=1
+  R16: concat(01,45) = 0145 -> F=0,E=4,J=5,B=1
+  R17: concat(01,46) = 0146 -> F=0,E=4,J=6,B=1
+  R18: concat(01,47) = 0147 -> F=0,E=4,J=7,B=1
+  R19: concat(01,48) = 0148 -> F=0,E=4,J=8,B=1
+  R20: concat(01,49) = 0149 -> F=0,E=4,J=9,B=1
+  R21: concat(01,52) = 0152 -> F=0,E=5,J=2,B=1
+  R22: concat(01,53) = 0153 -> F=0,E=5,J=3,B=1
+  R23: concat(01,54) = 0154 -> F=0,E=5,J=4,B=1
+  ... 5016 more candidates
 
-【::*:'】 = 【{||{】
-  input: 【:】【:】【*】【:】【'】
-  left:【:】【:】
-  operator: 【*】
-  right:【:】【'】
-  output: 【{】【|】【|】【{】
-  concatenation: 【:】【:】【:】【'】 mismatch
-  reverse concatenation: 【:】【'】【:】【:】 mismatch
-  operator: 【*】unknown
+Candidates are tried in order; R4665 is the first that extends to every fact. Propagate it:
+fact2 ['}+@|] = ['}@|]:
+  try mul: 92 * 35 = 3220 -> encodes @}}) != '}@| NG
+  try concat: concat(92,35) = 9235 -> encodes '}@| = '}@| OK -> accept
+fact0 [))+}:] = [))}:]:
+  operator '+' already fixed = concat
+  try concat: concat(00,26) = 0026 -> encodes ))}: = ))}: OK -> accept
+fact1 [{@-'!] = [-{`]:
+  try sub: 43 - 91 = -48 -> encodes -{` = -{` OK -> accept
+fact3 [::*:'] = [{||{]:
+  try mul: 66 * 69 = 4554 -> encodes {||{ = {||{ OK -> accept
 
-Question【@`-`:】
-  input: 【@】【`】【-】【`】【:】
-  left:【@】【`】
-  operator:【-】
-  right:【`】【:】
-
-The question operator is 【-】, which is unknown.
-As the question operator is unknown, we default to concatenation.
-
-  concatenation(【@】【`】, 【`】【:】) = 【@】【`】【`】【:】
-  output: 【@``:】-> 【{@``:}】
+Recovered cipher: G(!)=1, F(')=9, A())=0, C(:)=6, E(@)=3, H(`)=8, D({)=4, J(|)=5, B(})=2
+Query @`-`:: EH=38, HC=86, '-' = sub: 38 - 86 = -48.
+Encode 48 back to original symbols -> -{`.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{@``:}
+The answer in \boxed{-} is \boxed{-{`}
