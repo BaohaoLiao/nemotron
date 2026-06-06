@@ -65,6 +65,25 @@ conda activate nemotron-sft
 python -c "import torch, unsloth, mamba_ssm, causal_conv1d, cut_cross_entropy; print('ok')"
 ```
 
+If `mamba_ssm` import fails with a missing Triton symbol such as
+`_chunk_scan_fwd`, rebuild the CUDA extension wheels in the active env. For H100:
+
+```sh
+conda activate nemotron-sft
+
+export TORCH_CUDA_ARCH_LIST=9.0
+export WHEEL_DIR=/mount/coreai-genai-pvc/baliao/home/nemotron/nemotron/wheels_h100
+
+pip uninstall -y mamba-ssm mamba_ssm causal-conv1d causal_conv1d
+
+pip wheel --no-build-isolation --no-cache-dir --wheel-dir "$WHEEL_DIR" \
+  mamba_ssm==2.3.1 causal_conv1d==1.6.1
+
+pip install --no-deps --force-reinstall \
+  "$WHEEL_DIR"/mamba_ssm-*.whl \
+  "$WHEEL_DIR"/causal_conv1d-*.whl
+```
+
 ## 3. Data
 
 The script reads the corpus produced by the repo's `corpus.py`:
