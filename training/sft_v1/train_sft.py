@@ -371,6 +371,10 @@ def build_model(cfg: argparse.Namespace, device: torch.device, log):
     )
     FastLanguageModel.for_training(model)
 
+    for n, p in model.named_parameters():
+        if "lora_embedding_" in n:
+            p.requires_grad_(True)
+
     # ── Patch Mamba CUDA fast path ───────────────────────────────────
     nemotron_mod = None
     for _name, _m in sys.modules.items():
@@ -382,11 +386,14 @@ def build_model(cfg: argparse.Namespace, device: torch.device, log):
     log("Patched is_fast_path_available = True")
 
     # ── Manually add lm_head LoRA (Unsloth drops it for MoE) ─────────
+    # Only when lm_head is requested in --target_modules.
     _causal_lm = model
     while hasattr(_causal_lm, "model"):
         _causal_lm = _causal_lm.model
     _lm_head = _causal_lm.lm_head
-    if not isinstance(_lm_head, LoraLinear):
+    if "lm_head" not in cfg.target_modules:
+        log("lm_head not in target_modules; skipping lm_head LoRA")
+    elif not isinstance(_lm_head, LoraLinear):
         _cfg = LoraConfig(
             r=cfg.lora_rank, lora_alpha=cfg.lora_alpha, lora_dropout=cfg.lora_dropout
         )
@@ -439,11 +446,14 @@ def build_model(cfg: argparse.Namespace, device: torch.device, log):
         )
         hidden_states = backbone_out[0]
         lm_head = _base.lm_head
-        base_w = lm_head.base_layer.weight
-        lora_A = lm_head.lora_A["default"].weight
-        lora_B = lm_head.lora_B["default"].weight
-        scaling = lm_head.scaling["default"]
-        lm_weight = base_w + scaling * lora_B @ lora_A
+        if isinstance(lm_head, LoraLinear):
+            base_w = lm_head.base_layer.weight
+            lora_A = lm_head.lora_A["default"].weight
+            lora_B = lm_head.lora_B["default"].weight
+            scaling = lm_head.scaling["default"]
+            lm_weight = base_w + scaling * lora_B @ lora_A
+        else:
+            lm_weight = lm_head.weight
         if labels is not None:
             per_token_ce = linear_cross_entropy(
                 hidden_states, lm_weight, labels, reduction="none"
@@ -763,7 +773,7 @@ def save_adapter(
     for _f in os.listdir(save_dir):
         if _f.startswith("adapter"):
             os.remove(os.path.join(save_dir, _f))
-    model.save_pretrained(save_dir)
+    model.save_pretrained(save_dir, save_embedding_layers=False)
 
     st_path = os.path.join(save_dir, "adapter_model.safetensors")
     tensors = load_file(st_path)
