@@ -1,68 +1,57 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [(@*@:] = [(@@:]: AB * BC = ABBC  (r.len=4, sym=['A', 'B', 'C'], |sym|=3)
-fact1 []]*{]] = []]{]]: DD * ED = DDED  (r.len=4, sym=['D', 'E'], |sym|=2)
-fact2 []!-{"] = [@!]: DF - EG = BF  (r.len=2, sym=['B', 'D', 'E', 'F', 'G'], |sym|=5)
-fact3 [`!+>{] = [!@@]: HF + JE = FBB  (r.len=3, sym=['B', 'E', 'F', 'H', 'J'], |sym|=5)
-query [{{-{`]: EE - EH = ?
+【(@*@:】 = 【(@@:】
+  input: 【(】【@】【*】【@】【:】
+  left:【(】【@】
+  operator: 【*】
+  right:【@】【:】
+  output: 【(】【@】【@】【:】
+  concatenation: 【(】【@】【@】【:】 match
+  reverse concatenation: 【@】【:】【(】【@】 mismatch
+  operator: 【*】concatenation
 
-narrowing operator candidates by result length:
-  '*' -> {concat, rconcat, mul, mul1, mulm1}
-  '+' -> {mul, mul1, mulm1, add1, addm1}
-  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+【]]*{]】 = 【]]{]】
+  input: 【]】【]】【*】【{】【]】
+  left:【]】【]】
+  operator: 【*】
+  right:【{】【]】
+  output: 【]】【]】【{】【]】
+  concatenation: 【]】【]】【{】【]】 match
+  reverse concatenation: 【{】【]】【]】【]】 mismatch
+  operator: 【*】concatenation
 
-Mul anchor: fact0 [(@*@:] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern AB * BC = ABBC -> 720 candidates:
-  R0: concat(01,12) = 0112 -> A=0,C=2,B=1
-  R1: concat(01,13) = 0113 -> A=0,C=3,B=1
-  R2: concat(01,14) = 0114 -> A=0,C=4,B=1
-  R3: concat(01,15) = 0115 -> A=0,C=5,B=1
-  R4: concat(01,16) = 0116 -> A=0,C=6,B=1
-  R5: concat(01,17) = 0117 -> A=0,C=7,B=1
-  R6: concat(01,18) = 0118 -> A=0,C=8,B=1
-  R7: concat(01,19) = 0119 -> A=0,C=9,B=1
-  R8: concat(02,21) = 0221 -> A=0,C=1,B=2
-  R9: concat(02,23) = 0223 -> A=0,C=3,B=2
-  R10: concat(02,24) = 0224 -> A=0,C=4,B=2
-  R11: concat(02,25) = 0225 -> A=0,C=5,B=2
-  R12: concat(02,26) = 0226 -> A=0,C=6,B=2
-  R13: concat(02,27) = 0227 -> A=0,C=7,B=2
-  R14: concat(02,28) = 0228 -> A=0,C=8,B=2
-  R15: concat(02,29) = 0229 -> A=0,C=9,B=2
-  R16: concat(03,31) = 0331 -> A=0,C=1,B=3
-  R17: concat(03,32) = 0332 -> A=0,C=2,B=3
-  R18: concat(03,34) = 0334 -> A=0,C=4,B=3
-  R19: concat(03,35) = 0335 -> A=0,C=5,B=3
-  R20: concat(03,36) = 0336 -> A=0,C=6,B=3
-  R21: concat(03,37) = 0337 -> A=0,C=7,B=3
-  R22: concat(03,38) = 0338 -> A=0,C=8,B=3
-  R23: concat(03,39) = 0339 -> A=0,C=9,B=3
-  ... 696 more candidates
+【]!-{"】 = 【@!】
+  input: 【]】【!】【-】【{】【"】
+  left:【]】【!】
+  operator: 【-】
+  right:【{】【"】
+  output: 【@】【!】
+  concatenation: 【]】【!】【{】【"】 mismatch
+  reverse concatenation: 【{】【"】【]】【!】 mismatch
+  operator: 【-】unknown
 
-Candidates are tried in order; R315 is the first that extends to every fact. Propagate it:
-fact0 [(@*@:] = [(@@:]:
-  try mul: 43 * 35 = 1505 -> encodes !:]: != (@@: NG
-  try concat: concat(43,35) = 4335 -> encodes (@@: = (@@: OK -> accept
-fact1 []]*{]] = []]{]]:
-  operator '*' already fixed = concat
-  try concat: concat(00,20) = 0020 -> encodes ]]{] = ]]{] OK -> accept
-fact2 []!-{"] = [@!]:
-  try add: 1 + 29 = 30 -> encodes @] != @! NG
-  try sub: 1 - 29 = -28 (length/sign off) NG
-  try rsub: 29 - 1 = 28 -> encodes {? != @! NG
-  try add1: 1 + 29 + 1 = 31 -> encodes @! = @! OK -> accept
-fact3 [`!+>{] = [!@@]:
-  try mul: 61 * 72 = 4392 (length/sign off) NG
-  try mul1: 61 * 72 + 1 = 4393 (length/sign off) NG
-  try mulm1: 61 * 72 - 1 = 4391 (length/sign off) NG
-  try add1: 61 + 72 + 1 = 134 -> encodes !@( != !@@ NG
-  try addm1: 61 + 72 - 1 = 132 -> encodes !@{ != !@@ NG
+【`!+>{】 = 【!@@】
+  input: 【`】【!】【+】【>】【{】
+  left:【`】【!】
+  operator: 【+】
+  right:【>】【{】
+  output: 【!】【@】【@】
+  concatenation: 【`】【!】【>】【{】 mismatch
+  reverse concatenation: 【>】【{】【`】【!】 mismatch
+  operator: 【+】unknown
 
-Recovered cipher: F(!)=1, G(")=9, A(()=4, C(:)=5, J(>)=7, B(@)=3, D(])=0, H(`)=6, E({)=2
-Query {{-{`: EE=22, EH=26, '-' = add1: 22 + 26 + 1 = 49.
-Encode 49 back to original symbols -> (".
+Question【{{-{`】
+  input: 【{】【{】【-】【{】【`】
+  left:【{】【{】
+  operator:【-】
+  right:【{】【`】
+
+The question operator is 【-】, which is unknown.
+As the question operator is unknown, we default to concatenation.
+
+  concatenation(【{】【{】, 【{】【`】) = 【{】【{】【{】【`】
+  output: 【{{{`】-> 【{{{{`}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{("}
+The answer in \boxed{–} is \boxed{{{{`}

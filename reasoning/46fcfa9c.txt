@@ -1,68 +1,67 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [!>*$$] = [|?|]: AB * CC = DED  (r.len=3, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
-fact1 [>&+$(] = [>&$(]: BF + CG = BFCG  (r.len=4, sym=['B', 'C', 'F', 'G'], |sym|=4)
-fact2 [?|-&|] = [@[]: ED - FD = HJ  (r.len=2, sym=['D', 'E', 'F', 'H', 'J'], |sym|=5)
-fact3 [>&+!@] = [>&!@]: BF + AH = BFAH  (r.len=4, sym=['A', 'B', 'F', 'H'], |sym|=4)
-fact4 [(}-&[] = [-(!]: GK - FJ = -GA  (r.len=2 neg, sym=['A', 'F', 'G', 'J', 'K'], |sym|=5)
-query [>(-&@]: BG - FH = ?
+【!>*$$】 = 【|?|】
+  input: 【!】【>】【*】【$】【$】
+  left:【!】【>】
+  operator: 【*】
+  right:【$】【$】
+  output: 【|】【?】【|】
+  concatenation: 【!】【>】【$】【$】 mismatch
+  reverse concatenation: 【$】【$】【!】【>】 mismatch
+  operator: 【*】unknown
 
-narrowing operator candidates by result length:
-  '*' -> {mul, mul1, mulm1, add1, addm1}
-  '+' -> {concat, rconcat, mul, mul1, mulm1}
-  '-' -> {sub, rsub}
+【>&+$(】 = 【>&$(】
+  input: 【>】【&】【+】【$】【(】
+  left:【>】【&】
+  operator: 【+】
+  right:【$】【(】
+  output: 【>】【&】【$】【(】
+  concatenation: 【>】【&】【$】【(】 match
+  reverse concatenation: 【$】【(】【>】【&】 mismatch
+  operator: 【+】concatenation
 
-Mul anchor: fact1 [>&+$(] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern BF + CG = BFCG -> 5040 candidates:
-  R0: concat(01,23) = 0123 -> C=2,F=1,G=3,B=0
-  R1: concat(01,24) = 0124 -> C=2,F=1,G=4,B=0
-  R2: concat(01,25) = 0125 -> C=2,F=1,G=5,B=0
-  R3: concat(01,26) = 0126 -> C=2,F=1,G=6,B=0
-  R4: concat(01,27) = 0127 -> C=2,F=1,G=7,B=0
-  R5: concat(01,28) = 0128 -> C=2,F=1,G=8,B=0
-  R6: concat(01,29) = 0129 -> C=2,F=1,G=9,B=0
-  R7: concat(01,32) = 0132 -> C=3,F=1,G=2,B=0
-  R8: concat(01,34) = 0134 -> C=3,F=1,G=4,B=0
-  R9: concat(01,35) = 0135 -> C=3,F=1,G=5,B=0
-  R10: concat(01,36) = 0136 -> C=3,F=1,G=6,B=0
-  R11: concat(01,37) = 0137 -> C=3,F=1,G=7,B=0
-  R12: concat(01,38) = 0138 -> C=3,F=1,G=8,B=0
-  R13: concat(01,39) = 0139 -> C=3,F=1,G=9,B=0
-  R14: concat(01,42) = 0142 -> C=4,F=1,G=2,B=0
-  R15: concat(01,43) = 0143 -> C=4,F=1,G=3,B=0
-  R16: concat(01,45) = 0145 -> C=4,F=1,G=5,B=0
-  R17: concat(01,46) = 0146 -> C=4,F=1,G=6,B=0
-  R18: concat(01,47) = 0147 -> C=4,F=1,G=7,B=0
-  R19: concat(01,48) = 0148 -> C=4,F=1,G=8,B=0
-  R20: concat(01,49) = 0149 -> C=4,F=1,G=9,B=0
-  R21: concat(01,52) = 0152 -> C=5,F=1,G=2,B=0
-  R22: concat(01,53) = 0153 -> C=5,F=1,G=3,B=0
-  R23: concat(01,54) = 0154 -> C=5,F=1,G=4,B=0
-  ... 5016 more candidates
+【?|-&|】 = 【@[】
+  input: 【?】【|】【-】【&】【|】
+  left:【?】【|】
+  operator: 【-】
+  right:【&】【|】
+  output: 【@】【[】
+  concatenation: 【?】【|】【&】【|】 mismatch
+  reverse concatenation: 【&】【|】【?】【|】 mismatch
+  operator: 【-】unknown
 
-Candidates are tried in order; R2872 is the first that extends to every fact. Propagate it:
-fact1 [>&+$(] = [>&$(]:
-  try mul: 57 * 23 = 1311 -> encodes @(@@ != >&$( NG
-  try concat: concat(57,23) = 5723 -> encodes >&$( = >&$( OK -> accept
-fact0 [!>*$$] = [|?|]:
-  try mul: 45 * 22 = 990 -> encodes ||[ != |?| NG
-  try mul1: 45 * 22 + 1 = 991 -> encodes ||@ != |?| NG
-  try mulm1: 45 * 22 - 1 = 989 -> encodes |?| = |?| OK -> accept
-fact2 [?|-&|] = [@[]:
-  try add: 89 + 79 = 168 (length/sign off) NG
-  try sub: 89 - 79 = 10 -> encodes @[ = @[ OK -> accept
-fact3 [>&+!@] = [>&!@]:
-  operator '+' already fixed = concat
-  try concat: concat(57,41) = 5741 -> encodes >&!@ = >&!@ OK -> accept
-fact4 [(}-&[] = [-(!]:
-  operator '-' already fixed = sub
-  try sub: 36 - 70 = -34 -> encodes -(! = -(! OK -> accept
+【>&+!@】 = 【>&!@】
+  input: 【>】【&】【+】【!】【@】
+  left:【>】【&】
+  operator: 【+】
+  right:【!】【@】
+  output: 【>】【&】【!】【@】
+  concatenation: 【>】【&】【!】【@】 match
+  reverse concatenation: 【!】【@】【>】【&】 mismatch
+  operator: 【+】concatenation
 
-Recovered cipher: A(!)=4, C($)=2, F(&)=7, G(()=3, B(>)=5, E(?)=8, H(@)=1, J([)=0, D(|)=9, K(})=6
-Query >(-&@: BG=53, FH=71, '-' = sub: 53 - 71 = -18.
-Encode 18 back to original symbols -> -@?.
+【(}-&[】 = 【-(!】
+  input: 【(】【}】【-】【&】【[】
+  left:【(】【}】
+  operator: 【-】
+  right:【&】【[】
+  output: 【-】【(】【!】
+  concatenation: 【(】【}】【&】【[】 mismatch
+  reverse concatenation: 【&】【[】【(】【}】 mismatch
+  operator: 【-】unknown
+
+Question【>(-&@】
+  input: 【>】【(】【-】【&】【@】
+  left:【>】【(】
+  operator:【-】
+  right:【&】【@】
+
+The question operator is 【-】, which is unknown.
+As the question operator is unknown, we default to concatenation.
+
+  concatenation(【>】【(】, 【&】【@】) = 【>】【(】【&】【@】
+  output: 【>(&@】-> 【{>(&@}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{-@?}
+The answer in \boxed{–} is \boxed{>(&@}

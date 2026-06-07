@@ -1,70 +1,66 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 []{-]{] = [:]: AB - AB = C  (r.len=1, sym=['A', 'B', 'C'], |sym|=3)
-fact1 [{'*/{] = [{'/{]: BD * EB = BDEB  (r.len=4, sym=['B', 'D', 'E'], |sym|=3)
-fact2 [{?-?'] = [))]: BF - FD = GG  (r.len=2, sym=['B', 'D', 'F', 'G'], |sym|=4)
-fact3 [/&*))] = [/&))]: EH * GG = EHGG  (r.len=4, sym=['E', 'G', 'H'], |sym|=3)
-fact4 [{/*&/] = [{/&/]: BE * HE = BEHE  (r.len=4, sym=['B', 'E', 'H'], |sym|=3)
-query [){*?{]: GB * FB = ?
+【]{-]{】 = 【:】
+  input: 【]】【{】【-】【]】【{】
+  left:【]】【{】
+  operator: 【-】
+  right:【]】【{】
+  output: 【:】
+  concatenation: 【]】【{】【]】【{】 mismatch
+  reverse concatenation: 【]】【{】【]】【{】 mismatch
+  operator: 【-】unknown
 
-narrowing operator candidates by result length:
-  '*' -> {concat, rconcat, mul, mul1, mulm1}
-  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+【{'*/{】 = 【{'/{】
+  input: 【{】【'】【*】【/】【{】
+  left:【{】【'】
+  operator: 【*】
+  right:【/】【{】
+  output: 【{】【'】【/】【{】
+  concatenation: 【{】【'】【/】【{】 match
+  reverse concatenation: 【/】【{】【{】【'】 mismatch
+  operator: 【*】concatenation
 
-Mul anchor: fact1 [{'*/{] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern BD * EB = BDEB -> 720 candidates:
-  R0: concat(01,20) = 0120 -> D=1,E=2,B=0
-  R1: concat(01,30) = 0130 -> D=1,E=3,B=0
-  R2: concat(01,40) = 0140 -> D=1,E=4,B=0
-  R3: concat(01,50) = 0150 -> D=1,E=5,B=0
-  R4: concat(01,60) = 0160 -> D=1,E=6,B=0
-  R5: concat(01,70) = 0170 -> D=1,E=7,B=0
-  R6: concat(01,80) = 0180 -> D=1,E=8,B=0
-  R7: concat(01,90) = 0190 -> D=1,E=9,B=0
-  R8: concat(02,10) = 0210 -> D=2,E=1,B=0
-  R9: concat(02,30) = 0230 -> D=2,E=3,B=0
-  R10: concat(02,40) = 0240 -> D=2,E=4,B=0
-  R11: concat(02,50) = 0250 -> D=2,E=5,B=0
-  R12: concat(02,60) = 0260 -> D=2,E=6,B=0
-  R13: concat(02,70) = 0270 -> D=2,E=7,B=0
-  R14: concat(02,80) = 0280 -> D=2,E=8,B=0
-  R15: concat(02,90) = 0290 -> D=2,E=9,B=0
-  R16: concat(03,10) = 0310 -> D=3,E=1,B=0
-  R17: concat(03,20) = 0320 -> D=3,E=2,B=0
-  R18: concat(03,40) = 0340 -> D=3,E=4,B=0
-  R19: concat(03,50) = 0350 -> D=3,E=5,B=0
-  R20: concat(03,60) = 0360 -> D=3,E=6,B=0
-  R21: concat(03,70) = 0370 -> D=3,E=7,B=0
-  R22: concat(03,80) = 0380 -> D=3,E=8,B=0
-  R23: concat(03,90) = 0390 -> D=3,E=9,B=0
-  ... 696 more candidates
+【{?-?'】 = 【))】
+  input: 【{】【?】【-】【?】【'】
+  left:【{】【?】
+  operator: 【-】
+  right:【?】【'】
+  output: 【)】【)】
+  concatenation: 【{】【?】【?】【'】 mismatch
+  reverse concatenation: 【?】【'】【{】【?】 mismatch
+  operator: 【-】unknown
 
-Candidates are tried in order; R81 is the first that extends to every fact. Propagate it:
-fact1 [{'*/{] = [{'/{]:
-  try mul: 12 * 31 = 372 (length/sign off) NG
-  try concat: concat(12,31) = 1231 -> encodes {'/{ = {'/{ OK -> accept
-fact0 []{-]{] = [:]:
-  try mul: 61 * 61 = 3721 (length/sign off) NG
-  try concat: concat(61,61) = 6161 (length/sign off) NG
-  try rconcat: concat(61,61) = 6161 (length/sign off) NG
-  try add: 61 + 61 = 122 (length/sign off) NG
-  try sub: 61 - 61 = 0 -> encodes : != : NG
-  try rsub: 61 - 61 = 0 -> encodes : = : OK -> accept
-fact2 [{?-?'] = [))]:
-  operator '-' already fixed = rsub
-  try rsub: 72 - 17 = 55 -> encodes )) = )) OK -> accept
-fact3 [/&*))] = [/&))]:
-  operator '*' already fixed = concat
-  try concat: concat(34,55) = 3455 -> encodes /&)) = /&)) OK -> accept
-fact4 [{/*&/] = [{/&/]:
-  operator '*' already fixed = concat
-  try concat: concat(13,43) = 1343 -> encodes {/&/ = {/&/ OK -> accept
+【/&*))】 = 【/&))】
+  input: 【/】【&】【*】【)】【)】
+  left:【/】【&】
+  operator: 【*】
+  right:【)】【)】
+  output: 【/】【&】【)】【)】
+  concatenation: 【/】【&】【)】【)】 match
+  reverse concatenation: 【)】【)】【/】【&】 mismatch
+  operator: 【*】concatenation
 
-Recovered cipher: H(&)=4, D(')=2, G())=5, E(/)=3, C(:)=0, F(?)=7, A(])=6, B({)=1
-Query ){*?{: GB=51, FB=71, '*' = concat: concat(51,71) = 5171.
-Encode 5171 back to original symbols -> ){?{.
+【{/*&/】 = 【{/&/】
+  input: 【{】【/】【*】【&】【/】
+  left:【{】【/】
+  operator: 【*】
+  right:【&】【/】
+  output: 【{】【/】【&】【/】
+  concatenation: 【{】【/】【&】【/】 match
+  reverse concatenation: 【&】【/】【{】【/】 mismatch
+  operator: 【*】concatenation
+
+Question【){*?{】
+  input: 【)】【{】【*】【?】【{】
+  left:【)】【{】
+  operator:【*】
+  right:【?】【{】
+
+The question operator is 【*】, which is concatenation.
+
+  concatenation(【)】【{】, 【?】【{】) = 【)】【{】【?】【{】
+  output: 【){?{】-> 【{){?{}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{){?{}
+The answer in \boxed{–} is \boxed{){?{}

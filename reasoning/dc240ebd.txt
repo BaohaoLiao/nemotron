@@ -1,47 +1,67 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [>@-``] = [::``]: AB - CC = DDCC  (r.len=4, sym=['A', 'B', 'C', 'D'], |sym|=4)
-fact1 [:}-::] = ["|<]: DE - DD = FGH  (r.len=3, sym=['D', 'E', 'F', 'G', 'H'], |sym|=5)
-fact2 [)>-)>] = [>":>]: JA - JA = AFDA  (r.len=4, sym=['A', 'D', 'F', 'J'], |sym|=4)
-fact3 [@>-)<] = [@@)\]: BA - JH = BBJK  (r.len=4, sym=['A', 'B', 'H', 'J', 'K'], |sym|=5)
-fact4 [)|-<"] = [":)<]: JG - HF = FDJH  (r.len=4, sym=['D', 'F', 'G', 'H', 'J'], |sym|=5)
-query [>|-}|]: AG - EG = ?
+【>@-``】 = 【::``】
+  input: 【>】【@】【-】【`】【`】
+  left:【>】【@】
+  operator: 【-】
+  right:【`】【`】
+  output: 【:】【:】【`】【`】
+  concatenation: 【>】【@】【`】【`】 mismatch
+  reverse concatenation: 【`】【`】【>】【@】 mismatch
+  operator: 【-】unknown
 
-narrowing operator candidates by result length:
-  '-' -> {mul, mul1, mulm1}
+【:}-::】 = 【"|<】
+  input: 【:】【}】【-】【:】【:】
+  left:【:】【}】
+  operator: 【-】
+  right:【:】【:】
+  output: 【"】【|】【<】
+  concatenation: 【:】【}】【:】【:】 mismatch
+  reverse concatenation: 【:】【:】【:】【}】 mismatch
+  operator: 【-】unknown
 
-Mul anchor: fact3 [@>-)<] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern BA - JH = BBJK -> 8 candidates:
-  R0: 13 * 92 = 1196 -> J=9,H=2,A=3,B=1,K=6
-  R1: 15 * 78 = 1170 -> J=7,H=8,A=5,B=1,K=0  <-- consistent with all facts
-  R2: 13 * 92 + 1 = 1197 -> J=9,H=2,A=3,B=1,K=7
-  R3: 35 * 97 + 1 = 3396 -> J=9,H=7,A=5,B=3,K=6
-  R4: 13 * 92 - 1 = 1195 -> J=9,H=2,A=3,B=1,K=5
-  R5: 14 * 85 - 1 = 1189 -> J=8,H=5,A=4,B=1,K=9
-  R6: 18 * 65 - 1 = 1169 -> J=6,H=5,A=8,B=1,K=9
-  R7: 35 * 97 - 1 = 3394 -> J=9,H=7,A=5,B=3,K=4
+【)>-)>】 = 【>":>】
+  input: 【)】【>】【-】【)】【>】
+  left:【)】【>】
+  operator: 【-】
+  right:【)】【>】
+  output: 【>】【"】【:】【>】
+  concatenation: 【)】【>】【)】【>】 mismatch
+  reverse concatenation: 【)】【>】【)】【>】 mismatch
+  operator: 【-】unknown
 
-Candidates are tried in order; R1 is the first that extends to every fact. Propagate it:
-fact3 [@>-)<] = [@@)\]:
-  try mul: 15 * 78 = 1170 -> encodes @@)\ = @@)\ OK -> accept
-fact0 [>@-``] = [::``]:
-  operator '-' already fixed = mul
-  try mul: 51 * 44 = 2244 -> encodes ::`` = ::`` OK -> accept
-fact1 [:}-::] = ["|<]:
-  operator '-' already fixed = mul
-  try mul: 29 * 22 = 638 -> encodes "|< = "|< OK -> accept
-fact2 [)>-)>] = [>":>]:
-  operator '-' already fixed = mul
-  try mul: 75 * 75 = 5625 -> encodes >":> = >":> OK -> accept
-fact4 [)|-<"] = [":)<]:
-  operator '-' already fixed = mul
-  try mul: 73 * 86 = 6278 -> encodes ":)< = ":)< OK -> accept
+【@>-)<】 = 【@@)\】
+  input: 【@】【>】【-】【)】【<】
+  left:【@】【>】
+  operator: 【-】
+  right:【)】【<】
+  output: 【@】【@】【)】【\】
+  concatenation: 【@】【>】【)】【<】 mismatch
+  reverse concatenation: 【)】【<】【@】【>】 mismatch
+  operator: 【-】unknown
 
-Recovered cipher: F(")=6, J())=7, D(:)=2, H(<)=8, A(>)=5, B(@)=1, K(\)=0, C(`)=4, G(|)=3, E(})=9
-Query >|-}|: AG=53, EG=93, '-' = mul: 53 * 93 = 4929.
-Encode 4929 back to original symbols -> `}:}.
+【)|-<"】 = 【":)<】
+  input: 【)】【|】【-】【<】【"】
+  left:【)】【|】
+  operator: 【-】
+  right:【<】【"】
+  output: 【"】【:】【)】【<】
+  concatenation: 【)】【|】【<】【"】 mismatch
+  reverse concatenation: 【<】【"】【)】【|】 mismatch
+  operator: 【-】unknown
+
+Question【>|-}|】
+  input: 【>】【|】【-】【}】【|】
+  left:【>】【|】
+  operator:【-】
+  right:【}】【|】
+
+The question operator is 【-】, which is unknown.
+As the question operator is unknown, we default to concatenation.
+
+  concatenation(【>】【|】, 【}】【|】) = 【>】【|】【}】【|】
+  output: 【>|}|】-> 【{>|}|}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{`}:}}
+The answer in \boxed{–} is \boxed{>|}|}

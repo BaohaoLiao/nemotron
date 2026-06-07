@@ -191,80 +191,6 @@ Input 8: 00101000
 6 0
 7 0
 
-Attempt 1: one generic rule for every bit.
-g is one shared function of input bits at fixed offsets (covers shift/rotate/XOR/AND/OR/NOT/majority/choice).
-
-Search offset windows simplest first; r rotate (wrap), s shift (zero-fill).
-Accept if consistent (no pattern -> two outputs) and determining (all question patterns seen).
-x reject inconsistent, ? reject undetermined.
-
-size 1
-[+0]r x 0: 1@ex1b0 0@ex1b2
-[+0]s x 0: 1@ex1b0 0@ex1b2
-[-1]r x 1: 1@ex1b0 0@ex1b2
-[-1]s x 0: 1@ex1b0 0@ex1b1
-[+1]r x 1: 1@ex1b0 0@ex1b4
-[+1]s x 1: 1@ex1b0 0@ex1b4
-[-2]r x 1: 1@ex1b0 0@ex1b1
-[-2]s x 0: 1@ex1b0 0@ex1b1
-[+2]r x 0: 1@ex1b0 0@ex1b1
-[+2]s x 0: 1@ex1b0 0@ex1b1
-[-3]r x 1: 1@ex1b0 0@ex1b1
-[-3]s x 0: 1@ex1b0 0@ex1b1
-+18 more (30 inconsistent)
-
-size 2
-[-1,+0]r x 10: 1@ex1b0 0@ex1b2
-[-1,+0]s x 00: 1@ex1b0 0@ex1b3
-[+0,+1]r x 01: 1@ex1b0 0@ex1b4
-[+0,+1]s x 01: 1@ex1b0 0@ex1b4
-[-2,+0]r x 10: 1@ex1b0 0@ex1b3
-[-2,+0]s x 00: 1@ex1b0 0@ex1b2
-[-1,+1]r x 10: 0@ex1b2 1@ex1b7
-[-1,+1]s x 01: 1@ex1b0 0@ex1b4
-[+0,+2]r x 00: 1@ex1b0 0@ex1b2
-[+0,+2]s x 00: 1@ex1b0 0@ex1b2
-[-3,+0]r x 10: 1@ex1b0 0@ex1b2
-[-3,+0]s x 00: 1@ex1b0 0@ex1b2
-+198 more (210 inconsistent)
-
-size 3
-[-1,+0,+1]r x 001: 0@ex1b4 1@ex2b1
-[-1,+0,+1]s x 001: 1@ex1b0 0@ex1b4
-[-2,-1,+0]r x 110: 1@ex1b0 0@ex2b0
-[-2,-1,+0]s x 000: 1@ex1b0 0@ex1b4
-[-2,+0,+1]r x 011: 0@ex1b5 1@ex1b6
-[-2,+0,+1]s x 001: 1@ex1b0 0@ex1b4
-[-1,+0,+2]r x 100: 1@ex1b0 0@ex1b2
-[-1,+0,+2]s x 001: 0@ex1b3 1@ex2b1
-[+0,+1,+2]r x 011: 0@ex1b4 1@ex2b1
-[+0,+1,+2]s x 100: 0@ex1b1 1@ex1b7
-[-3,-1,+0]r x 110: 1@ex1b0 0@ex1b2
-[-3,-1,+0]s x 000: 1@ex1b0 0@ex1b3
-+898 more (910 inconsistent)
-
-size 4
-[-2,-1,+0,+1]r x 1100: 0@ex2b0 1@ex3b3
-[-2,-1,+0,+1]s x 0001: 1@ex1b0 0@ex1b4
-[-1,+0,+1,+2]r x 0011: 0@ex1b4 1@ex2b1
-[-1,+0,+1,+2]s x 0011: 0@ex1b4 1@ex2b1
-[-3,-1,+0,+1]r x 1001: 0@ex1b4 1@ex2b1
-[-3,-1,+0,+1]s x 0110: 1@ex1b7 0@ex3b2
-[-2,-1,+0,+2]r x 1001: 0@ex1b3 1@ex2b1
-[-2,-1,+0,+2]s x 0001: 0@ex1b4 1@ex2b1
-[-2,+0,+1,+2]r x 0111: 0@ex1b5 1@ex2b3
-[-2,+0,+1,+2]s x 0011: 0@ex1b4 1@ex2b1
-[-1,+0,+1,+3]r x 0011: 0@ex1b4 1@ex2b1
-[-1,+0,+1,+3]s x 0011: 0@ex1b4 1@ex2b1
-+2718 more (2729 inconsistent, 1 undetermined)
-
-No window of size 1..4 is consistent and determining.
-
-Attempt 1 fails: no single offset-window function is consistent across all examples.
-Fall back to per-bit matching.
-
-Attempt 2: match each output column against Identity/NOT/Constant/AND/OR/XOR (and NOT variants), then combine.
-
 When matching output
 x: not in operator
 y: wrong position
@@ -304,7 +230,8 @@ NOT
 3 101100011 5
 4 101000110 4
 5 000010111 4
-+2 more NOT rows (no match)
+6 000000111 3
+7 001111111 7
 
 Matching output
 0 absent
@@ -354,10 +281,30 @@ AND
 45 54 010101000 3
 56 65 111101000 5 match 7
 67 76 110000000 2
+70 07 000000000 a
+
+02 20 000100000 1
+13 31 000011100 3
+24 42 010111001 5
+35 53 010001000 2
 46 64 010111000 4 match 5
+57 75 110000000 2
+60 06 000100000 1
+71 17 100000000 1
+
+03 30 000000000 a
+14 41 000111000 3
+25 52 011101000 4
+36 63 010011000 3
+47 74 010000000 1
+50 05 000100000 1
 61 16 101111000 5 match 0
+72 27 010000000 1
+
+04 40 000100000 1
+15 51 101101000 4
 26 62 011111000 5 match 4
-+18 more AND rows (no match)
+37 73 010000000 1
 
 Matching output
 0 61 16
@@ -386,11 +333,31 @@ OR
 34 43 010111101 6
 45 54 111111001 7
 56 65 111111000 6
+67 76 111111000 6
+70 07 110100000 3
+
 02 20 011111011 7 match 3
+13 31 111111110 8
 24 42 011111011 7 match 3
+35 53 111111100 7
+46 64 111111001 7
 57 75 111101000 5 match 7
+60 06 111111000 6
+71 17 111111110 8
+
+03 30 010111100 5
+14 41 111111111 a
+25 52 111111011 8
+36 63 111111100 7
+47 74 110111001 6
 50 05 111101000 5 match 7
-+18 more OR rows (no match)
+61 16 111111110 8
+72 27 111111011 8
+
+04 40 010111001 5
+15 51 111111110 8
+26 62 111111011 8
+37 73 110011100 5
 
 Matching output
 0 absent
@@ -420,7 +387,31 @@ XOR
 34 43 000100101 3
 45 54 101010001 4
 56 65 000010000 1
-+22 more XOR rows (no match)
+67 76 001111000 4
+70 07 110100000 3
+
+02 20 011011011 6
+13 31 111100010 5
+24 42 001000010 2
+35 53 101110100 5
+46 64 101000001 3
+57 75 001101000 3
+60 06 111011000 5
+71 17 011111110 7
+
+03 30 010111100 5
+14 41 111000111 6
+25 52 100010011 4
+36 63 101100100 4
+47 74 100111001 5
+50 05 111001000 4
+61 16 010000110 3
+72 27 101111011 7
+
+04 40 010011001 4
+15 51 010010110 4
+26 62 100000011 3
+37 73 100011100 4
 
 Matching output
 0 absent
@@ -447,7 +438,62 @@ AND-NOT
 34 000000100 1
 45 000010001 2
 56 000000000 a
-+50 more AND-NOT rows (no match)
+67 001111000 4
+70 110000000 2
+
+02 000000000 a
+13 101100010 4
+24 001000010 2
+35 000010100 2
+46 000000001 1
+57 001101000 3
+60 111011000 5
+71 010000000 1
+
+03 000100000 1
+14 101000110 4
+25 000010011 3
+36 000000100 1
+47 000111001 4
+50 111001000 4
+61 010000000 1
+72 100000000 1
+
+04 000000000 a
+15 000010110 3
+26 000000011 2
+37 000011100 3
+40 010011001 4
+51 010000000 1
+62 100000000 1
+73 100000000 1
+
+05 000000000 a
+16 000000110 2
+27 001111011 6
+30 010011100 4
+41 010000001 2
+52 100000000 1
+63 101100000 3
+74 100000000 1
+
+06 000000000 a
+17 001111110 6
+20 011011011 6
+31 010000000 1
+42 000000000 a
+53 101100000 3
+64 101000000 2
+75 000000000 a
+
+07 000100000 1
+10 101011110 6
+21 010000001 2
+32 000000100 1
+43 000100001 2
+54 101000000 2
+65 000010000 1
+76 000000000 a
 
 Matching output
 0 absent
@@ -474,8 +520,62 @@ OR-NOT
 34 111011110 7
 45 010111111 7
 56 111101111 8
+67 111111111 a
+70 111011111 8
+
+02 100100100 3
+13 101111111 8
+24 111111111 a
+35 010011111 6
+46 010111111 7
+57 111111111 a
+60 111111111 a
+71 110000001 3
+
+03 101100011 5
+14 101111110 7
+25 011111111 8
+36 010011111 6
+47 011111111 8
+50 111111111 a
+61 111111001 7
+72 110000100 3
+
+04 101100110 5
+15 101111111 8
+26 011111111 8
+37 011111111 8
+40 111111111 a
+51 111101001 6
+62 111111100 7
+73 111100011 6
+
+05 000110111 5
+16 101111111 8
+27 011111111 8
+30 111011111 8
+41 010111001 5
+52 111101100 6
+63 111111011 8
+74 111000110 5
+
+06 000100111 4
+17 101111111 8
+20 111111111 a
+31 010011101 5
+42 110111101 7
+53 111101011 7
+64 111111110 8
+75 110010111 6
+
+07 001111111 7
+10 111111111 a
 21 011111011 7 match 3
-+49 more OR-NOT rows (no match)
+32 110011100 5
+43 111111011 8
+54 111101110 7
+65 111111111 a
+76 110000111 5
 
 Matching output
 0 absent
@@ -502,7 +602,62 @@ XOR-NOT
 34 111011010 6
 45 010101110 5
 56 111101111 8
-+50 more XOR-NOT rows (no match)
+67 110000111 5
+70 001011111 6
+
+02 100100100 3
+13 000011101 4
+24 110111101 7
+35 010001011 4
+46 010111110 6
+57 110010111 6
+60 000100111 4
+71 100000001 2
+
+03 101000011 4
+14 000111000 3
+25 011101100 5
+36 010011011 5
+47 011000110 4
+50 000110111 5
+61 101111001 6
+72 010000100 2
+
+04 101100110 5
+15 101101001 5
+26 011111100 6
+37 011100011 5
+40 101100110 5
+51 101101001 5
+62 011111100 6
+73 011100011 5
+
+05 000110111 5
+16 101111001 6
+27 010000100 2
+30 101000011 4
+41 000111000 3
+52 011101100 5
+63 010011011 5
+74 011000110 4
+
+06 000100111 4
+17 100000001 2
+20 100100100 3
+31 000011101 4
+42 110111101 7
+53 010001011 4
+64 010111110 6
+75 110010111 6
+
+07 001011111 6
+10 010100001 3
+21 001111010 5
+32 110011000 4
+43 111011010 6
+54 010101110 5
+65 111101111 8
+76 110000111 5
 
 Matching output
 0 absent
@@ -648,6 +803,83 @@ Selected
 5 default 1
 6 default 1
 7 I5
+
+
+Verify the per-bit rule reproduces every worked example:
+ex0: 01000111 -> 11111111 MISMATCH expected 10000011
+ex1: 00111111 -> 01111111 MISMATCH expected 01011111
+ex2: 01100110 -> 11111111 MISMATCH expected 10011001
+ex3: 11101110 -> 11111111 ok
+ex4: 01111010 -> 11111110 MISMATCH expected 10111100
+ex5: 01111110 -> 11111111 MISMATCH expected 10111111
+ex6: 01010000 -> 01111110 MISMATCH expected 00100000
+ex7: 01100000 -> 01111110 MISMATCH expected 00010000
+ex8: 00101000 -> 01111110 MISMATCH expected 00010000
+
+Examples 0, 1, 2, 4, 5, 6, 7, 8 are not reproduced, so the per-bit rule is not valid here.
+Try instead one shared function of input bits at fixed offsets (a sliding window).
+
+Model every output bit as the SAME function g of input bits at fixed offsets (a sliding window; covers shift/rotate/XOR/AND/OR/NOT/majority/choice).
+
+Look for one shared window, escalating by size: first every single offset (size 1), then every offset pair (size 2), simplest first.
+Accept the first consistent (no source pattern -> two outputs) and determining (every query bit's pattern seen in an example).
+r rotate (wrap), s shift (zero past the ends). x reject inconsistent, ? reject undetermined.
+
+Size 1: every single offset.
+[+0]r x 0: 1@ex1b0 0@ex1b2
+[+0]s x 0: 1@ex1b0 0@ex1b2
+[-1]r x 1: 1@ex1b0 0@ex1b2
+[-1]s x 0: 1@ex1b0 0@ex1b1
+[+1]r x 1: 1@ex1b0 0@ex1b4
+[+1]s x 1: 1@ex1b0 0@ex1b4
+[-2]r x 1: 1@ex1b0 0@ex1b1
+[-2]s x 0: 1@ex1b0 0@ex1b1
+[+2]r x 0: 1@ex1b0 0@ex1b1
+[+2]s x 0: 1@ex1b0 0@ex1b1
+[-3]r x 1: 1@ex1b0 0@ex1b1
+[-3]s x 0: 1@ex1b0 0@ex1b1
+[+3]r x 0: 1@ex1b0 0@ex1b1
+[+3]s x 0: 1@ex1b0 0@ex1b1
+[-4]r x 0: 1@ex1b0 0@ex1b4
+[-4]s x 0: 1@ex1b0 0@ex1b1
+[+4]r x 0: 1@ex1b0 0@ex1b4
+[+4]s x 0: 1@ex1b0 0@ex1b4
+[-5]r x 0: 1@ex1b0 0@ex1b1
+[-5]s x 0: 1@ex1b0 0@ex1b1
+[+5]r x 1: 1@ex1b0 0@ex1b1
+[+5]s x 1: 1@ex1b0 0@ex1b1
+[-6]r x 0: 1@ex1b0 0@ex1b1
+[-6]s x 0: 1@ex1b0 0@ex1b1
+[+6]r x 1: 1@ex1b0 0@ex1b1
+[+6]s x 1: 1@ex1b0 0@ex1b1
+[-7]r x 1: 1@ex1b0 0@ex1b4
+[-7]s x 0: 1@ex1b0 0@ex1b1
+[+7]r x 1: 1@ex1b0 0@ex1b2
+[+7]s x 0: 0@ex1b1 1@ex1b6
+
+All 30 single offsets reject: not a plain shift or rotate (with or without a global NOT). Escalate to offset pairs.
+
+Size 2: every offset pair.
+[-1,+0]r x 10: 1@ex1b0 0@ex1b2
+[-1,+0]s x 00: 1@ex1b0 0@ex1b3
+[+0,+1]r x 01: 1@ex1b0 0@ex1b4
+[+0,+1]s x 01: 1@ex1b0 0@ex1b4
+[-2,+0]r x 10: 1@ex1b0 0@ex1b3
+[-2,+0]s x 00: 1@ex1b0 0@ex1b2
+[-1,+1]r x 10: 0@ex1b2 1@ex1b7
+[-1,+1]s x 01: 1@ex1b0 0@ex1b4
+[+0,+2]r x 00: 1@ex1b0 0@ex1b2
+[+0,+2]s x 00: 1@ex1b0 0@ex1b2
+[-3,+0]r x 10: 1@ex1b0 0@ex1b2
+[-3,+0]s x 00: 1@ex1b0 0@ex1b2
+[-2,-1]r x 01: 0@ex1b2 1@ex1b6
+[-2,-1]s x 00: 1@ex1b0 0@ex1b1
+[-2,+1]r x 01: 0@ex1b4 1@ex1b6
+[-2,+1]s x 01: 1@ex1b0 0@ex1b4
++194 more offset pairs, all reject
+All offset pairs reject too.
+
+No shared window fits the examples either. Use the per-bit best effort.
 
 Applying to 11111111
 Input

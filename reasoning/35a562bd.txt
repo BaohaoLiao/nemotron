@@ -1,51 +1,57 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [??+%'] = [##]: AA + BC = DD  (r.len=2, sym=['A', 'B', 'C', 'D'], |sym|=4)
-fact1 ['(+?:] = [(@:]: CE + AF = EGF  (r.len=3, sym=['A', 'C', 'E', 'F', 'G'], |sym|=5)
-fact2 [|'*#|] = [|{%{]: HC * DH = HJBJ  (r.len=4, sym=['B', 'C', 'D', 'H', 'J'], |sym|=5)
-fact3 [:)-'?] = [{#]: FK - CA = JD  (r.len=2, sym=['A', 'C', 'D', 'F', 'J', 'K'], |sym|=6)
-query [#'*(']: DC * EC = ?
+【??+%'】 = 【##】
+  input: 【?】【?】【+】【%】【'】
+  left:【?】【?】
+  operator: 【+】
+  right:【%】【'】
+  output: 【#】【#】
+  concatenation: 【?】【?】【%】【'】 mismatch
+  reverse concatenation: 【%】【'】【?】【?】 mismatch
+  operator: 【+】unknown
 
-narrowing operator candidates by result length:
-  '*' -> {concat, rconcat, mul, mul1, mulm1}
-  '+' -> {add1, addm1}
-  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+【'(+?:】 = 【(@:】
+  input: 【'】【(】【+】【?】【:】
+  left:【'】【(】
+  operator: 【+】
+  right:【?】【:】
+  output: 【(】【@】【:】
+  concatenation: 【'】【(】【?】【:】 mismatch
+  reverse concatenation: 【?】【:】【'】【(】 mismatch
+  operator: 【+】unknown
 
-Mul anchor: fact2 [|'*#|] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern HC * DH = HJBJ -> 11 candidates:
-  R0: 27 * 92 = 2484 -> D=9,B=8,C=7,J=4,H=2
-  R1: 84 * 98 = 8232 -> D=9,B=3,C=4,J=2,H=8  <-- consistent with all facts
-  R2: 54 * 95 + 1 = 5131 -> D=9,B=3,C=4,J=1,H=5
-  R3: 26 * 82 - 1 = 2131 -> D=8,B=3,C=6,J=1,H=2
-  R4: 28 * 92 - 1 = 2575 -> D=9,B=7,C=8,J=5,H=2
-  R5: 34 * 93 - 1 = 3161 -> D=9,B=6,C=4,J=1,H=3
-  R6: 46 * 94 - 1 = 4323 -> D=9,B=2,C=6,J=3,H=4
-  R7: 57 * 95 - 1 = 5414 -> D=9,B=1,C=7,J=4,H=5
-  R8: 73 * 97 - 1 = 7080 -> D=9,B=8,C=3,J=0,H=7
-  R9: 78 * 97 - 1 = 7565 -> D=9,B=6,C=8,J=5,H=7
-  R10: 87 * 98 - 1 = 8525 -> D=9,B=2,C=7,J=5,H=8
+【|'*#|】 = 【|{%{】
+  input: 【|】【'】【*】【#】【|】
+  left:【|】【'】
+  operator: 【*】
+  right:【#】【|】
+  output: 【|】【{】【%】【{】
+  concatenation: 【|】【'】【#】【|】 mismatch
+  reverse concatenation: 【#】【|】【|】【'】 mismatch
+  operator: 【*】unknown
 
-Candidates are tried in order; R1 is the first that extends to every fact. Propagate it:
-fact2 [|'*#|] = [|{%{]:
-  try mul: 84 * 98 = 8232 -> encodes |{%{ = |{%{ OK -> accept
-fact0 [??+%'] = [##]:
-  try add: 66 + 34 = 100 (length/sign off) NG
-  try sub: 66 - 34 = 32 -> encodes %{ != ## NG
-  try rsub: 34 - 66 = -32 (length/sign off) NG
-  try add1: 66 + 34 + 1 = 101 (length/sign off) NG
-  try addm1: 66 + 34 - 1 = 99 -> encodes ## = ## OK -> accept
-fact1 ['(+?:] = [(@:]:
-  operator '+' already fixed = addm1
-  try addm1: 41 + 67 - 1 = 107 -> encodes (@: = (@: OK -> accept
-fact3 [:)-'?] = [{#]:
-  try add: 75 + 46 = 121 (length/sign off) NG
-  try sub: 75 - 46 = 29 -> encodes {# = {# OK -> accept
+【:)-'?】 = 【{#】
+  input: 【:】【)】【-】【'】【?】
+  left:【:】【)】
+  operator: 【-】
+  right:【'】【?】
+  output: 【{】【#】
+  concatenation: 【:】【)】【'】【?】 mismatch
+  reverse concatenation: 【'】【?】【:】【)】 mismatch
+  operator: 【-】unknown
 
-Recovered cipher: D(#)=9, B(%)=3, C(')=4, E(()=1, K())=5, F(:)=7, A(?)=6, G(@)=0, J({)=2, H(|)=8
-Query #'*(': DC=94, EC=14, '*' = mul: 94 * 14 = 1316.
-Encode 1316 back to original symbols -> (%(?.
+Question【#'*('】
+  input: 【#】【'】【*】【(】【'】
+  left:【#】【'】
+  operator:【*】
+  right:【(】【'】
+
+The question operator is 【*】, which is unknown.
+As the question operator is unknown, we default to concatenation.
+
+  concatenation(【#】【'】, 【(】【'】) = 【#】【'】【(】【'】
+  output: 【#'('】-> 【{#'('}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{(%(?}
+The answer in \boxed{–} is \boxed{#'('}

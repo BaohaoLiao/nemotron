@@ -1,58 +1,46 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [(&>{@] = [>^@]: AB > CD = EFD  (r.len=3, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
-fact1 [({}$'] = [@:(]: AC } GH = DJA  (r.len=3, sym=['A', 'C', 'D', 'G', 'H', 'J'], |sym|=6)
-fact2 ['&\"&] = ['&"&]: HB \ KB = HBKB  (r.len=4, sym=['B', 'H', 'K'], |sym|=3)
-query [@:\:']: DJ \ JH = ?
+【(&>{@】 = 【>^@】
+  input: 【(】【&】【>】【{】【@】
+  left:【(】【&】
+  operator: 【>】
+  right:【{】【@】
+  output: 【>】【^】【@】
+  concatenation: 【(】【&】【{】【@】 mismatch
+  reverse concatenation: 【{】【@】【(】【&】 mismatch
+  operator: 【>】unknown
 
-narrowing operator candidates by result length:
-  '>' -> {mul, mul1, mulm1, add1, addm1}
-  '\' -> {concat, rconcat, mul, mul1, mulm1}
-  '}' -> {mul, mul1, mulm1, add1, addm1}
+【({}$'】 = 【@:(】
+  input: 【(】【{】【}】【$】【'】
+  left:【(】【{】
+  operator: 【}】
+  right:【$】【'】
+  output: 【@】【:】【(】
+  concatenation: 【(】【{】【$】【'】 mismatch
+  reverse concatenation: 【$】【'】【(】【{】 mismatch
+  operator: 【}】unknown
 
-Mul anchor: fact2 ['&\"&] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern HB \ KB = HBKB -> 720 candidates:
-  R0: concat(01,21) = 0121 -> K=2,B=1,H=0
-  R1: concat(01,31) = 0131 -> K=3,B=1,H=0
-  R2: concat(01,41) = 0141 -> K=4,B=1,H=0
-  R3: concat(01,51) = 0151 -> K=5,B=1,H=0
-  R4: concat(01,61) = 0161 -> K=6,B=1,H=0
-  R5: concat(01,71) = 0171 -> K=7,B=1,H=0
-  R6: concat(01,81) = 0181 -> K=8,B=1,H=0
-  R7: concat(01,91) = 0191 -> K=9,B=1,H=0
-  R8: concat(02,12) = 0212 -> K=1,B=2,H=0
-  R9: concat(02,32) = 0232 -> K=3,B=2,H=0
-  R10: concat(02,42) = 0242 -> K=4,B=2,H=0
-  R11: concat(02,52) = 0252 -> K=5,B=2,H=0
-  R12: concat(02,62) = 0262 -> K=6,B=2,H=0
-  R13: concat(02,72) = 0272 -> K=7,B=2,H=0
-  R14: concat(02,82) = 0282 -> K=8,B=2,H=0
-  R15: concat(02,92) = 0292 -> K=9,B=2,H=0
-  R16: concat(03,13) = 0313 -> K=1,B=3,H=0
-  R17: concat(03,23) = 0323 -> K=2,B=3,H=0
-  R18: concat(03,43) = 0343 -> K=4,B=3,H=0
-  R19: concat(03,53) = 0353 -> K=5,B=3,H=0
-  R20: concat(03,63) = 0363 -> K=6,B=3,H=0
-  R21: concat(03,73) = 0373 -> K=7,B=3,H=0
-  R22: concat(03,83) = 0383 -> K=8,B=3,H=0
-  R23: concat(03,93) = 0393 -> K=9,B=3,H=0
-  ... 696 more candidates
+【'&\"&】 = 【'&"&】
+  input: 【'】【&】【\】【"】【&】
+  left:【'】【&】
+  operator: 【\】
+  right:【"】【&】
+  output: 【'】【&】【"】【&】
+  concatenation: 【'】【&】【"】【&】 match
+  reverse concatenation: 【"】【&】【'】【&】 mismatch
+  operator: 【\】concatenation
 
-Candidates are tried in order; R471 is the first that extends to every fact. Propagate it:
-fact2 ['&\"&] = ['&"&]:
-  try mul: 64 * 94 = 6016 -> encodes '(^' != '&"& NG
-  try concat: concat(64,94) = 6494 -> encodes '&"& = '&"& OK -> accept
-fact0 [(&>{@] = [>^@]:
-  try mul: 4 * 53 = 212 -> encodes >^> != >^@ NG
-  try mul1: 4 * 53 + 1 = 213 -> encodes >^@ = >^@ OK -> accept
-fact1 [({}$'] = [@:(]:
-  try mul: 5 * 76 = 380 -> encodes @:( = @:( OK -> accept
+Question【@:\:'】
+  input: 【@】【:】【\】【:】【'】
+  left:【@】【:】
+  operator:【\】
+  right:【:】【'】
 
-Recovered cipher: K(")=9, G($)=7, B(&)=4, H(')=6, A(()=0, J(:)=8, E(>)=2, D(@)=3, F(^)=1, C({)=5
-Query @:\:': DJ=38, JH=86, '\' = concat: concat(38,86) = 3886.
-Encode 3886 back to original symbols -> @::'.
+The question operator is 【\】, which is concatenation.
+
+  concatenation(【@】【:】, 【:】【'】) = 【@】【:】【:】【'】
+  output: 【@::'】-> 【{@::'}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{@::'}
+The answer in \boxed{–} is \boxed{@::'}

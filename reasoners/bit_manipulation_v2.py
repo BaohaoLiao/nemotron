@@ -30,6 +30,8 @@ original solver 1364/1602 (85.1%) -> this solver 1569/1602 (97.9%).
 from __future__ import annotations
 
 import itertools
+import re
+from types import SimpleNamespace
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from reasoners.bit_manipulation import (
@@ -179,13 +181,129 @@ def _name_function(rule: _Rule) -> Optional[str]:
     return None
 
 
-def _emit_table(lines: List[str], rule: _Rule) -> None:
+def _necessity_line(
+    inputs: Sequence[str],
+    outputs: Sequence[str],
+    question: str,
+    offsets: Tuple[int, ...],
+    drop_d: int,
+    mode: str,
+) -> str:
+    """Explain why offset ``drop_d`` cannot be removed from ``offsets``: dropping it
+    either makes two example bits collide, or leaves a question bit undetermined."""
+    sub = tuple(d for d in offsets if d != drop_d)
+    verdict, info = _candidate_verdict(inputs, outputs, question, sub, mode)
+    if verdict == "inconsistent":
+        _o, _m, key, (ea, ba, oa), (eb, bb, ob) = info  # type: ignore[misc]
+        return (
+            f"drop {_signed(drop_d)} -> collision {''.join(key)}: "
+            f"{oa}@ex{ea + 1}b{ba} vs {ob}@ex{eb + 1}b{bb}"
+        )
+    if verdict == "undetermined":
+        bit_i, pat = info  # type: ignore[misc]
+        return f"drop {_signed(drop_d)} -> question bit{bit_i} pattern {pat} unseen"
+    return f"drop {_signed(drop_d)} -> still works (redundant)"
+
+
+def _determining_lines(
+    inputs: Sequence[str], question: str, offsets: Tuple[int, ...], mode: str
+) -> List[str]:
+    """For every question bit, cite the example bit whose source pattern matches it
+    (this is what makes the window *determining* for the held-out input)."""
+    first: Dict[Tuple[str, ...], Tuple[int, int]] = {}
+    for e, x in enumerate(inputs):
+        for b in range(N_BITS):
+            key = tuple(_source_bit(x, b, d, mode) for d in offsets)
+            first.setdefault(key, (e, b))
+    out: List[str] = []
+    for i in range(N_BITS):
+        key = tuple(_source_bit(question, i, d, mode) for d in offsets)
+        e, b = first[key]
+        out.append(f"q bit{i} {''.join(key)} = ex{e + 1}b{b}")
+    return out
+
+
+def _table_provenance(
+    inputs: Sequence[str], outputs: Sequence[str], offsets: Tuple[int, ...], mode: str
+) -> Dict[Tuple[str, ...], Tuple[int, int, str]]:
+    """First (example, bit, output) that established each source pattern."""
+    first: Dict[Tuple[str, ...], Tuple[int, int, str]] = {}
+    for e, (x, o) in enumerate(zip(inputs, outputs)):
+        for b in range(N_BITS):
+            key = tuple(_source_bit(x, b, d, mode) for d in offsets)
+            first.setdefault(key, (e, b, o[b]))
+    return first
+
+
+def _emit_table_derived(
+    lines: List[str],
+    rule: _Rule,
+    inputs: Sequence[str],
+    outputs: Sequence[str],
+) -> None:
+    """Emit g one row at a time, each derived from a concrete example bit instead of
+    asserted."""
     k = len(rule.offsets)
-    lines.append("g (" + "".join(f"s{j}" for j in range(k)) + " -> out)")
+    prov = _table_provenance(inputs, outputs, rule.offsets, rule.mode)
+    header = "".join(f"s{j}" for j in range(k))
+    lines.append(
+        f"Derive g from the examples (g({header}) = out, read off a worked bit):"
+    )
     for v in range(2**k):
         key = tuple(format(v, "b").zfill(k))
         if key in rule.table:
-            lines.append("".join(key) + f" {rule.table[key]}")
+            e, b, _o = prov[key]
+            lines.append(f"g({''.join(key)}) = {rule.table[key]}  from ex{e + 1}b{b}")
+
+
+def _emit_derive(
+    lines: List[str],
+    inputs: Sequence[str],
+    outputs: Sequence[str],
+    question: str,
+    rule: _Rule,
+) -> None:
+    """Derive the sliding-window support by necessity instead of brute-force search:
+    show each chosen offset is required (dropping it collides or under-determines)
+    and that the full window is consistent and determining."""
+    mode = rule.mode
+    mode_word = "rotate" if mode == "rotate" else "shift"
+    edge = "wrap around the ends" if mode == "rotate" else "zero past the ends"
+    k = len(rule.offsets)
+    lines.append(
+        "Hypothesis: every output bit is the SAME function g of input bits at a "
+        "fixed set of offsets (a sliding window)."
+    )
+    lines.append(f"Mode: {mode_word} ({edge}).")
+    if k >= 2:
+        for d in sorted(_OFFSETS, key=lambda x: (abs(x), x)):
+            c = _first_conflict(inputs, outputs, (d,), mode)
+            if c is not None:
+                _o, _m, key, (ea, ba, oa), (eb, bb, ob) = c
+                lines.append(
+                    f"One bit is not enough: offset {_signed(d)} alone collides "
+                    f"{''.join(key)}: {oa}@ex{ea + 1}b{ba} vs {ob}@ex{eb + 1}b{bb}."
+                )
+                break
+    offs_lbl = "{" + ", ".join(_signed(d) for d in rule.offsets) + "}"
+    if k >= 2:
+        lines.append(f"Window {offs_lbl}. Each offset is necessary:")
+        for d in rule.offsets:
+            lines.append(
+                "  " + _necessity_line(inputs, outputs, question, rule.offsets, d, mode)
+            )
+    else:
+        lines.append(f"Window {offs_lbl}: a single offset already fits.")
+    lines.append(
+        "Full window is consistent (no source pattern maps to two different "
+        "outputs in any example)"
+    )
+    lines.append(
+        "and determining (every question bit's source pattern was seen in an example):"
+    )
+    for ln in _determining_lines(inputs, question, rule.offsets, mode):
+        lines.append("  " + ln)
+    lines.append("")
 
 
 # Human labels for each support size, used to narrate the search ladder.
@@ -228,6 +346,11 @@ def _first_conflict(
 # search tries far more; capping keeps the trace readable while still showing the
 # enumerate-test-reject-accept procedure. Raise it for more exhaustive traces.
 _SEARCH_DISPLAY_CAP = 12
+
+# When the size<=2 window search finds no winner, show this many rejected
+# candidates before summarizing the rest. (A winner, when it exists, is always
+# shown in full up to itself -- this cap only applies to the no-winner case.)
+_SIZE2_CAP = 16
 
 # Section names emitted by the original per-bit solver (Attempt 2). Each enumerates
 # many candidate operand rows; we cap them like the Attempt 1 search to keep the
@@ -284,79 +407,6 @@ def _window_shape(offsets: Tuple[int, ...], mode: str) -> str:
         return f"{verb} {direction} {abs(d)}"
     verb = "rotate" if mode == "rotate" else "shift"
     return f"{verb} taps " + ",".join(_signed(d) for d in offsets)
-
-
-def _emit_search(
-    lines: List[str],
-    inputs: Sequence[str],
-    outputs: Sequence[str],
-    question: str,
-    winner: _Rule,
-) -> None:
-    """Narrate the search compactly: enumerate offset windows smallest-first, test
-    each, reject with concrete evidence, accept the first that works."""
-    wk = len(winner.offsets)
-    lines.append(
-        "Search offset windows simplest first; r rotate (wrap), s shift (zero-fill)."
-    )
-    lines.append(
-        "Accept if consistent (no pattern -> two outputs) and determining "
-        "(all question patterns seen)."
-    )
-    lines.append("x reject inconsistent, ? reject undetermined.")
-
-    for k in range(1, wk + 1):
-        combos = sorted(
-            itertools.combinations(_OFFSETS, k),
-            key=lambda t: (sum(abs(d) for d in t), t),
-        )
-        rows: List[str] = []
-        n_incons = 0
-        n_undet = 0
-        tested = 0
-        accepted: Optional[Tuple[Tuple[int, ...], str]] = None
-        for offsets in combos:
-            for mode in ("rotate", "shift"):
-                tested += 1
-                verdict, info = _candidate_verdict(
-                    inputs, outputs, question, offsets, mode
-                )
-                if verdict == "win":
-                    accepted = (offsets, mode)
-                    break
-                if verdict == "inconsistent":
-                    n_incons += 1
-                    _o, _m, key, (ea, ba, oa), (eb, bb, ob) = info  # type: ignore[misc]
-                    ev = f"x {''.join(key)}: {oa}@ex{ea + 1}b{ba} {ob}@ex{eb + 1}b{bb}"
-                else:  # undetermined
-                    n_undet += 1
-                    bit_i, pat = info  # type: ignore[misc]
-                    ev = f"? bit{bit_i} needs {pat}"
-                if len(rows) < _SEARCH_DISPLAY_CAP:
-                    rows.append(f"{_cand_str(offsets, mode)} {ev}")
-            if accepted is not None:
-                break
-
-        lines.append("")
-        lines.append(f"size {k}")
-        for row in rows:
-            lines.append(row)
-        hidden = tested - len(rows) - (1 if accepted is not None else 0)
-        if hidden > 0:
-            parts = [f"{n_incons} inconsistent"]
-            if n_undet:
-                parts.append(f"{n_undet} undetermined")
-            lines.append(f"+{hidden} more ({', '.join(parts)})")
-        if accepted is not None:
-            a_off, a_mode = accepted
-            gname = (
-                _name_function(winner)
-                if (a_off == winner.offsets and a_mode == winner.mode)
-                else None
-            )
-            tail = f" g={gname}" if gname else ""
-            lines.append(f"{_cand_str(a_off, a_mode)} accept{tail}")
-    lines.append("")
 
 
 def _emit_search_failed(
@@ -449,6 +499,14 @@ _ATTEMPT1_INTRO = (
     "(covers shift/rotate/XOR/AND/OR/NOT/majority/choice)."
 )
 
+# Neutral lead-in for the standalone sliding-window derivation (used as the
+# fallback when the per-bit solver cannot resolve the problem).
+_GENERIC_INTRO = (
+    "Model every output bit as the SAME function g of input bits at fixed "
+    "offsets (a sliding window; covers shift/rotate/XOR/AND/OR/NOT/majority/"
+    "choice)."
+)
+
 
 def _emit_header(
     lines: List[str], inputs: Sequence[str], outputs: Sequence[str]
@@ -489,7 +547,7 @@ def _emit_ti_body(
     name = _name_function(rule)
     offsets_str = ", ".join(_signed(d) for d in rule.offsets)
     mode_word = "rotate" if rule.mode == "rotate" else "shift"
-    _emit_search(lines, inputs, outputs, question, rule)
+    _emit_derive(lines, inputs, outputs, question, rule)
     lines.append("Rule")
     lines.append(
         "output[i] = g("
@@ -504,7 +562,7 @@ def _emit_ti_body(
         + ")"
     )
     lines.append(f"{mode_word}, offsets {offsets_str}")
-    _emit_table(lines, rule)
+    _emit_table_derived(lines, rule, inputs, outputs)
     if name is not None:
         lines.append(f"g = {name}")
     lines.append("")
@@ -674,49 +732,316 @@ def _solve_translation_invariant(problem: Problem) -> Optional[str]:
     return "\n".join(lines)
 
 
-def reasoning_bit_manipulation(problem: Problem) -> Optional[str]:
-    """Two-attempt trace: try a generic rule first, fall back to per-bit analysis.
+def _reproduce_examples(
+    problem: Problem,
+) -> Tuple[List[str], bool, List[int]]:
+    """Apply the per-bit (v1) rule back to every worked example and check it
+    reproduces the example output.
 
-    The trace always narrates Attempt 1 (search for one translation-invariant
-    rule). If that succeeds the trace ends there. If it fails, the trace explains
-    why and continues with Attempt 2 (the original per-bit solver), so a model
-    trained on it learns the routing decision, not just the winning branch.
+    The v1 rule is derived from the examples only (the question is used solely at
+    apply time), so re-running v1 with the example input as the query applies the
+    SAME rule to that input. Returns ``(rows, all_ok, bad)`` where ``rows`` are
+    display lines and ``bad`` is the list of indices of every example the rule
+    fails to reproduce (empty when all reproduce).
+
+    This check is computed from the examples alone -- never from the held-out
+    answer -- so the accept/pivot decision it drives is reproducible at inference.
     """
-    rule, answers, inputs, outputs, question, reason = _attempt1(problem)
+    rows: List[str] = []
+    bad: List[int] = []
+    for i, ex in enumerate(problem.examples):
+        inp = _normalize_bits(ex.input_value)
+        out = _normalize_bits(ex.output_value)
+        shim = SimpleNamespace(examples=problem.examples, question=ex.input_value)
+        pred = _boxed_answer(_reasoning_bit_manipulation_original(shim))  # type: ignore[arg-type]
+        if pred == out:
+            rows.append(f"ex{i}: {inp} -> {pred} ok")
+        else:
+            bad.append(i)
+            rows.append(f"ex{i}: {inp} -> {pred or '????????'} MISMATCH expected {out}")
+    return rows, not bad, bad
 
-    # Could not normalize the problem at all: defer entirely to the original.
-    if inputs is None or outputs is None or question is None:
-        return _reasoning_bit_manipulation_original(problem)
 
-    lines: List[str] = []
-    _emit_header(lines, inputs, outputs)
-    lines.append(_ATTEMPT1_INTRO)
-    lines.append("")
+def _bounded2_order() -> List[Tuple[Tuple[int, ...], str]]:
+    """Every shared window of size <= 2, simplest-first (size, then sum |offset|,
+    then tuple), in both rotate and shift modes.
 
-    if rule is not None and reason is None:
-        _emit_ti_body(lines, inputs, outputs, question, rule, answers[0])
-        return "\n".join(lines)
+    Small enough (240 candidates) to enumerate in full, so a size<=2 winner is
+    always reached and shown -- never hidden behind a display cap. Windows that
+    need 3+ offsets fall through to a labelled guess instead of being brute-forced
+    to an unlearnable wide offset set.
+    """
+    combos: List[Tuple[int, ...]] = []
+    for k in (1, 2):
+        combos.extend(itertools.combinations(_OFFSETS, k))
+    combos.sort(key=lambda t: (len(t), sum(abs(d) for d in t), t))
+    out: List[Tuple[Tuple[int, ...], str]] = []
+    for offs in combos:
+        for mode in ("rotate", "shift"):
+            out.append((offs, mode))
+    return out
 
-    # Attempt 1 failed -> show the exhaustive search behind the give-up decision,
-    # then explain, then run Attempt 2 (per-bit solver).
-    survivors, distinct = _emit_search_failed(lines, inputs, outputs, question)
-    if distinct:
-        lines.append(
-            f"{len(survivors)} windows pass but disagree: {', '.join(distinct)}"
-        )
-    else:
-        lines.append("No window of size 1..4 is consistent and determining.")
-    lines.append("")
-    lines.append(f"Attempt 1 fails: {reason}.")
-    lines.append("Fall back to per-bit matching.")
-    lines.append("")
+
+def _emit_rule_block(
+    lines: List[str],
+    inputs: Sequence[str],
+    outputs: Sequence[str],
+    question: str,
+    rule: _Rule,
+) -> str:
+    """Emit Rule + g derived from examples + Verify + Apply for a chosen window.
+    Returns the answer string."""
+    answer = rule.predict(question)
+    assert answer is not None
+    mode_word = "rotate" if rule.mode == "rotate" else "shift"
+    offsets_str = ", ".join(_signed(d) for d in rule.offsets)
+    lines.append("Rule")
     lines.append(
-        "Attempt 2: match each output column against "
-        "Identity/NOT/Constant/AND/OR/XOR (and NOT variants), then combine."
+        "output[i] = g("
+        + ", ".join(
+            (
+                f"input[(i{_signed(d)}) mod 8]"
+                if rule.mode == "rotate"
+                else f"input[i{_signed(d)}]"
+            )
+            for d in rule.offsets
+        )
+        + ")"
+    )
+    lines.append(f"{mode_word}, offsets {offsets_str}")
+    _emit_table_derived(lines, rule, inputs, outputs)
+    name = _name_function(rule)
+    if name is not None:
+        lines.append(f"g = {name}")
+    lines.append("")
+    lines.append("Verify")
+    for x, o in zip(inputs, outputs):
+        got = rule.predict(x)
+        ok = "ok" if got == o else f"MISMATCH expected {o}"
+        lines.append(f"{x} -> {got} {ok}")
+    lines.append("")
+    lines.append(f"Applying to {question}")
+    lines.append("Input")
+    for i, bit in enumerate(question):
+        lines.append(f"{i} {bit}")
+    lines.append("Output")
+    gname = name or "g"
+    for i in range(N_BITS):
+        srcs = [_source_bit(question, i, d, rule.mode) for d in rule.offsets]
+        val = rule.table[tuple(srcs)]
+        lines.append(f"{i} {gname}({','.join(srcs)}) = {val}")
+    lines.append("")
+    lines.append("I will now return the answer in \\boxed{}")
+    lines.append(f"The answer in \\boxed{{–}} is \\boxed{{{answer}}}")
+    return answer
+
+
+def _scan_windows(
+    candidates: Sequence[Tuple[Tuple[int, ...], str]],
+    inputs: Sequence[str],
+    outputs: Sequence[str],
+    question: str,
+) -> Tuple[List[str], Optional[_Rule]]:
+    """Test ``candidates`` in order, stopping at the first consistent+determining
+    one. Return the narration rows (one per tested candidate, the winner ending in
+    ``-> accept``) and the accepted rule, or ``None`` if every candidate rejects.
+    """
+    rows: List[str] = []
+    for offsets, mode in candidates:
+        verdict, info = _candidate_verdict(inputs, outputs, question, offsets, mode)
+        if verdict == "win":
+            table = _build_table(inputs, outputs, offsets, mode)
+            assert table is not None
+            rows.append(
+                f"{_cand_str(offsets, mode)} consistent and determining -> accept"
+            )
+            return rows, _Rule(mode, offsets, table)
+        if verdict == "inconsistent":
+            _o, _m, key, (ea, ba, oa), (eb, bb, ob) = info  # type: ignore[misc]
+            ev = f"x {''.join(key)}: {oa}@ex{ea + 1}b{ba} {ob}@ex{eb + 1}b{bb}"
+        else:  # undetermined
+            bit_i, pat = info  # type: ignore[misc]
+            ev = f"? bit{bit_i} needs {pat}"
+        rows.append(f"{_cand_str(offsets, mode)} {ev}")
+    return rows, None
+
+
+def _emit_bounded2_search(
+    lines: List[str],
+    inputs: Sequence[str],
+    outputs: Sequence[str],
+    question: str,
+    cap: int,
+) -> Optional[_Rule]:
+    """Narrate the bounded window search as an explicit size ladder: first every
+    single offset (size 1), then -- only if all of those reject -- every offset
+    pair (size 2), simplest first within each size.
+
+    A winner of either size is shown in full (never hidden) and its rule returned.
+    Size 1 has only 30 candidates, so all are listed and "all reject" is exhaustive
+    before escalating. Size 2 has 210 candidates, so its rejects are capped at
+    ``cap`` with a summary. If neither size fits, return ``None`` -- the caller then
+    guesses a larger window.
+    """
+    order = _bounded2_order()
+    singles = [(o, m) for o, m in order if len(o) == 1]
+    pairs = [(o, m) for o, m in order if len(o) == 2]
+
+    lines.append(
+        "Look for one shared window, escalating by size: first every single "
+        "offset (size 1), then every offset pair (size 2), simplest first."
+    )
+    lines.append(
+        "Accept the first consistent (no source pattern -> two outputs) and "
+        "determining (every query bit's pattern seen in an example)."
+    )
+    lines.append(
+        "r rotate (wrap), s shift (zero past the ends). "
+        "x reject inconsistent, ? reject undetermined."
     )
     lines.append("")
-    fallback = _reasoning_bit_manipulation_original(problem)
-    if fallback is None:
-        return None
-    lines.append(_trim_fallback(_strip_v1_header(fallback)))
-    return "\n".join(lines)
+
+    # Size 1: single offset. Only 30 candidates, so list them all -- "all reject"
+    # is then fully exhaustive, nothing hidden.
+    lines.append("Size 1: every single offset.")
+    rows1, rule1 = _scan_windows(singles, inputs, outputs, question)
+    lines.extend(rows1)
+    lines.append("")
+    if rule1 is not None:
+        return rule1
+    lines.append(
+        "All 30 single offsets reject: not a plain shift or rotate (with or "
+        "without a global NOT). Escalate to offset pairs."
+    )
+    lines.append("")
+
+    # Size 2: offset pair. 210 candidates -> a winner is shown in full, but if all
+    # reject the list is capped (nothing to hide -- they all fail).
+    lines.append("Size 2: every offset pair.")
+    rows2, rule2 = _scan_windows(pairs, inputs, outputs, question)
+    if rule2 is not None:
+        lines.extend(rows2)  # winner reached: never hidden
+        lines.append("")
+        return rule2
+    lines.extend(rows2[:cap])
+    hidden = len(rows2) - min(len(rows2), cap)
+    if hidden > 0:
+        lines.append(f"+{hidden} more offset pairs, all reject")
+    lines.append("All offset pairs reject too.")
+    lines.append("")
+    return None
+
+
+def reasoning_bit_manipulation(problem: Problem) -> Optional[str]:
+    """Verify-gated two-attempt trace: per-bit first, pivot to a shared rule only
+    when the per-bit rule fails to reproduce the worked examples.
+
+    Every trace:
+      1. builds the per-bit (v1) rule -- the proven-learnable style that computes
+         each output bit from a small, shown local layout;
+      2. VERIFIES that rule against the worked examples (an in-prompt, answer-
+         independent check);
+      3. if every example is reproduced, applies the rule to the query (v1 answer);
+         otherwise the per-bit rule is provably wrong, so the trace switches to one
+         shared function of input bits at fixed offsets (the sliding-window rule)
+         and derives it.
+
+    The pivot is triggered by a signal the model can compute at inference (the
+    rule does not reproduce a visible example), not by the hidden answer -- so the
+    routing is learnable, and the model can recover when the per-bit rule fails.
+    """
+    v1 = _reasoning_bit_manipulation_original(problem)
+    if v1 is None or "\nApplying to " not in v1:
+        return v1  # could not produce a per-bit trace; nothing to gate
+
+    rows, all_ok, bad = _reproduce_examples(problem)
+    pre, _sep, apply_tail = v1.partition("\nApplying to ")
+    apply_tail = "Applying to " + apply_tail
+
+    verify = ["", "Verify the per-bit rule reproduces every worked example:"]
+    verify.extend(rows)
+
+    if all_ok:
+        tail = [
+            "",
+            "All worked examples reproduced; the per-bit rule is valid. "
+            "Apply it to the query.",
+            "",
+            apply_tail,
+        ]
+        return "\n".join([pre, *verify, *tail])
+
+    # The per-bit rule is inconsistent with the examples. Pivot in three stages:
+    #   A. a fully-shown size<=2 window search (single offset or pair). If a
+    #      window fits, derive and apply it -- a real, learnable search.
+    #   B. if nothing of size<=2 fits, the rule needs >=3 offsets. There are too
+    #      many such windows to enumerate, so take the simplest consistent window
+    #      the full search finds, label it a guess, justify it by necessity, and
+    #      derive the answer.
+    #   C. if no shared window fits at all, keep the per-bit best effort.
+    if len(bad) == 1:
+        bad_msg = f"Example {bad[0]} is not reproduced"
+    else:
+        bad_msg = f"Examples {', '.join(str(i) for i in bad)} are not reproduced"
+    switch = [
+        "",
+        f"{bad_msg}, so the per-bit rule is not valid here.",
+        "Try instead one shared function of input bits at fixed offsets "
+        "(a sliding window).",
+        "",
+        _GENERIC_INTRO,
+        "",
+    ]
+
+    inp_norm = [_normalize_bits(ex.input_value) for ex in problem.examples]
+    out_norm = [_normalize_bits(ex.output_value) for ex in problem.examples]
+    q_norm = _normalize_bits(problem.question)
+    if not q_norm or any(not b for b in inp_norm + out_norm):
+        # Could not normalize for the window search: keep the per-bit best effort.
+        note = [
+            "",
+            f"{bad_msg}, but the examples could not be parsed for a window "
+            "search; keep the per-bit best effort.",
+            "",
+            apply_tail,
+        ]
+        return "\n".join([pre, *verify, *note])
+
+    body: List[str] = []
+
+    # Stage A: explicit size-1 then size-2 search, every candidate shown.
+    rule = _emit_bounded2_search(body, inp_norm, out_norm, q_norm, cap=_SIZE2_CAP)
+    if rule is not None:
+        _emit_rule_block(body, inp_norm, out_norm, q_norm, rule)
+        return "\n".join([pre, *verify, *switch, *body])
+
+    # Stage B: no size<=2 window fits -> guess the simplest larger window.
+    guess, _answers = _search_rules(inp_norm, out_norm, q_norm)
+    if guess is not None:
+        k = len(guess.offsets)
+        body.append(
+            f"No single offset and no offset pair fits, so the rule needs {k} "
+            "offsets. There are too many such windows to enumerate one by one; "
+            "take the simplest window consistent with every example (a guess) "
+            "and check it."
+        )
+        body.append("")
+        _emit_derive(body, inp_norm, out_norm, q_norm, guess)
+        _emit_rule_block(body, inp_norm, out_norm, q_norm, guess)
+        return "\n".join([pre, *verify, *switch, *body])
+
+    # Stage C: no shared window fits at all -> per-bit best effort.
+    body.append(
+        "No shared window fits the examples either. Use the per-bit best effort."
+    )
+    body.append("")
+    body.append(apply_tail)
+    return "\n".join([pre, *verify, *switch, *body])
+
+
+def _boxed_answer(text: Optional[str]) -> str:
+    """Last ``\\boxed{...}`` payload, or empty string."""
+    if not text:
+        return ""
+    matches = re.findall(r"\\boxed\{([^}]*)\}", text)
+    return matches[-1].strip() if matches else ""

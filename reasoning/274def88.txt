@@ -36,37 +36,37 @@ Looking at operator 【-】 [29-79 = -5, 01-72 = -71]:
     concatenation f(92, 97) = 92 || 97 = 9297 -rev-> 7929 wrong
     reverse concatenation f(10, 27) = 27 || 10 = 2710 -rev-> 0172 wrong
     addition f(92, 97) = 92 + 97 = 189 -rev-> 981 wrong
-    subtraction (a-b) f(10, 27) = 10 - 27 = -17 -rev-> -71 match, f(92,97) -> 92 - 97 = -5 -rev-> -5 match, correct, actions: reversed operands, reversed result, subtraction (a-b)
-    reverse subtraction (b-a) f(92, 97) = 97 - 92 = 5 -rev-> 5 wrong
     absolute difference f(10, 27) = |10 - 27| = 17 -rev-> 71 wrong
-    negated absolute difference f(92, 97) = -|92 - 97| = -5 -rev-> -5 match, f(10,27) -> -|10 - 27| = -17 -rev-> -71 match, correct, but skipping
+    negated absolute difference f(92, 97) = -|92 - 97| = -5 -rev-> -5 match, f(10,27) -> -|10 - 27| = -17 -rev-> -71 match, correct, actions: reversed operands, reversed result, negated absolute difference
+    subtraction (a-b) f(10, 27) = 10 - 27 = -17 -rev-> -71 match, f(92,97) -> 92 - 97 = -5 -rev-> -5 match, correct, but skipping
+    reverse subtraction (b-a) f(92, 97) = 97 - 92 = 5 -rev-> 5 wrong
     multiplication f(10, 27) = (10 + 0) * 27 = 10 * 27 + 0 * 27 = 270 + 0 = 270 -rev-> 072 wrong
   Trying common operations on identity [29 79, 01 72] [expected (29,79)->-5, (01,72)->-71]:
     concatenation f(29, 79) = 29 || 79 = 2979 wrong
     reverse concatenation f(01, 72) = 72 || 01 = 7201 wrong
     addition f(29, 79) = 29 + 79 = 108 wrong
-    subtraction (a-b) f(01, 72) = 01 - 72 = -71 match, f(29,79) -> 29 - 79 = -50 wrong
-    reverse subtraction (b-a) f(29, 79) = 79 - 29 = 50 wrong
     absolute difference f(01, 72) = |01 - 72| = 71 wrong
     negated absolute difference f(29, 79) = -|29 - 79| = -50 wrong
+    subtraction (a-b) f(01, 72) = 01 - 72 = -71 match, f(29,79) -> 29 - 79 = -50 wrong
+    reverse subtraction (b-a) f(29, 79) = 79 - 29 = 50 wrong
     multiplication f(01, 72) = (0 + 1) * 72 = 0 * 72 + 1 * 72 = 0 + 72 = 72 wrong
   Trying common operations reversed operands [29->92 79->97, 01->10 72->27] [expected (92,97)->-5, (10,27)->-71]:
     concatenation f(92, 97) = 92 || 97 = 9297 wrong
     reverse concatenation f(10, 27) = 27 || 10 = 2710 wrong
     addition f(92, 97) = 92 + 97 = 189 wrong
-    subtraction (a-b) f(10, 27) = 10 - 27 = -17 wrong
-    reverse subtraction (b-a) f(92, 97) = 97 - 92 = 5 wrong
     absolute difference f(10, 27) = |10 - 27| = 17 wrong
     negated absolute difference f(92, 97) = -|92 - 97| = -5 match, f(10,27) -> -|10 - 27| = -17 wrong
+    subtraction (a-b) f(10, 27) = 10 - 27 = -17 wrong
+    reverse subtraction (b-a) f(92, 97) = 97 - 92 = 5 wrong
     multiplication f(10, 27) = (10 + 0) * 27 = 10 * 27 + 0 * 27 = 270 + 0 = 270 wrong
   Trying common operations identity operands [29 79, 01 72] reversed result [expected (29,79)->-5, (01,72)->-71]:
     concatenation f(29, 79) = 29 || 79 = 2979 -rev-> 9792 wrong
     reverse concatenation f(01, 72) = 72 || 01 = 7201 -rev-> 1027 wrong
     addition f(29, 79) = 29 + 79 = 108 -rev-> 801 wrong
-    subtraction (a-b) f(01, 72) = 01 - 72 = -71 -rev-> -17 wrong
-    reverse subtraction (b-a) f(29, 79) = 79 - 29 = 50 -rev-> 05 wrong
     absolute difference f(01, 72) = |01 - 72| = 71 -rev-> 17 wrong
     negated absolute difference f(29, 79) = -|29 - 79| = -50 -rev-> -05 wrong
+    subtraction (a-b) f(01, 72) = 01 - 72 = -71 -rev-> -17 wrong
+    reverse subtraction (b-a) f(29, 79) = 79 - 29 = 50 -rev-> 05 wrong
     multiplication f(01, 72) = (0 + 1) * 72 = 0 * 72 + 1 * 72 = 0 + 72 = 72 -rev-> 27 wrong
   Trying rare operations reversed operands [29->92 79->97, 01->10 72->27] and reversed result [expected (92,97)->-5, (10,27)->-71]:
     multiply+1 f(92, 97) = (90 + 2) * 97 + 1 = 90 * 97 + 2 * 97 + 1 = 8730 + 194 + 1 = 8924 + 1 = 8925 -rev-> 5298 wrong
@@ -171,9 +171,9 @@ Looking at operator 【-】 [29-79 = -5, 01-72 = -71]:
 
 Applying to 85-92:
   reversed operands [85->58, 92->29] and reversed result
-  subtraction (a-b) f(58, 29) = 58 - 29 = 29 -rev-> 92
-  Result is non-negative, no prefix needed: 【92】
-  Result: 【92】
+  negated absolute difference f(58, 29) = -|58 - 29| = -29 -rev-> -92
+  Result is negative - we add back the operator prefix 【-】: -92 -> 【-92】
+  Result: 【-92】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{92}
+The answer in \boxed{–} is \boxed{-92}

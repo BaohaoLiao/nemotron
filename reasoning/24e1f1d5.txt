@@ -1,61 +1,56 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [%!+<}] = [%!<}]: AB + CD = ABCD  (r.len=4, sym=['A', 'B', 'C', 'D'], |sym|=4)
-fact1 [<^*"^] = [["(]: CE * FE = GFH  (r.len=3, sym=['C', 'E', 'F', 'G', 'H'], |sym|=5)
-fact2 [!\*%[] = [#}(\]: BJ * AG = KDHJ  (r.len=4, sym=['A', 'B', 'D', 'G', 'H', 'J', 'K'], |sym|=7)
-fact3 [^<*<<] = [^"<]: EC * CC = EFC  (r.len=3, sym=['C', 'E', 'F'], |sym|=3)
-query [^#+(!]: EK + HB = ?
+【%!+<}】 = 【%!<}】
+  input: 【%】【!】【+】【<】【}】
+  left:【%】【!】
+  operator: 【+】
+  right:【<】【}】
+  output: 【%】【!】【<】【}】
+  concatenation: 【%】【!】【<】【}】 match
+  reverse concatenation: 【<】【}】【%】【!】 mismatch
+  operator: 【+】concatenation
 
-narrowing operator candidates by result length:
-  '*' -> {mul, mul1, mulm1}
-  '+' -> {concat, rconcat, mul, mul1, mulm1}
+【<^*"^】 = 【["(】
+  input: 【<】【^】【*】【"】【^】
+  left:【<】【^】
+  operator: 【*】
+  right:【"】【^】
+  output: 【[】【"】【(】
+  concatenation: 【<】【^】【"】【^】 mismatch
+  reverse concatenation: 【"】【^】【<】【^】 mismatch
+  operator: 【*】unknown
 
-Mul anchor: fact2 [!\*%[] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern BJ * AG = KDHJ -> 121 candidates:
-  R0: 20 * 67 = 1340 -> B=2,K=1,A=6,H=4,G=7,J=0,D=3
-  R1: 20 * 69 = 1380 -> B=2,K=1,A=6,H=8,G=9,J=0,D=3
-  R2: 20 * 73 = 1460 -> B=2,K=1,A=7,H=6,G=3,J=0,D=4
-  R3: 20 * 78 = 1560 -> B=2,K=1,A=7,H=6,G=8,J=0,D=5
-  R4: 20 * 79 = 1580 -> B=2,K=1,A=7,H=8,G=9,J=0,D=5
-  R5: 20 * 93 = 1860 -> B=2,K=1,A=9,H=6,G=3,J=0,D=8
-  R6: 25 * 43 = 1075 -> B=2,K=1,A=4,H=7,G=3,J=5,D=0
-  R7: 30 * 54 = 1620 -> B=3,K=1,A=5,H=2,G=4,J=0,D=6
-  R8: 30 * 58 = 1740 -> B=3,K=1,A=5,H=4,G=8,J=0,D=7
-  R9: 30 * 64 = 1920 -> B=3,K=1,A=6,H=2,G=4,J=0,D=9
-  R10: 30 * 87 = 2610 -> B=3,K=2,A=8,H=1,G=7,J=0,D=6
-  R11: 30 * 89 = 2670 -> B=3,K=2,A=8,H=7,G=9,J=0,D=6
-  R12: 32 * 56 = 1792 -> B=3,K=1,A=5,H=9,G=6,J=2,D=7
-  R13: 34 * 56 = 1904 -> B=3,K=1,A=5,H=0,G=6,J=4,D=9
-  R14: 34 * 61 = 2074 -> B=3,K=2,A=6,H=7,G=1,J=4,D=0
-  R15: 34 * 76 = 2584 -> B=3,K=2,A=7,H=8,G=6,J=4,D=5
-  R16: 34 * 81 = 2754 -> B=3,K=2,A=8,H=5,G=1,J=4,D=7
-  R17: 35 * 69 = 2415 -> B=3,K=2,A=6,H=1,G=9,J=5,D=4
-  R18: 35 * 71 = 2485 -> B=3,K=2,A=7,H=8,G=1,J=5,D=4
-  R19: 38 * 71 = 2698 -> B=3,K=2,A=7,H=9,G=1,J=8,D=6
-  R20: 40 * 38 = 1520 -> B=4,K=1,A=3,H=2,G=8,J=0,D=5
-  R21: 40 * 39 = 1560 -> B=4,K=1,A=3,H=6,G=9,J=0,D=5
-  R22: 40 * 59 = 2360 -> B=4,K=2,A=5,H=6,G=9,J=0,D=3
-  R23: 40 * 78 = 3120 -> B=4,K=3,A=7,H=2,G=8,J=0,D=1
-  ... 97 more candidates
+【!\*%[】 = 【#}(\】
+  input: 【!】【\】【*】【%】【[】
+  left:【!】【\】
+  operator: 【*】
+  right:【%】【[】
+  output: 【#】【}】【(】【\】
+  concatenation: 【!】【\】【%】【[】 mismatch
+  reverse concatenation: 【%】【[】【!】【\】 mismatch
+  operator: 【*】unknown
 
-Candidates are tried in order; R67 is the first that extends to every fact. Propagate it:
-fact2 [!\*%[] = [#}(\]:
-  try mul: 80 * 37 = 2960 -> encodes #}(\ = #}(\ OK -> accept
-fact0 [%!+<}] = [%!<}]:
-  try mul: 38 * 19 = 722 (length/sign off) NG
-  try concat: concat(38,19) = 3819 -> encodes %!<} = %!<} OK -> accept
-fact1 [<^*"^] = [["(]:
-  operator '*' already fixed = mul
-  try mul: 14 * 54 = 756 -> encodes ["( = ["( OK -> accept
-fact3 [^<*<<] = [^"<]:
-  operator '*' already fixed = mul
-  try mul: 41 * 11 = 451 -> encodes ^"< = ^"< OK -> accept
+【^<*<<】 = 【^"<】
+  input: 【^】【<】【*】【<】【<】
+  left:【^】【<】
+  operator: 【*】
+  right:【<】【<】
+  output: 【^】【"】【<】
+  concatenation: 【^】【<】【<】【<】 mismatch
+  reverse concatenation: 【<】【<】【^】【<】 mismatch
+  operator: 【*】unknown
 
-Recovered cipher: B(!)=8, F(")=5, K(#)=2, A(%)=3, H(()=6, C(<)=1, G([)=7, J(\)=0, E(^)=4, D(})=9
-Query ^#+(!: EK=42, HB=68, '+' = concat: concat(42,68) = 4268.
-Encode 4268 back to original symbols -> ^#(!.
+Question【^#+(!】
+  input: 【^】【#】【+】【(】【!】
+  left:【^】【#】
+  operator:【+】
+  right:【(】【!】
+
+The question operator is 【+】, which is concatenation.
+
+  concatenation(【^】【#】, 【(】【!】) = 【^】【#】【(】【!】
+  output: 【^#(!】-> 【{^#(!}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{^#(!}
+The answer in \boxed{–} is \boxed{^#(!}

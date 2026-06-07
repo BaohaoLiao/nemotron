@@ -1,41 +1,47 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [&%+@]] = [`?&]: AB + CD = EFA  (r.len=3, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
-fact1 [@>*<@] = [&>?<]: CG * HC = AGFH  (r.len=4, sym=['A', 'C', 'F', 'G', 'H'], |sym|=5)
-fact2 [@`*`%] = [`^&%]: CE * EB = EJAB  (r.len=4, sym=['A', 'B', 'C', 'E', 'J'], |sym|=5)
-query [`]*@>]: ED * CG = ?
+【&%+@]】 = 【`?&】
+  input: 【&】【%】【+】【@】【]】
+  left:【&】【%】
+  operator: 【+】
+  right:【@】【]】
+  output: 【`】【?】【&】
+  concatenation: 【&】【%】【@】【]】 mismatch
+  reverse concatenation: 【@】【]】【&】【%】 mismatch
+  operator: 【+】unknown
 
-narrowing operator candidates by result length:
-  '*' -> {concat, rconcat, mul, mul1, mulm1}
-  '+' -> {mul, mul1, mulm1, add1, addm1}
+【@>*<@】 = 【&>?<】
+  input: 【@】【>】【*】【<】【@】
+  left:【@】【>】
+  operator: 【*】
+  right:【<】【@】
+  output: 【&】【>】【?】【<】
+  concatenation: 【@】【>】【<】【@】 mismatch
+  reverse concatenation: 【<】【@】【@】【>】 mismatch
+  operator: 【*】unknown
 
-Mul anchor: fact1 [@>*<@] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern CG * HC = AGFH -> 6 candidates:
-  R0: 67 * 26 = 1742 -> A=1,H=2,G=7,F=4,C=6
-  R1: 74 * 87 = 6438 -> A=6,H=8,G=4,F=3,C=7  <-- consistent with all facts
-  R2: 57 * 65 + 1 = 3706 -> A=3,H=6,G=7,F=0,C=5
-  R3: 35 * 43 - 1 = 1504 -> A=1,H=4,G=5,F=0,C=3
-  R4: 53 * 45 - 1 = 2384 -> A=2,H=4,G=3,F=8,C=5
-  R5: 75 * 47 - 1 = 3524 -> A=3,H=4,G=5,F=2,C=7
+【@`*`%】 = 【`^&%】
+  input: 【@】【`】【*】【`】【%】
+  left:【@】【`】
+  operator: 【*】
+  right:【`】【%】
+  output: 【`】【^】【&】【%】
+  concatenation: 【@】【`】【`】【%】 mismatch
+  reverse concatenation: 【`】【%】【@】【`】 mismatch
+  operator: 【*】unknown
 
-Candidates are tried in order; R1 is the first that extends to every fact. Propagate it:
-fact1 [@>*<@] = [&>?<]:
-  try mul: 74 * 87 = 6438 -> encodes &>?< = &>?< OK -> accept
-fact0 [&%+@]] = [`?&]:
-  try mul: 65 * 72 = 4680 (length/sign off) NG
-  try mul1: 65 * 72 + 1 = 4681 (length/sign off) NG
-  try mulm1: 65 * 72 - 1 = 4679 (length/sign off) NG
-  try add1: 65 + 72 + 1 = 138 -> encodes `?< != `?& NG
-  try addm1: 65 + 72 - 1 = 136 -> encodes `?& = `?& OK -> accept
-fact2 [@`*`%] = [`^&%]:
-  operator '*' already fixed = mul
-  try mul: 71 * 15 = 1065 -> encodes `^&% = `^&% OK -> accept
+Question【`]*@>】
+  input: 【`】【]】【*】【@】【>】
+  left:【`】【]】
+  operator:【*】
+  right:【@】【>】
 
-Recovered cipher: B(%)=5, A(&)=6, H(<)=8, G(>)=4, F(?)=3, C(@)=7, D(])=2, J(^)=0, E(`)=1
-Query `]*@>: ED=12, CG=74, '*' = mul: 12 * 74 = 888.
-Encode 888 back to original symbols -> <<<.
+The question operator is 【*】, which is unknown.
+As the question operator is unknown, we default to concatenation.
+
+  concatenation(【`】【]】, 【@】【>】) = 【`】【]】【@】【>】
+  output: 【`]@>】-> 【{`]@>}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{<<<}
+The answer in \boxed{–} is \boxed{`]@>}

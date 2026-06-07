@@ -191,97 +191,633 @@ Input 8: 10011110
 6 1
 7 0
 
-Attempt 1: one generic rule for every bit.
-g is one shared function of input bits at fixed offsets (covers shift/rotate/XOR/AND/OR/NOT/majority/choice).
+When matching output
+x: not in operator
+y: wrong position
 
-Search offset windows simplest first; r rotate (wrap), s shift (zero-fill).
-Accept if consistent (no pattern -> two outputs) and determining (all question patterns seen).
-x reject inconsistent, ? reject undetermined.
+Identity
+0 001100011 4
+1 111101000 5
+2 011100100 4
+3 010000101 3
+4 101110011 6
+5 001110101 5
+6 001110101 5
+7 100100000 2 match 0
 
-size 1
-[+0]r x 0: 1@ex1b0 0@ex1b2
-[+0]s x 0: 1@ex1b0 0@ex1b2
-[-1]r x 1: 1@ex1b0 0@ex1b2
-[-1]s x 0: 1@ex1b0 0@ex1b1
-[+1]r x 1: 1@ex1b0 0@ex1b3
-[+1]s x 1: 1@ex1b0 0@ex1b3
-[-2]r x 0: 1@ex1b0 0@ex1b2
-[-2]s x 0: 1@ex1b0 0@ex1b1
-[+2]r x 0: 1@ex1b0 0@ex1b1
-[+2]s x 0: 1@ex1b0 0@ex1b1
-[-3]r x 0: 1@ex1b0 0@ex1b1
-[-3]s x 0: 1@ex1b0 0@ex1b1
-+18 more (30 inconsistent)
+Matching output
+0 7
+1 absent
+2 absent
+3 absent
+4 absent
+5 absent
+6 absent
+7 absent
 
-size 2
-[-1,+0]r x 10: 1@ex1b0 0@ex1b2
-[-1,+0]s x 00: 1@ex1b0 0@ex1b3
-[+0,+1]r x 01: 1@ex1b0 0@ex1b3
-[+0,+1]s x 01: 1@ex1b0 0@ex1b3
-[-2,+0]r x 00: 1@ex1b0 0@ex1b2
-[-2,+0]s x 00: 1@ex1b0 0@ex1b2
-[-1,+1]r x 11: 1@ex1b0 0@ex2b2
-[-1,+1]s x 01: 1@ex1b0 0@ex1b3
-[+0,+2]r x 00: 1@ex1b0 0@ex1b3
-[+0,+2]s x 00: 1@ex1b0 0@ex1b3
-[-3,+0]r x 00: 1@ex1b0 0@ex1b3
-[-3,+0]s x 00: 1@ex1b0 0@ex1b2
-+198 more (210 inconsistent)
+Left
+7 0x
+Best: I7: 1
 
-size 3
-[-1,+0,+1]r x 100: 0@ex1b2 1@ex2b4
-[-1,+0,+1]s x 001: 1@ex1b0 0@ex1b3
-[-2,-1,+0]r x 010: 1@ex1b0 0@ex1b2
-[-2,-1,+0]s x 000: 1@ex1b0 0@ex2b0
-[-2,+0,+1]r x 001: 1@ex1b0 0@ex2b0
-[-2,+0,+1]s x 001: 1@ex1b0 0@ex2b0
-[-1,+0,+2]r x 110: 0@ex2b2 1@ex3b1
-[-1,+0,+2]s x 000: 1@ex1b0 0@ex1b3
-[+0,+1,+2]r x 010: 1@ex1b0 0@ex1b3
-[+0,+1,+2]s x 010: 1@ex1b0 0@ex1b3
-[-3,-1,+0]r x 010: 1@ex1b0 0@ex1b5
-[-3,-1,+0]s x 000: 1@ex1b0 0@ex1b3
-+898 more (910 inconsistent)
+Right
+none
+Best: none
 
-size 4
-[-2,-1,+0,+1]r x 0111: 0@ex2b2 1@ex3b1
-[-2,-1,+0,+1]s x 0001: 1@ex1b0 0@ex2b0
-[-1,+0,+1,+2]r x 1110: 0@ex2b2 1@ex3b1
-[-1,+0,+1,+2]s x 0010: 1@ex1b0 0@ex1b3
-[-3,-1,+0,+1]r x 1100: 0@ex1b2 1@ex2b4
-[-3,-1,+0,+1]s x 0001: 1@ex1b0 0@ex1b3
-[-2,-1,+0,+2]r x 0110: 0@ex2b2 1@ex3b1
-[-2,-1,+0,+2]s x 0000: 1@ex1b0 0@ex2b6
-[-2,+0,+1,+2]r x 1000: 1@ex2b4 0@ex2b5
-[-2,+0,+1,+2]s x 1000: 1@ex2b4 0@ex2b5
-[-1,+0,+1,+3]r x 1000: 0@ex1b2 1@ex2b4
-[-1,+0,+1,+3]s x 0010: 1@ex1b0 0@ex1b3
-+1453 more (1465 inconsistent)
-[-3,-1,+4,+7]s accept
+NOT
+0 110011100 5
+1 000010111 4
+2 100011011 5
+3 101111010 6
+4 010001100 3
+5 110001010 4
+6 110001010 4
+7 011011111 7
 
-Rule
-output[i] = g(input[i-3], input[i-1], input[i+4], input[i+7])
-shift, offsets -3, -1, +4, +7
-g (s0s1s2s3 -> out)
-0000 0
-0010 0
-0011 1
-0100 0
-0110 1
-1000 0
-1100 1
-1110 1
+Matching output
+0 absent
+1 absent
+2 absent
+3 absent
+4 absent
+5 absent
+6 absent
+7 absent
 
-Verify
-01001001 -> 10000000 ok
-01110000 -> 00001000 ok
-11101110 -> 01110101 ok
-11101111 -> 11110101 ok
-00001110 -> 00000001 ok
-01000000 -> 00000000 ok
-00110110 -> 00000010 ok
-10001000 -> 00000000 ok
-10011110 -> 01000011 ok
+Left
+none
+Best: none
+
+Right
+none
+Best: none
+
+Constant
+0 000000000 a
+1 111111111 a
+
+Matching output
+0 absent
+1 absent
+2 absent
+3 absent
+4 absent
+5 absent
+6 absent
+7 absent
+
+Left
+none
+Best: none
+
+Right
+none
+Best: none
+
+AND
+01 10 001100000 2 match 2 3 5
+12 21 011100000 3
+23 32 010000100 2
+34 43 000000001 1
+45 54 001110001 4 match 7
+56 65 001110101 5
+67 76 000100000 1
+70 07 000100000 1
+
+02 20 001100000 2 match 2 3 5
+13 31 010000000 1 match 4
+24 42 001100000 2 match 2 3 5
+35 53 000000101 2 match 6
+46 64 001110001 4 match 7
+57 75 000100000 1
+60 06 001100001 3 match 1
+71 17 100100000 2 match 0
+
+03 30 000000001 1
+14 41 101100000 3
+25 52 001100100 3
+36 63 000000101 2 match 6
+47 74 100100000 2 match 0
+50 05 001100001 3 match 1
+61 16 001100000 2 match 2 3 5
+72 27 000100000 1
+
+04 40 001100011 4
+15 51 001100000 2 match 2 3 5
+26 62 001100100 3
+37 73 000000000 a
+
+Matching output
+0 71 17 47 74
+1 60 06 50 05
+2 01 10 02 20 24 42 61 16 15 51
+3 01 10 02 20 24 42 61 16 15 51
+4 13 31
+5 01 10 02 20 24 42 61 16 15 51
+6 35 53 36 63
+7 45 54 46 64
+
+Left
+71 02y
+17 20y
+47 50 61 72x
+74 05 16 27x
+Best: AND47 50 61: 3
+
+Right
+45 34x
+54 43x
+46 35 24 13 02 71y
+64 53 42 31 20 17y
+Best: AND46 35 24 13 02: 5
+
+OR
+01 10 111101011 7
+12 21 111101100 6
+23 32 011100101 5
+34 43 111110111 8
+45 54 101110111 7
+56 65 001110101 5
+67 76 101110101 6
+70 07 101100011 5
+
+02 20 011100111 6
+13 31 111101101 7
+24 42 111110111 8
+35 53 011110101 6
+46 64 101110111 7
+57 75 101110101 6
+60 06 001110111 6
+71 17 111101000 5
+
+03 30 011100111 6
+14 41 111111011 8
+25 52 011110101 6
+36 63 011110101 6
+47 74 101110011 6
+50 05 001110111 6
+61 16 111111101 8
+72 27 111100100 5
+
+04 40 101110011 6
+15 51 111111101 8
+26 62 011110101 6
+37 73 110100101 5
+
+Matching output
+0 absent
+1 absent
+2 absent
+3 absent
+4 absent
+5 absent
+6 absent
+7 absent
+
+Left
+none
+Best: none
+
+Right
+none
+Best: none
+
+XOR
+01 10 110001011 5
+12 21 100001100 3
+23 32 001100001 3 match 1
+34 43 111110110 7
+45 54 100000110 3
+56 65 000000000 a
+67 76 101010101 5
+70 07 101000011 4
+
+02 20 010000111 4
+13 31 101101101 6
+24 42 110010111 6
+35 53 011110000 4
+46 64 100000110 3
+57 75 101010101 5
+60 06 000010110 3
+71 17 011001000 3
+
+03 30 011100110 5
+14 41 010011011 5
+25 52 010010001 3
+36 63 011110000 4
+47 74 001010011 4
+50 05 000010110 3
+61 16 110011101 6
+72 27 111000100 4
+
+04 40 100010000 2
+15 51 110011101 6
+26 62 010010001 3
+37 73 110100101 5
+
+Matching output
+0 absent
+1 23 32
+2 absent
+3 absent
+4 absent
+5 absent
+6 absent
+7 absent
+
+Left
+none
+Best: none
+
+Right
+none
+Best: none
+
+AND-NOT
+01 000000011 2
+12 100001000 2
+23 001100000 2 match 2 3 5
+34 010000100 2
+45 100000010 2
+56 000000000 a
+67 001010101 4
+70 100000000 1
+
+02 000000011 2
+13 101101000 4
+24 010000100 2
+35 010000000 1 match 4
+46 100000010 2
+57 001010101 4
+60 000010100 2
+71 000000000 a
+
+03 001100010 3
+14 010001000 2
+25 010000000 1 match 4
+36 010000000 1 match 4
+47 001010011 4
+50 000010100 2
+61 000010101 3
+72 100000000 1
+
+04 000000000 a
+15 110001000 3
+26 010000000 1 match 4
+37 010000101 3
+40 100010000 2
+51 000010101 3
+62 000010001 2
+73 100100000 2 match 0
+
+05 000000010 1
+16 110001000 3
+27 011000100 3
+30 010000100 2
+41 000010011 3
+52 000010001 2
+63 001110000 3
+74 000000000 a
+
+06 000000010 1
+17 011001000 3
+20 010000100 2
+31 000000101 2 match 6
+42 100010011 4
+53 001110000 3
+64 000000100 1
+75 100000000 1
+
+07 001000011 3
+10 110001000 3
+21 000000100 1
+32 000000001 1
+43 101110010 5
+54 000000100 1
+65 000000000 a
+76 100000000 1
+
+Matching output
+0 73
+1 absent
+2 23
+3 23
+4 35 25 36 26
+5 23
+6 31
+7 absent
+
+Left
+73 04x
+Best: AND-NOT73: 1
+
+Right
+none
+Best: none
+
+OR-NOT
+01 001110111 6
+12 111111011 8
+23 111111110 8
+34 010001101 4
+45 111111011 8
+56 111111111 a
+67 011111111 8
+70 110111100 6
+
+02 101111011 7
+13 111111010 7
+24 011101100 5
+35 110001111 6
+46 111111011 8
+57 011111111 8
+60 111111101 8
+71 100110111 6
+
+03 101111011 7
+14 111101100 6
+25 111101110 7
+36 110001111 6
+47 111111111 a
+50 111111101 8
+61 001110111 6
+72 100111011 6
+
+04 011101111 7
+15 111101010 6
+26 111101110 7
+37 011011111 7
+40 111111111 a
+51 001110111 6
+62 101111111 8
+73 101111010 6
+
+05 111101011 7
+16 111101010 6
+27 011111111 8
+30 110011101 6
+41 101110111 7
+52 101111111 8
+63 101111111 8
+74 110101100 5
+
+06 111101011 7
+17 111111111 a
+20 111111100 7
+31 010010111 5
+42 101111011 7
+53 101111111 8
+64 011111101 7
+75 110101010 5
+
+07 011111111 8
+10 111111100 7
+21 011110111 7
+32 110011111 7
+43 101111011 7
+54 011111101 7
+65 111111111 a
+76 110101010 5
+
+Matching output
+0 absent
+1 absent
+2 absent
+3 absent
+4 absent
+5 absent
+6 absent
+7 absent
+
+Left
+none
+Best: none
+
+Right
+none
+Best: none
+
+XOR-NOT
+01 001110100 4
+12 011110011 6
+23 110011110 6
+34 000001001 2
+45 011111001 6
+56 111111111 a
+67 010101010 4
+70 010111100 5
+
+02 101111000 5
+13 010010010 3
+24 001101000 3
+35 100001111 5
+46 011111001 6
+57 010101010 4
+60 111101001 6
+71 100110111 6
+
+03 100011001 4
+14 101100100 4
+25 101101110 6
+36 100001111 5
+47 110101100 5
+50 111101001 6
+61 001100010 3
+72 000111011 5
+
+04 011101111 7
+15 001100010 3
+26 101101110 6
+37 001011010 4
+40 011101111 7
+51 001100010 3
+62 101101110 6
+73 001011010 4
+
+05 111101001 6
+16 001100010 3
+27 000111011 5
+30 100011001 4
+41 101100100 4
+52 101101110 6
+63 100001111 5
+74 110101100 5
+
+06 111101001 6
+17 100110111 6
+20 101111000 5
+31 010010010 3
+42 001101000 3
+53 100001111 5
+64 011111001 6
+75 010101010 4
+
+07 010111100 5
+10 001110100 4
+21 011110011 6
+32 110011110 6
+43 000001001 2
+54 011111001 6
+65 111111111 a
+76 010101010 4
+
+Matching output
+0 absent
+1 absent
+2 absent
+3 absent
+4 absent
+5 absent
+6 absent
+7 absent
+
+Left
+none
+Best: none
+
+Right
+none
+Best: none
+
+Selecting
+
+Lefts
+Identity I7: 1
+NOT none
+Constant none
+AND AND47 50 61: 3
+OR none
+XOR none
+AND-NOT AND-NOT73: 1
+OR-NOT none
+XOR-NOT none
+
+Rights
+Identity none
+NOT none
+Constant none
+AND AND46 35 24 13 02: 5
+OR none
+XOR none
+AND-NOT none
+OR-NOT none
+XOR-NOT none
+
+Left longest: 3
+Right longest: 5
+
+Right winner: Identity no, NOT no, Constant no, AND yes, OR no, XOR no, AND-NOT no, OR-NOT no, XOR-NOT no
+Left winner: Identity no, NOT no, Constant no, AND yes, OR no, XOR no, AND-NOT no, OR-NOT no, XOR-NOT no
+
+Best right: AND46 35 24 13 02: 5
+Best left: AND47 50 61: 3
+
+Truncated right: AND46 35 24 13 02: 5
+Truncated left: AND47 50 61: 3
+
+Tentative from right
+7 AND46
+6 AND35
+5 AND24
+4 AND13
+3 AND02
+2 pending
+1 pending
+0 pending
+
+Tentative
+0 AND47
+1 AND50
+2 AND61
+3 AND02
+4 AND13
+5 AND24
+6 AND35
+7 AND46
+
+Preferred from right
+7 AND46
+6 AND35
+5 AND24
+4 AND13
+3 AND02
+2 AND61
+1 AND50
+0 AND47
+
+Preferred from left
+0 AND47
+1 AND50
+2 AND61
+3 AND02
+4 AND13
+5 AND24
+6 AND35
+7 AND46
+
+Preferred
+0 AND47
+1 AND50
+2 AND61
+3 AND02
+4 AND13
+5 AND24
+6 AND35
+7 AND46
+
+Matching
+0 AND47
+1 AND50
+2 AND61
+3 AND02
+4 AND13
+5 AND24
+6 AND35
+7 AND46
+
+Perfect match
+Identity no
+NOT no
+Constant no
+AND no
+OR no
+XOR no
+AND-NOT no
+OR-NOT no
+XOR-NOT no
+
+Matched
+0 AND47
+1 AND50
+2 AND61
+3 AND02
+4 AND13
+5 AND24
+6 AND35
+7 AND46
+
+Selected
+0 AND47
+1 AND50
+2 AND61
+3 AND02
+4 AND13
+5 AND24
+6 AND35
+7 AND46
+
+
+Verify the per-bit rule reproduces every worked example:
+ex0: 01001001 -> 10000000 ok
+ex1: 01110000 -> 00001000 ok
+ex2: 11101110 -> 01110101 ok
+ex3: 11101111 -> 11110101 ok
+ex4: 00001110 -> 00000001 ok
+ex5: 01000000 -> 00000000 ok
+ex6: 00110110 -> 00000010 ok
+ex7: 10001000 -> 00000000 ok
+ex8: 10011110 -> 01000011 ok
+
+All worked examples reproduced; the per-bit rule is valid. Apply it to the query.
 
 Applying to 00011001
 Input
@@ -294,14 +830,14 @@ Input
 6 0
 7 1
 Output
-0 g(0,0,1,1) = 1
-1 g(0,0,0,0) = 0
-2 g(0,0,0,0) = 0
-3 g(0,0,1,0) = 0
-4 g(0,1,0,0) = 0
-5 g(0,1,0,0) = 0
-6 g(1,0,0,0) = 0
-7 g(1,0,0,0) = 0
+0 AND47 = AND(1,1) = 1
+1 AND50 = AND(0,0) = 0
+2 AND61 = AND(0,0) = 0
+3 AND02 = AND(0,0) = 0
+4 AND13 = AND(0,1) = 0
+5 AND24 = AND(0,1) = 0
+6 AND35 = AND(1,0) = 0
+7 AND46 = AND(1,0) = 0
 
 I will now return the answer in \boxed{}
 The answer in \boxed{–} is \boxed{10000000}

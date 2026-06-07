@@ -1,71 +1,66 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [}%*})] = [||)]: AB * AC = DDC  (r.len=3, sym=['A', 'B', 'C', 'D'], |sym|=4)
-fact1 [`^-%"] = [%{]: EF - BG = BH  (r.len=2, sym=['B', 'E', 'F', 'G', 'H'], |sym|=5)
-fact2 [|}-!?] = [)`]: DA - JK = CE  (r.len=2, sym=['A', 'C', 'D', 'E', 'J', 'K'], |sym|=6)
-fact3 [{^+?)] = [{^?)]: HF + KC = HFKC  (r.len=4, sym=['C', 'F', 'H', 'K'], |sym|=4)
-fact4 [}!+}^] = [}!}^]: AJ + AF = AJAF  (r.len=4, sym=['A', 'F', 'J'], |sym|=3)
-query [!"+"!]: JG + GJ = ?
+【}%*})】 = 【||)】
+  input: 【}】【%】【*】【}】【)】
+  left:【}】【%】
+  operator: 【*】
+  right:【}】【)】
+  output: 【|】【|】【)】
+  concatenation: 【}】【%】【}】【)】 mismatch
+  reverse concatenation: 【}】【)】【}】【%】 mismatch
+  operator: 【*】unknown
 
-narrowing operator candidates by result length:
-  '*' -> {mul, mul1, mulm1, add1, addm1}
-  '+' -> {concat, rconcat, mul, mul1, mulm1}
-  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+【`^-%"】 = 【%{】
+  input: 【`】【^】【-】【%】【"】
+  left:【`】【^】
+  operator: 【-】
+  right:【%】【"】
+  output: 【%】【{】
+  concatenation: 【`】【^】【%】【"】 mismatch
+  reverse concatenation: 【%】【"】【`】【^】 mismatch
+  operator: 【-】unknown
 
-Mul anchor: fact3 [{^+?)] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern HF + KC = HFKC -> 5040 candidates:
-  R0: concat(01,23) = 0123 -> C=3,K=2,F=1,H=0
-  R1: concat(01,24) = 0124 -> C=4,K=2,F=1,H=0
-  R2: concat(01,25) = 0125 -> C=5,K=2,F=1,H=0
-  R3: concat(01,26) = 0126 -> C=6,K=2,F=1,H=0
-  R4: concat(01,27) = 0127 -> C=7,K=2,F=1,H=0
-  R5: concat(01,28) = 0128 -> C=8,K=2,F=1,H=0
-  R6: concat(01,29) = 0129 -> C=9,K=2,F=1,H=0
-  R7: concat(01,32) = 0132 -> C=2,K=3,F=1,H=0
-  R8: concat(01,34) = 0134 -> C=4,K=3,F=1,H=0
-  R9: concat(01,35) = 0135 -> C=5,K=3,F=1,H=0
-  R10: concat(01,36) = 0136 -> C=6,K=3,F=1,H=0
-  R11: concat(01,37) = 0137 -> C=7,K=3,F=1,H=0
-  R12: concat(01,38) = 0138 -> C=8,K=3,F=1,H=0
-  R13: concat(01,39) = 0139 -> C=9,K=3,F=1,H=0
-  R14: concat(01,42) = 0142 -> C=2,K=4,F=1,H=0
-  R15: concat(01,43) = 0143 -> C=3,K=4,F=1,H=0
-  R16: concat(01,45) = 0145 -> C=5,K=4,F=1,H=0
-  R17: concat(01,46) = 0146 -> C=6,K=4,F=1,H=0
-  R18: concat(01,47) = 0147 -> C=7,K=4,F=1,H=0
-  R19: concat(01,48) = 0148 -> C=8,K=4,F=1,H=0
-  R20: concat(01,49) = 0149 -> C=9,K=4,F=1,H=0
-  R21: concat(01,52) = 0152 -> C=2,K=5,F=1,H=0
-  R22: concat(01,53) = 0153 -> C=3,K=5,F=1,H=0
-  R23: concat(01,54) = 0154 -> C=4,K=5,F=1,H=0
-  ... 5016 more candidates
+【|}-!?】 = 【)`】
+  input: 【|】【}】【-】【!】【?】
+  left:【|】【}】
+  operator: 【-】
+  right:【!】【?】
+  output: 【)】【`】
+  concatenation: 【|】【}】【!】【?】 mismatch
+  reverse concatenation: 【!】【?】【|】【}】 mismatch
+  operator: 【-】unknown
 
-Candidates are tried in order; R841 is the first that extends to every fact. Propagate it:
-fact3 [{^+?)] = [{^?)]:
-  try mul: 17 * 3 = 51 (length/sign off) NG
-  try concat: concat(17,03) = 1703 -> encodes {^?) = {^?) OK -> accept
-fact0 [}%*})] = [||)]:
-  try mul: 24 * 23 = 552 -> encodes ||} != ||) NG
-  try mul1: 24 * 23 + 1 = 553 -> encodes ||) = ||) OK -> accept
-fact1 [`^-%"] = [%{]:
-  try add: 87 + 46 = 133 (length/sign off) NG
-  try sub: 87 - 46 = 41 -> encodes %{ != %{ NG
-  try rsub: 46 - 87 = -41 (length/sign off) NG
-  try add1: 87 + 46 + 1 = 134 (length/sign off) NG
-  try addm1: 87 + 46 - 1 = 132 (length/sign off) NG
-  try absdiff: |87 - 46| = 41 -> encodes %{ = %{ OK -> accept
-fact2 [|}-!?] = [)`]:
-  operator '-' already fixed = absdiff
-  try absdiff: |52 - 90| = 38 -> encodes )` = )` OK -> accept
-fact4 [}!+}^] = [}!}^]:
-  operator '+' already fixed = concat
-  try concat: concat(29,27) = 2927 -> encodes }!}^ = }!}^ OK -> accept
+【{^+?)】 = 【{^?)】
+  input: 【{】【^】【+】【?】【)】
+  left:【{】【^】
+  operator: 【+】
+  right:【?】【)】
+  output: 【{】【^】【?】【)】
+  concatenation: 【{】【^】【?】【)】 match
+  reverse concatenation: 【?】【)】【{】【^】 mismatch
+  operator: 【+】concatenation
 
-Recovered cipher: J(!)=9, G(")=6, B(%)=4, C())=3, K(?)=0, F(^)=7, E(`)=8, H({)=1, D(|)=5, A(})=2
-Query !"+"!: JG=96, GJ=69, '+' = concat: concat(96,69) = 9669.
-Encode 9669 back to original symbols -> !""!.
+【}!+}^】 = 【}!}^】
+  input: 【}】【!】【+】【}】【^】
+  left:【}】【!】
+  operator: 【+】
+  right:【}】【^】
+  output: 【}】【!】【}】【^】
+  concatenation: 【}】【!】【}】【^】 match
+  reverse concatenation: 【}】【^】【}】【!】 mismatch
+  operator: 【+】concatenation
+
+Question【!"+"!】
+  input: 【!】【"】【+】【"】【!】
+  left:【!】【"】
+  operator:【+】
+  right:【"】【!】
+
+The question operator is 【+】, which is concatenation.
+
+  concatenation(【!】【"】, 【"】【!】) = 【!】【"】【"】【!】
+  output: 【!""!】-> 【{!""!}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{!""!}
+The answer in \boxed{–} is \boxed{!""!}

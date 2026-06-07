@@ -1,39 +1,56 @@
-We infer the transformation rule from the facts by bounded rule-based trial.
+We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-remap (index 2 is the operator):
-fact0 [>\-\/] = ["\]: AB - BC = DB  (r.len=2, sym=['A', 'B', 'C', 'D'], |sym|=4)
-fact1 [:/-/"] = [:>]: EC - CD = EA  (r.len=2, sym=['A', 'C', 'D', 'E'], |sym|=4)
-fact2 [%\+%!] = [%\%!]: FB + FG = FBFG  (r.len=4, sym=['B', 'F', 'G'], |sym|=3)
-fact3 [:"*?%] = [:::"]: ED * HF = EEED  (r.len=4, sym=['D', 'E', 'F', 'H'], |sym|=4)
-query [:%+::]: EF + EE = ?
+【>\-\/】 = 【"\】
+  input: 【>】【\】【-】【\】【/】
+  left:【>】【\】
+  operator: 【-】
+  right:【\】【/】
+  output: 【"】【\】
+  concatenation: 【>】【\】【\】【/】 mismatch
+  reverse concatenation: 【\】【/】【>】【\】 mismatch
+  operator: 【-】unknown
 
-narrowing operator candidates by result length:
-  '*' -> {concat, rconcat, mul, mul1, mulm1}
-  '+' -> {concat, rconcat, mul, mul1, mulm1}
-  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+【:/-/"】 = 【:>】
+  input: 【:】【/】【-】【/】【"】
+  left:【:】【/】
+  operator: 【-】
+  right:【/】【"】
+  output: 【:】【>】
+  concatenation: 【:】【/】【/】【"】 mismatch
+  reverse concatenation: 【/】【"】【:】【/】 mismatch
+  operator: 【-】unknown
 
-Mul anchor: fact3 [:"*?%] (4-digit result constrains the cipher most tightly).
-Enumerate (operation, operands) consistent with the anchor pattern ED * HF = EEED -> 1 candidates:
-  R0: 25 * 89 = 2225 -> D=5,F=9,E=2,H=8  <-- consistent with all facts
+【%\+%!】 = 【%\%!】
+  input: 【%】【\】【+】【%】【!】
+  left:【%】【\】
+  operator: 【+】
+  right:【%】【!】
+  output: 【%】【\】【%】【!】
+  concatenation: 【%】【\】【%】【!】 match
+  reverse concatenation: 【%】【!】【%】【\】 mismatch
+  operator: 【+】concatenation
 
-Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
-fact3 [:"*?%] = [:::"]:
-  try mul: 25 * 89 = 2225 -> encodes :::" = :::" OK -> accept
-fact0 [>\-\/] = ["\]:
-  try add: 17 + 74 = 91 -> encodes %> != "\ NG
-  try sub: 17 - 74 = -57 (length/sign off) NG
-  try rsub: 74 - 17 = 57 -> encodes "\ = "\ OK -> accept
-fact1 [:/-/"] = [:>]:
-  operator '-' already fixed = rsub
-  try rsub: 45 - 24 = 21 -> encodes :> = :> OK -> accept
-fact2 [%\+%!] = [%\%!]:
-  try mul: 97 * 90 = 8730 -> encodes ?\?! != %\%! NG
-  try concat: concat(97,90) = 9790 -> encodes %\%! = %\%! OK -> accept
+【:"*?%】 = 【:::"】
+  input: 【:】【"】【*】【?】【%】
+  left:【:】【"】
+  operator: 【*】
+  right:【?】【%】
+  output: 【:】【:】【:】【"】
+  concatenation: 【:】【"】【?】【%】 mismatch
+  reverse concatenation: 【?】【%】【:】【"】 mismatch
+  operator: 【*】unknown
 
-Recovered cipher: G(!)=0, D(")=5, F(%)=9, C(/)=4, E(:)=2, A(>)=1, H(?)=8, B(\)=7
-Query :%+::: EF=29, EE=22, '+' = concat: concat(29,22) = 2922.
-Encode 2922 back to original symbols -> :%::.
+Question【:%+::】
+  input: 【:】【%】【+】【:】【:】
+  left:【:】【%】
+  operator:【+】
+  right:【:】【:】
+
+The question operator is 【+】, which is concatenation.
+
+  concatenation(【:】【%】, 【:】【:】) = 【:】【%】【:】【:】
+  output: 【:%::】-> 【{:%::}】
 
 I will now return the answer in \boxed{}
-The answer in \boxed{-} is \boxed{:%::}
+The answer in \boxed{–} is \boxed{:%::}

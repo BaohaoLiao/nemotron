@@ -471,13 +471,27 @@ def reasoning_equation_numeric(problem: Problem) -> str | None:
         # absolute difference) when the operator is literally "-" or when at least
         # one transformed example output is negative -- both reveal that this
         # puzzle encodes the sign of the result.
-        prefer_signed = op_char == "-" or any(
-            str(t).startswith("-") for _, _, t in group
-        )
+        signed_reason = ""
+        if op_char == "-":
+            signed_reason = "the operator is literally '-'"
+        elif any(str(t).startswith("-") for _, _, t in group):
+            signed_reason = "an example output is negative"
+        prefer_signed = bool(signed_reason)
 
         examples_str = ", ".join(f"{a}{op_char}{b} = {out}" for a, b, out in group)
         lines.append("")
         lines.append(f"Looking at operator 【{op_char}】 [{examples_str}]:")
+        if prefer_signed:
+            # Narrate the deterministic ordering rule so the choice between two
+            # operators that both fit the examples is explicit, not implicit:
+            # a-b and |a-b| agree on non-negative examples but differ in sign on
+            # the query, so a visible signed cue must break the tie toward a-b.
+            lines.append(
+                f"Since {signed_reason}, this puzzle keeps the sign of the result. "
+                "When signed subtraction (a-b) and absolute difference |a-b| both "
+                "match the examples, prefer signed subtraction so a negative query "
+                "answer keeps its sign."
+            )
 
         a_str, b_str, expected = group[0]
 
