@@ -1,47 +1,54 @@
 We need to infer the transformation rule from the examples.
 I will put my final answer inside \boxed{}.
 
-【{]-{{】 = 【)】
-  input: 【{】【]】【-】【{】【{】
-  left:【{】【]】
-  operator: 【-】
-  right:【{】【{】
-  output: 【)】
-  concatenation: 【{】【]】【{】【{】 mismatch
-  reverse concatenation: 【{】【{】【{】【]】 mismatch
-  operator: 【-】unknown
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
 
-【}@*>>】 = 【})]|】
-  input: 【}】【@】【*】【>】【>】
-  left:【}】【@】
-  operator: 【*】
-  right:【>】【>】
-  output: 【}】【)】【]】【|】
-  concatenation: 【}】【@】【>】【>】 mismatch
-  reverse concatenation: 【>】【>】【}】【@】 mismatch
-  operator: 【*】unknown
+Examples:
+  {]-{{ = )
+  }@*>> = })]|
+  )>->] = {@
 
-【)>->]】 = 【{@】
-  input: 【)】【>】【-】【>】【]】
-  left:【)】【>】
-  operator: 【-】
-  right:【>】【]】
-  output: 【{】【@】
-  concatenation: 【)】【>】【>】【]】 mismatch
-  reverse concatenation: 【>】【]】【)】【>】 mismatch
-  operator: 【-】unknown
+Step 1 - test the simplest reading, plain concatenation (output = the two operands' symbols in order, forward or reversed):
+  operator '*': }@*>> -> })]|; is NOT plain concatenation (some example differs)
+  operator '-': {]-{{ -> ?); is NOT plain concatenation (some example differs)
 
-Question【'}*{@】
-  input: 【'】【}】【*】【{】【@】
-  left:【'】【}】
-  operator:【*】
-  right:【{】【@】
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example:
+  '*' -> {mul, lcm, mul_p1, mul_m1}  (take mul)
+  '-' -> {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}  (take absdiff)
 
-The question operator is 【*】, which is unknown.
-As the question operator is unknown, we default to concatenation.
+Solve the cipher by constraint propagation. Start every symbol at {0..9}, then for each example keep only digits that let the operation reproduce the output; AllDifferent removes a fixed digit from the rest.
+Candidate digits after one pass over the examples:
+  ': {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+  ): {1, 2, 3, 4, 5, 6, 7}
+  >: {6, 7, 8, 9}
+  @: {2, 3, 4, 5, 6, 7, 8, 9}
+  ]: {1, 2, 3, 4, 5, 6, 7, 8, 9}
+  {: {1, 2, 3, 4, 5, 6, 7}
+  |: {0, 2, 3, 4, 6, 7, 8}
+  }: {1, 2, 3, 4, 5, 6, 7, 8}
 
-  concatenation(【'】【}】, 【{】【@】) = 【'】【}】【{】【@】
-  output: 【'}{@】-> 【{'}{@}】
+Commit symbols in order (forced = only digit left):
+  > = 6  guess (choices {6, 7, 8, 9}; the examples do not single one out, take 6 and verify)
+  ) = 2  forced (only remaining digit)
+  @ = 9  forced (only remaining digit)
+  ] = 5  forced (only remaining digit)
+  { = 3  forced (only remaining digit)
+  | = 4  forced (only remaining digit)
+  } = 1  forced (only remaining digit)
+  ' = 0  guess (choices {0, 7, 8}; the examples do not single one out, take 0 and verify)
+
+Recovered cipher: '=0, )=2, >=6, @=9, ]=5, {=3, |=4, }=1
+Operator meanings: '*'=mul, '-'=absdiff
+
+Step 3 - verify every example under this cipher:
+  {]-{{: |35 - 33| = 2 -> ) (expected )) OK
+  }@*>>: 19 * 66 = 1254 -> })]| (expected })]|) OK
+  )>->]: |26 - 65| = 39 -> {@ (expected {@) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question '}*{@:
+  '}=1, {@=39, '*'=mul: 1 * 39 -> encode back to symbols -> {@.
 
 I will now return the answer in \boxed{}
-The answer in \boxed{–} is \boxed{'}{@}
+The answer in \boxed{-} is \boxed{{@}

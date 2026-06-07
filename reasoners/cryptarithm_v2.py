@@ -545,24 +545,30 @@ def _emit_search_trace(problem: Problem, sol: "_Solution") -> str:
         lines.append(f"  '{opsym}' -> {{{', '.join(by_opsym[opsym])}}}")
     lines.append("")
 
-    # --- mul anchor: the 4-digit fact with the most distinct symbols ---
+    # --- anchor: the most-constraining fact whose result pins the cipher.
+    # Prefer a 4-digit result (a mul/concat -- only ~6-20 candidates); if none is
+    # present, fall back to the most-constraining 3-digit result so the cipher is
+    # still recovered by a SHOWN enumeration instead of being stated cold.
     anchor_idx = None
-    best = -1
+    best = (-1, -1)  # (4-digit preferred over 3-digit, then most distinct symbols)
     for i, (s0, s1, opsym, s3, s4, ov) in enumerate(facts):
-        if len(ov.lstrip("-")) == 4 and opsym in op_of:
-            nsym = len(set([s0, s1, s3, s4] + list(ov.lstrip("-"))))
-            if nsym > best:
-                best = nsym
-                anchor_idx = i
+        rlen = len(ov.lstrip("-"))
+        if rlen not in (3, 4) or opsym not in op_of:
+            continue
+        nsym = len(set([s0, s1, s3, s4] + list(ov.lstrip("-"))))
+        key = (1 if rlen == 4 else 0, nsym)
+        if key > best:
+            best = key
+            anchor_idx = i
     if anchor_idx is None:
-        # No 4-digit anchor in the solved facts -> compact trace is clearer.
+        # No 3- or 4-digit anchor among the solved facts -> compact trace.
         return _emit_trace(problem, sol)
 
     s0, s1, aopsym, s3, s4, aov = facts[anchor_idx]
     anchor_ops = _narrow_display(aov)
     lines.append(
-        f"Mul anchor: fact{anchor_idx} [{s0}{s1}{aopsym}{s3}{s4}] (4-digit result"
-        " constrains the cipher most tightly)."
+        f"Mul anchor: fact{anchor_idx} [{s0}{s1}{aopsym}{s3}{s4}] "
+        f"({len(aov.lstrip('-'))}-digit result constrains the cipher most tightly)."
     )
     table = _enum_anchor(s0, s1, s3, s4, aov, anchor_ops)
     # The winning candidate matches the full solution on this fact.
@@ -573,22 +579,32 @@ def _emit_search_trace(problem: Problem, sol: "_Solution") -> str:
         ):
             win = k
             break
+    if win is None:
+        # The anchor enumeration never surfaces the committed cipher; without a
+        # shown winner this would not be derivable, so use the compact trace.
+        return _emit_trace(problem, sol)
+
     cap = 24
+    # Never hide the winner: show every candidate up to AND INCLUDING R{win}
+    # (each earlier one was tried and rejected because it fails to extend to all
+    # facts), then summarize only the untried tail AFTER the winner. The display
+    # floor is therefore win + 1, so the accepted candidate is always visible.
+    shown = max(cap, win + 1)
     lines.append(
         f"Enumerate (operation, operands) consistent with the anchor pattern "
         f"{_lab(s0 + s1, labels)} {aopsym} {_lab(s3 + s4, labels)} = "
         f"{_lab(aov.lstrip('-'), labels)} -> {len(table)} candidates:"
     )
-    for k, (op, a, b, assign) in enumerate(table[:cap]):
+    for k, (op, a, b, assign) in enumerate(table[:shown]):
         mark = "  <-- consistent with all facts" if k == win else ""
         asg = ",".join(f"{labels[sym]}={d}" for sym, d in sorted(assign.items()))
         lines.append(f"  R{k}: {_op_expr(a, b, op)} -> {asg}{mark}")
-    if len(table) > cap:
-        lines.append(f"  ... {len(table) - cap} more candidates")
+    if len(table) > shown:
+        lines.append(
+            f"  ... {len(table) - shown} more candidates (untried; the search "
+            f"stops at the first that extends to every fact, R{win})"
+        )
     lines.append("")
-
-    if win is None:
-        return _emit_trace(problem, sol)
 
     # --- propagation: starting from the winning anchor, fix each remaining fact ---
     wop, wa, wb, wassign = table[win]

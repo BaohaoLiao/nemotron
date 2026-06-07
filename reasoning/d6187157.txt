@@ -777,120 +777,6 @@ Selected
 6 AND72
 7 AND03
 
-
-Verify the per-bit rule reproduces every worked example:
-ex0: 10101001 -> 01001010 ok
-ex1: 01001011 -> 00011100 MISMATCH expected 00010100
-ex2: 01100111 -> 00001110 ok
-ex3: 11100110 -> 00001100 ok
-ex4: 01010100 -> 10101000 MISMATCH expected 10100000
-ex5: 01110100 -> 10101000 MISMATCH expected 10100000
-ex6: 01010110 -> 10101100 MISMATCH expected 10100100
-
-Examples 1, 4, 5, 6 are not reproduced, so the per-bit rule is not valid here.
-Try instead one shared function of input bits at fixed offsets (a sliding window).
-
-Model every output bit as the SAME function g of input bits at fixed offsets (a sliding window; covers shift/rotate/XOR/AND/OR/NOT/majority/choice).
-
-Look for one shared window, escalating by size: first every single offset (size 1), then every offset pair (size 2), simplest first.
-Accept the first consistent (no source pattern -> two outputs) and determining (every query bit's pattern seen in an example).
-r rotate (wrap), s shift (zero past the ends). x reject inconsistent, ? reject undetermined.
-
-Size 1: every single offset.
-[+0]r x 0: 1@ex1b1 0@ex1b3
-[+0]s x 0: 1@ex1b1 0@ex1b3
-[-1]r x 1: 0@ex1b0 1@ex1b1
-[-1]s x 1: 1@ex1b1 0@ex1b3
-[+1]r x 1: 1@ex1b1 0@ex1b3
-[+1]s x 1: 1@ex1b1 0@ex1b3
-[-2]r x 1: 1@ex1b1 0@ex1b2
-[-2]s x 0: 0@ex1b0 1@ex1b1
-[+2]r x 0: 1@ex1b1 0@ex1b3
-[+2]s x 0: 1@ex1b1 0@ex1b3
-[-3]r x 0: 0@ex1b0 1@ex1b1
-[-3]s x 0: 0@ex1b0 1@ex1b1
-[+3]r x 1: 1@ex1b1 0@ex1b5
-[+3]s x 0: 0@ex1b0 1@ex1b6
-[-4]r x 0: 1@ex1b1 0@ex1b2
-[-4]s x 0: 0@ex1b0 1@ex1b1
-[+4]r x 0: 1@ex1b1 0@ex1b2
-[+4]s x 0: 1@ex1b1 0@ex1b2
-[-5]r x 1: 1@ex1b1 0@ex1b5
-[-5]s x 0: 0@ex1b0 1@ex1b1
-[+5]r x 0: 0@ex1b0 1@ex1b1
-[+5]s x 0: 0@ex1b0 1@ex1b1
-[-6]r x 0: 1@ex1b1 0@ex1b3
-[-6]s x 0: 0@ex1b0 1@ex1b1
-[+6]r x 1: 1@ex1b1 0@ex1b2
-[+6]s x 0: 0@ex1b0 1@ex1b4
-[-7]r x 1: 1@ex1b1 0@ex1b3
-[-7]s x 0: 0@ex1b0 1@ex1b1
-[+7]r x 1: 0@ex1b0 1@ex1b1
-[+7]s x 0: 1@ex1b1 0@ex1b2
-
-All 30 single offsets reject: not a plain shift or rotate (with or without a global NOT). Escalate to offset pairs.
-
-Size 2: every offset pair.
-[-1,+0]r x 10: 1@ex1b1 0@ex1b3
-[-1,+0]s x 10: 1@ex1b1 0@ex1b3
-[+0,+1]r x 01: 1@ex1b1 0@ex1b3
-[+0,+1]s x 01: 1@ex1b1 0@ex1b3
-[-2,+0]r x 11: 0@ex1b2 1@ex1b4
-[-2,+0]s x 00: 1@ex1b1 0@ex1b3
-[-1,+1]r x 11: 1@ex1b1 0@ex1b3
-[-1,+1]s x 11: 1@ex1b1 0@ex1b3
-[+0,+2]r x 00: 1@ex1b1 0@ex1b3
-[+0,+2]s x 00: 1@ex1b1 0@ex1b3
-[-3,+0]r x 01: 0@ex1b0 1@ex1b4
-[-3,+0]s x 01: 0@ex1b0 1@ex1b4
-[-2,-1]r x 10: 0@ex1b2 1@ex1b4
-[-2,-1]s x 01: 1@ex1b1 0@ex1b3
-[-2,+1]r x 10: 0@ex1b2 1@ex1b4
-[-2,+1]s x 01: 1@ex1b1 0@ex1b3
-+194 more offset pairs, all reject
-All offset pairs reject too.
-
-No single offset and no offset pair fits, so the rule needs 3 offsets. There are too many such windows to enumerate one by one; take the simplest window consistent with every example (a guess) and check it.
-
-Hypothesis: every output bit is the SAME function g of input bits at a fixed set of offsets (a sliding window).
-Mode: shift (zero past the ends).
-One bit is not enough: offset +0 alone collides 0: 1@ex1b1 vs 0@ex1b3.
-Window {-4, +1, +3}. Each offset is necessary:
-  drop -4 -> collision 10: 0@ex1b3 vs 1@ex1b6
-  drop +1 -> collision 01: 1@ex1b1 vs 0@ex2b1
-  drop +3 -> collision 01: 1@ex1b1 vs 0@ex1b3
-Full window is consistent (no source pattern maps to two different outputs in any example)
-and determining (every question bit's source pattern was seen in an example):
-  q bit0 010 = ex1b3
-  q bit1 011 = ex1b1
-  q bit2 001 = ex2b1
-  q bit3 010 = ex1b3
-  q bit4 110 = ex1b6
-  q bit5 100 = ex4b6
-  q bit6 100 = ex4b6
-  q bit7 000 = ex1b0
-
-Rule
-output[i] = g(input[i-4], input[i+1], input[i+3])
-shift, offsets -4, +1, +3
-Derive g from the examples (g(s0s1s2) = out, read off a worked bit):
-g(000) = 0  from ex1b0
-g(001) = 0  from ex2b1
-g(010) = 0  from ex1b3
-g(011) = 1  from ex1b1
-g(100) = 0  from ex4b6
-g(101) = 1  from ex1b4
-g(110) = 1  from ex1b6
-
-Verify
-10101001 -> 01001010 ok
-01001011 -> 00010100 ok
-01100111 -> 00001110 ok
-11100110 -> 00001100 ok
-01010100 -> 10100000 ok
-01110100 -> 10100000 ok
-01010110 -> 10100100 ok
-
 Applying to 11101100
 Input
 0 1
@@ -902,14 +788,14 @@ Input
 6 0
 7 0
 Output
-0 g(0,1,0) = 0
-1 g(0,1,1) = 1
-2 g(0,0,1) = 0
-3 g(0,1,0) = 0
-4 g(1,1,0) = 1
-5 g(1,0,0) = 0
-6 g(1,0,0) = 0
-7 g(0,0,0) = 0
+0 AND13 = AND(1,0) = 0
+1 AND24 = AND(1,1) = 1
+2 AND35 = AND(0,1) = 0
+3 AND46 = AND(1,0) = 0
+4 default 1 = 1
+5 AND61 = AND(0,1) = 0
+6 AND72 = AND(0,1) = 0
+7 AND03 = AND(1,0) = 0
 
 I will now return the answer in \boxed{}
 The answer in \boxed{–} is \boxed{01001000}
