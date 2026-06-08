@@ -8,8 +8,14 @@
 #
 # Data:
 #   - index : data/corpus.jsonl   (test_500 already marked included=False)
-#   - tokens: <repo>/corpus/<id>/synthetic.jsonl
+#   - tokens: <repo>/corpus/<category>/<version>/<id>/synthetic.jsonl
 #   - csv   : data/train_9000.csv  (used only when --original_problems_only)
+#
+# Solver version per category (the corpus is built --all-versions, so every
+# version is present; training picks one version per category):
+#   - default selection comes from <repo>/versions.json
+#   - override the whole file:        VERSIONS_CONFIG=/path/to/sel.json ./run_train.sh
+#   - override specific categories:   VERSIONS="bit_manipulation=v2 cryptarithm_deduce=v1" ./run_train.sh
 #
 # Extra args are forwarded to train_sft.py, e.g.:
 #     ./run_train.sh --learning_rate 1e-4 --num_steps 500 --original_problems_only
@@ -29,6 +35,12 @@ CORPUS_INDEX="${REPO_ROOT}/data/corpus.jsonl"
 CORPUS_DIR="${REPO_ROOT}/corpus"
 TRAIN_CSV="${REPO_ROOT}/data/train_9000.csv"
 OUTPUT_DIR="${SCRIPT_DIR}/output/weights"
+
+# Per-category solver version selection (see reasoners/versions.py).
+VERSIONS_CONFIG="${VERSIONS_CONFIG:-${REPO_ROOT}/versions.json}"
+# Optional per-category overrides, space-separated CAT=VER (e.g.
+#   VERSIONS="bit_manipulation=v2 cryptarithm_deduce=v1").
+VERSIONS="${VERSIONS:-}"
 
 # ── Hyperparameters (override via env) ───────────────────────────────
 NUM_GPUS="${NUM_GPUS:-1}"
@@ -53,7 +65,14 @@ COMMON_ARGS=(
   --batch_size "${BATCH_SIZE}"
   --micro_batch_size "${MICRO_BATCH_SIZE}"
   --learning_rate "${LEARNING_RATE}"
+  --versions_config "${VERSIONS_CONFIG}"
 )
+
+# Append per-category version overrides only when provided.
+if [[ -n "${VERSIONS}" ]]; then
+  # shellcheck disable=SC2206  -- intentional word-splitting of CAT=VER pairs.
+  COMMON_ARGS+=( --versions ${VERSIONS} )
+fi
 
 cd "${SCRIPT_DIR}"
 
@@ -62,6 +81,8 @@ echo "Corpus index: ${CORPUS_INDEX}"
 echo "Corpus dir  : ${CORPUS_DIR}"
 echo "Train csv   : ${TRAIN_CSV}"
 echo "Output dir  : ${OUTPUT_DIR}"
+echo "Versions cfg: ${VERSIONS_CONFIG}"
+echo "Versions    : ${VERSIONS:-<from config>}"
 echo "GPUs        : ${NUM_GPUS}"
 echo
 
