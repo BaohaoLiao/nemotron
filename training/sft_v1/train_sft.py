@@ -175,6 +175,15 @@ def parse_args() -> argparse.Namespace:
         metavar="CAT=VER",
         help="Override training version for specific categories.",
     )
+    g.add_argument(
+        "--max_gen_tokens",
+        type=int,
+        default=7680,
+        help="Drop corpus entries whose completion (the tokens the model must "
+        "generate, ending in \\boxed{...}<|im_end|>) exceeds this budget, so "
+        "every training trace reaches its boxed answer within the inference "
+        "generation window. 0 disables the filter.",
+    )
     g.add_argument("--train_csv", default=str(REPO_ROOT / "train.csv"))
     g.add_argument(
         "--original_problems_only",
@@ -319,6 +328,7 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
 
     examples: list[dict] = []
     skipped_version = 0
+    skipped_budget = 0
     for rec in index:
         if not rec.get("included", True):
             continue
@@ -349,6 +359,15 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
         tokens, mask = _load_segment(seg_path)
         if not tokens:
             continue
+        # Generation-budget filter. The completion (unmasked tokens) is what the
+        # model must produce at inference; its final tokens are \boxed{...} and
+        # <|im_end|>. If the completion exceeds the generation window the boxed
+        # answer is never reached (and corpus traces over the corpus limit were
+        # already tail-truncated, so they end mid-reasoning with no answer at
+        # all). Drop these so every trained trace finishes within budget.
+        if cfg.max_gen_tokens and sum(mask) > cfg.max_gen_tokens:
+            skipped_budget += 1
+            continue
         if len(tokens) > cfg.max_seq_len:
             tokens = tokens[: cfg.max_seq_len]
             mask = mask[: cfg.max_seq_len]
@@ -367,6 +386,12 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
         log(
             f"version selection skipped {skipped_version} corpus entries "
             f"(non-matching versions)"
+        )
+
+    if cfg.max_gen_tokens and skipped_budget:
+        log(
+            f"generation budget (max_gen_tokens={cfg.max_gen_tokens}) skipped "
+            f"{skipped_budget} corpus entries whose completion exceeds the budget"
         )
 
     if cfg.original_problems_only:

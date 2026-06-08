@@ -49,6 +49,9 @@ NUM_STEPS="${NUM_STEPS:-0}"
 BATCH_SIZE="${BATCH_SIZE:-32}"
 MICRO_BATCH_SIZE="${MICRO_BATCH_SIZE:-4}"
 LEARNING_RATE="${LEARNING_RATE:-2e-4}"
+# Drop traces whose completion (ending in \boxed{...}<|im_end|>) exceeds the
+# inference generation window, so every trained trace finishes within budget.
+MAX_GEN_TOKENS="${MAX_GEN_TOKENS:-7680}"
 
 # ── Sanity checks ────────────────────────────────────────────────────
 [[ -f "${CORPUS_INDEX}" ]] || { echo "Missing corpus index: ${CORPUS_INDEX}" >&2; exit 1; }
@@ -65,6 +68,7 @@ COMMON_ARGS=(
   --batch_size "${BATCH_SIZE}"
   --micro_batch_size "${MICRO_BATCH_SIZE}"
   --learning_rate "${LEARNING_RATE}"
+  --max_gen_tokens "${MAX_GEN_TOKENS}"
   --versions_config "${VERSIONS_CONFIG}"
 )
 
@@ -83,6 +87,7 @@ echo "Train csv   : ${TRAIN_CSV}"
 echo "Output dir  : ${OUTPUT_DIR}"
 echo "Versions cfg: ${VERSIONS_CONFIG}"
 echo "Versions    : ${VERSIONS:-<from config>}"
+echo "Max gen tok : ${MAX_GEN_TOKENS}"
 echo "GPUs        : ${NUM_GPUS}"
 echo
 

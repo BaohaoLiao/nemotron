@@ -22,6 +22,7 @@ from pathlib import Path
 
 from reasoners.bit_manipulation import reasoning_bit_manipulation as _bit_v1
 from reasoners.bit_manipulation_v2 import reasoning_bit_manipulation as _bit_v2
+from reasoners.bit_manipulation_v3 import reasoning_bit_manipulation as _bit_v3
 from reasoners.cipher import reasoning_cipher as _cipher_v1
 from reasoners.cryptarithm import reasoning_cryptarithm as _crypt_v1
 from reasoners.cryptarithm_v2 import reasoning_cryptarithm as _crypt_v2
@@ -35,7 +36,7 @@ from reasoners.unit_conversion import reasoning_unit_conversion as _unit_v1
 
 # category -> {version -> solver function}
 REGISTRY: dict[str, dict[str, Callable]] = {
-    "bit_manipulation": {"v1": _bit_v1, "v2": _bit_v2},
+    "bit_manipulation": {"v1": _bit_v1, "v2": _bit_v2, "v3": _bit_v3},
     "cipher": {"v1": _cipher_v1},
     "equation_numeric_deduce": {"v1": _eqn_v1, "v2": _eqn_v2},
     "equation_numeric_guess": {"v1": _eqn_v1, "v2": _eqn_v2},

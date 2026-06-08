@@ -162,9 +162,7 @@ def _selected_pairs(args: argparse.Namespace) -> dict[str, list[str]]:
         out: dict[str, list[str]] = {}
         for cat in REGISTRY:
             vers = [
-                v
-                for v in available_versions(cat)
-                if (REASONING_DIR / cat / v).is_dir()
+                v for v in available_versions(cat) if (REASONING_DIR / cat / v).is_dir()
             ]
             if vers:
                 out[cat] = vers
@@ -220,6 +218,7 @@ def main() -> None:
     CORPUS_DIR.mkdir(parents=True)
 
     entries: list[CorpusEntry] = []
+    oversize: dict[str, int] = {}
 
     # Iterate over (category, version) pairs and their reasoning traces.
     for category in sorted(build_plan):
@@ -234,14 +233,14 @@ def main() -> None:
             )
             for problem_id in problem_ids:
                 answer = answers[problem_id]
-                reasoning_text = (ver_dir / f"{problem_id}.txt").read_text().rstrip("\n")
+                reasoning_text = (
+                    (ver_dir / f"{problem_id}.txt").read_text().rstrip("\n")
+                )
 
                 # Extract answer from reasoning's \boxed{} so they match
                 boxed_match = re.findall(r"\\boxed\{([^}]*)\}", reasoning_text)
                 reasoning_answer = boxed_match[-1] if boxed_match else answer
-                completion_text = (
-                    f"{reasoning_text}\n</think>\n\\boxed{{{reasoning_answer}}}<|im_end|>"
-                )
+                completion_text = f"{reasoning_text}\n</think>\n\\boxed{{{reasoning_answer}}}<|im_end|>"
                 completion_ids = tokenizer.encode(
                     completion_text, add_special_tokens=False
                 ).ids
@@ -252,8 +251,14 @@ def main() -> None:
                 mask = [0] * len(prompt_ids) + [1] * len(completion_ids)
 
                 if len(all_tokens) > TOKEN_LIMIT:
-                    all_tokens = all_tokens[:TOKEN_LIMIT]
-                    mask = mask[:TOKEN_LIMIT]
+                    # The boxed answer and <|im_end|> live at the very end of the
+                    # completion. Tail-truncating to TOKEN_LIMIT would delete them
+                    # and teach the model to never finish, so skip the trace
+                    # entirely instead.
+                    oversize[f"{category}/{version}"] = (
+                        oversize.get(f"{category}/{version}", 0) + 1
+                    )
+                    continue
 
                 unmasked_count = sum(mask)
                 masked_count = len(mask) - unmasked_count
@@ -282,6 +287,14 @@ def main() -> None:
 
                 entries.append(entry)
 
+    if oversize:
+        total_skipped = sum(oversize.values())
+        print(
+            f"Skipped {total_skipped} over-limit traces (> {TOKEN_LIMIT} tokens) "
+            f"to avoid truncating the boxed answer:"
+        )
+        for key in sorted(oversize):
+            print(f"  {key}: {oversize[key]}")
 
     # Process augmentations/*.txt (no reasoning, no \boxed{})
     if AUGMENTATIONS_DIR.exists():
@@ -362,7 +375,6 @@ def main() -> None:
     print()
     for cat in sorted(cat_counts):
         print(f"  {cat}: {cat_counts[cat]} runs, {cat_tokens[cat]:,} unmasked tokens")
-
 
 
 if __name__ == "__main__":
