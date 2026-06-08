@@ -1,0 +1,43 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [`?-#?] = [-@?]: AB - CB = -DB  (r.len=2 neg, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 []&*]]] = [&|#&]: EF * EE = FGCF  (r.len=4, sym=['C', 'E', 'F', 'G'], |sym|=4)
+fact2 [#]-]@] = [-\|]: CE - ED = -HG  (r.len=2 neg, sym=['C', 'D', 'E', 'G', 'H'], |sym|=5)
+fact3 [[|-&?] = [-[@]: JG - FB = -JD  (r.len=2 neg, sym=['B', 'D', 'F', 'G', 'J'], |sym|=5)
+fact4 [\]-`?] = [`]]: HE - AB = AE  (r.len=2, sym=['A', 'B', 'E', 'H'], |sym|=4)
+query [\@*#[]: HD * CJ = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {sub, rsub}
+
+Mul anchor: fact1 []&*]]] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern EF * EE = FGCF -> 1 candidates:
+  R0: 87 * 88 + 1 = 7657 -> C=5,F=7,E=8,G=6  <-- consistent with all facts
+
+Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
+fact1 []&*]]] = [&|#&]:
+  try mul: 87 * 88 = 7656 -> encodes &|#| != &|#& NG
+  try concat: concat(87,88) = 8788 -> encodes ]&]] != &|#& NG
+  try rconcat: concat(88,87) = 8887 -> encodes ]]]& != &|#& NG
+  try mul1: 87 * 88 + 1 = 7657 -> encodes &|#& = &|#& OK -> accept
+fact0 [`?-#?] = [-@?]:
+  try sub: 10 - 50 = -40 -> encodes -@? = -@? OK -> accept
+fact2 [#]-]@] = [-\|]:
+  operator '-' already fixed = sub
+  try sub: 58 - 84 = -26 -> encodes -\| = -\| OK -> accept
+fact3 [[|-&?] = [-[@]:
+  operator '-' already fixed = sub
+  try sub: 36 - 70 = -34 -> encodes -[@ = -[@ OK -> accept
+fact4 [\]-`?] = [`]]:
+  operator '-' already fixed = sub
+  try sub: 28 - 10 = 18 -> encodes `] = `] OK -> accept
+
+Recovered cipher: C(#)=5, F(&)=7, B(?)=0, D(@)=4, J([)=3, H(\)=2, E(])=8, A(`)=1, G(|)=6
+Query \@*#[: HD=24, CJ=53, '*' = mul1: 24 * 53 + 1 = 1273.
+Encode 1273 back to original symbols -> `\&[.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{`\&[}

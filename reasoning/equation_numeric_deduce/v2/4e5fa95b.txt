@@ -1,0 +1,176 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  93(51 = 4744
+  44(82 = 3609
+  13(26 = 339
+  49+81 = 32
+  84?47 = 131
+
+The inputs are 93, 51, 44, 82, 13, 26, 49, 81, 84, 47
+
+The outputs are 4744, 3609, 339, 32, 131
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+93(51 -> (
+44(82 -> (
+13(26 -> (
+49+81 -> +
+84?47 -> ?
+
+The operators
+(
++
+?
+
+Looking at the question
+27?59 -> ?
+The question operator is found in the examples.
+
+Looking at operator 【?】 [84?47 = 131]:
+  Trying common operations reversed operands [84->48 47->74] and reversed result [expected (48,74)->131]:
+    concatenation f(48, 74) = 48 || 74 = 4874 -rev-> 4784 wrong
+    reverse concatenation f(48, 74) = 74 || 48 = 7448 -rev-> 8447 wrong
+    addition f(48, 74) = 48 + 74 = 122 -rev-> 221 wrong
+    absolute difference f(48, 74) = |48 - 74| = 26 -rev-> 62 wrong
+    negated absolute difference f(48, 74) = -|48 - 74| = -26 -rev-> -62 wrong
+    subtraction (a-b) f(48, 74) = 48 - 74 = -26 -rev-> -62 wrong
+    reverse subtraction (b-a) f(48, 74) = 74 - 48 = 26 -rev-> 62 wrong
+    multiplication f(48, 74) = (40 + 8) * 74 = 40 * 74 + 8 * 74 = 2960 + 592 = 3552 -rev-> 2553 wrong
+  Trying common operations on identity [84 47] [expected (84,47)->131]:
+    concatenation f(84, 47) = 84 || 47 = 8447 wrong
+    reverse concatenation f(84, 47) = 47 || 84 = 4784 wrong
+    addition f(84, 47) = 84 + 47 = 131 match, correct, actions: addition
+    absolute difference f(84, 47) = |84 - 47| = 37 wrong
+    negated absolute difference f(84, 47) = -|84 - 47| = -37 wrong
+    subtraction (a-b) f(84, 47) = 84 - 47 = 37 wrong
+    reverse subtraction (b-a) f(84, 47) = 47 - 84 = -37 wrong
+    multiplication f(84, 47) = (80 + 4) * 47 = 80 * 47 + 4 * 47 = 3760 + 188 = 3948 wrong
+  Trying common operations reversed operands [84->48 47->74] [expected (48,74)->131]:
+    concatenation f(48, 74) = 48 || 74 = 4874 wrong
+    reverse concatenation f(48, 74) = 74 || 48 = 7448 wrong
+    addition f(48, 74) = 48 + 74 = 122 wrong
+    absolute difference f(48, 74) = |48 - 74| = 26 wrong
+    negated absolute difference f(48, 74) = -|48 - 74| = -26 wrong
+    subtraction (a-b) f(48, 74) = 48 - 74 = -26 wrong
+    reverse subtraction (b-a) f(48, 74) = 74 - 48 = 26 wrong
+    multiplication f(48, 74) = (40 + 8) * 74 = 40 * 74 + 8 * 74 = 2960 + 592 = 3552 wrong
+  Trying common operations identity operands [84 47] reversed result [expected (84,47)->131]:
+    concatenation f(84, 47) = 84 || 47 = 8447 -rev-> 7448 wrong
+    reverse concatenation f(84, 47) = 47 || 84 = 4784 -rev-> 4874 wrong
+    addition f(84, 47) = 84 + 47 = 131 -rev-> 131 match, correct, but skipping
+    absolute difference f(84, 47) = |84 - 47| = 37 -rev-> 73 wrong
+    negated absolute difference f(84, 47) = -|84 - 47| = -37 -rev-> -73 wrong
+    subtraction (a-b) f(84, 47) = 84 - 47 = 37 -rev-> 73 wrong
+    reverse subtraction (b-a) f(84, 47) = 47 - 84 = -37 -rev-> -73 wrong
+    multiplication f(84, 47) = (80 + 4) * 47 = 80 * 47 + 4 * 47 = 3760 + 188 = 3948 -rev-> 8493 wrong
+  Trying rare operations reversed operands [84->48 47->74] and reversed result [expected (48,74)->131]:
+    multiply+1 f(48, 74) = (40 + 8) * 74 + 1 = 40 * 74 + 8 * 74 + 1 = 2960 + 592 + 1 = 3552 + 1 = 3553 -rev-> 3553 wrong
+    multiply-1 f(48, 74) = (40 + 8) * 74 - 1 = 40 * 74 + 8 * 74 - 1 = 2960 + 592 - 1 = 3552 - 1 = 3551 -rev-> 1553 wrong
+    add+1 f(48, 74) = 48 + 74 + 1 = 123 -rev-> 321 wrong
+    add-1 f(48, 74) = 48 + 74 - 1 = 121 -rev-> 121 wrong
+    sub+1 f(48, 74) = 48 - 74 + 1 = -25 -rev-> -52 wrong
+    sub-1 f(48, 74) = 48 - 74 - 1 = -27 -rev-> -72 wrong
+    max mod min f(48, 74) = max(48,74) mod min(48,74) = 74 mod 48 = 26 -rev-> 62 wrong
+    integer division (a/b) f(48, 74) = 48 / 74 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(48, 74) = 48 mod 74 = 48 -rev-> 84 wrong
+    reverse division (b/a) f(48, 74) = 74 / 48 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(48, 74) = 74 mod 48 = 26 -rev-> 62 wrong
+    digit absolute diff f(48, 74) = |4-7| || |8-4| = 34 -rev-> 43 wrong
+    digit add mod10 f(48, 74) = (4+7)%10 || (8+4)%10 = 12 -rev-> 21 wrong
+    digit sub mod10 f(48, 74) = (4-7)%10 || (8-4)%10 = 74 -rev-> 47 wrong
+    cross multiply f(48, 74) = 4*7 + 8*4 = 28 + 32 = 60 -rev-> 06 wrong
+    cross multiply rev f(48, 74) = 4*4 + 8*7 = 16 + 56 = 72 -rev-> 27 wrong
+    digit multiply f(48, 74) = 4*7 || 8*4 = 28 || 32 = 2832 -rev-> 2382 wrong
+    digit multiply rev f(48, 74) = 4*4 || 8*7 = 16 || 56 = 1656 -rev-> 6561 wrong
+    digit sum diff f(48, 74) = (4+8) - (7+4) = 1 -rev-> 1 wrong
+    digit sum sum f(48, 74) = (4+8) + (7+4) = 23 -rev-> 32 wrong
+    digit product diff f(48, 74) = 4*8 - 7*4 = 32 - 28 = 4 -rev-> 4 wrong
+    digit product sum f(48, 74) = 4*8 + 7*4 = 32 + 28 = 60 -rev-> 06 wrong
+    determinant f(48, 74) = 4*4 - 8*7 = 16 - 56 = -40 -rev-> -04 wrong
+    abs determinant f(48, 74) = |4*4 - 8*7| = |16 - 56| = 40 -rev-> 04 wrong
+  Trying rare operations on identity [84 47] [expected (84,47)->131]:
+    multiply+1 f(84, 47) = (80 + 4) * 47 + 1 = 80 * 47 + 4 * 47 + 1 = 3760 + 188 + 1 = 3948 + 1 = 3949 wrong
+    multiply-1 f(84, 47) = (80 + 4) * 47 - 1 = 80 * 47 + 4 * 47 - 1 = 3760 + 188 - 1 = 3948 - 1 = 3947 wrong
+    add+1 f(84, 47) = 84 + 47 + 1 = 132 wrong
+    add-1 f(84, 47) = 84 + 47 - 1 = 130 wrong
+    sub+1 f(84, 47) = 84 - 47 + 1 = 38 wrong
+    sub-1 f(84, 47) = 84 - 47 - 1 = 36 wrong
+    max mod min f(84, 47) = max(84,47) mod min(84,47) = 84 mod 47 = 37 wrong
+    integer division (a/b) f(84, 47) = 84 / 47 = 1 wrong
+    modulo (a mod b) f(84, 47) = 84 mod 47 = 37 wrong
+    reverse division (b/a) f(84, 47) = 47 / 84 = 0 wrong
+    reverse modulo (b mod a) f(84, 47) = 47 mod 84 = 47 wrong
+    digit absolute diff f(84, 47) = |8-4| || |4-7| = 43 wrong
+    digit add mod10 f(84, 47) = (8+4)%10 || (4+7)%10 = 21 wrong
+    digit sub mod10 f(84, 47) = (8-4)%10 || (4-7)%10 = 47 wrong
+    cross multiply f(84, 47) = 8*4 + 4*7 = 32 + 28 = 60 wrong
+    cross multiply rev f(84, 47) = 8*7 + 4*4 = 56 + 16 = 72 wrong
+    digit multiply f(84, 47) = 8*4 || 4*7 = 32 || 28 = 3228 wrong
+    digit multiply rev f(84, 47) = 8*7 || 4*4 = 56 || 16 = 5616 wrong
+    digit sum diff f(84, 47) = (8+4) - (4+7) = 1 wrong
+    digit sum sum f(84, 47) = (8+4) + (4+7) = 23 wrong
+    digit product diff f(84, 47) = 8*4 - 4*7 = 32 - 28 = 4 wrong
+    digit product sum f(84, 47) = 8*4 + 4*7 = 32 + 28 = 60 wrong
+    determinant f(84, 47) = 8*7 - 4*4 = 56 - 16 = 40 wrong
+    abs determinant f(84, 47) = |8*7 - 4*4| = |56 - 16| = 40 wrong
+  Trying rare operations reversed operands [84->48 47->74] [expected (48,74)->131]:
+    multiply+1 f(48, 74) = (40 + 8) * 74 + 1 = 40 * 74 + 8 * 74 + 1 = 2960 + 592 + 1 = 3552 + 1 = 3553 wrong
+    multiply-1 f(48, 74) = (40 + 8) * 74 - 1 = 40 * 74 + 8 * 74 - 1 = 2960 + 592 - 1 = 3552 - 1 = 3551 wrong
+    add+1 f(48, 74) = 48 + 74 + 1 = 123 wrong
+    add-1 f(48, 74) = 48 + 74 - 1 = 121 wrong
+    sub+1 f(48, 74) = 48 - 74 + 1 = -25 wrong
+    sub-1 f(48, 74) = 48 - 74 - 1 = -27 wrong
+    max mod min f(48, 74) = max(48,74) mod min(48,74) = 74 mod 48 = 26 wrong
+    integer division (a/b) f(48, 74) = 48 / 74 = 0 wrong
+    modulo (a mod b) f(48, 74) = 48 mod 74 = 48 wrong
+    reverse division (b/a) f(48, 74) = 74 / 48 = 1 wrong
+    reverse modulo (b mod a) f(48, 74) = 74 mod 48 = 26 wrong
+    digit absolute diff f(48, 74) = |4-7| || |8-4| = 34 wrong
+    digit add mod10 f(48, 74) = (4+7)%10 || (8+4)%10 = 12 wrong
+    digit sub mod10 f(48, 74) = (4-7)%10 || (8-4)%10 = 74 wrong
+    cross multiply f(48, 74) = 4*7 + 8*4 = 28 + 32 = 60 wrong
+    cross multiply rev f(48, 74) = 4*4 + 8*7 = 16 + 56 = 72 wrong
+    digit multiply f(48, 74) = 4*7 || 8*4 = 28 || 32 = 2832 wrong
+    digit multiply rev f(48, 74) = 4*4 || 8*7 = 16 || 56 = 1656 wrong
+    digit sum diff f(48, 74) = (4+8) - (7+4) = 1 wrong
+    digit sum sum f(48, 74) = (4+8) + (7+4) = 23 wrong
+    digit product diff f(48, 74) = 4*8 - 7*4 = 32 - 28 = 4 wrong
+    digit product sum f(48, 74) = 4*8 + 7*4 = 32 + 28 = 60 wrong
+    determinant f(48, 74) = 4*4 - 8*7 = 16 - 56 = -40 wrong
+    abs determinant f(48, 74) = |4*4 - 8*7| = |16 - 56| = 40 wrong
+  Trying rare operations identity operands [84 47] reversed result [expected (84,47)->131]:
+    multiply+1 f(84, 47) = (80 + 4) * 47 + 1 = 80 * 47 + 4 * 47 + 1 = 3760 + 188 + 1 = 3948 + 1 = 3949 -rev-> 9493 wrong
+    multiply-1 f(84, 47) = (80 + 4) * 47 - 1 = 80 * 47 + 4 * 47 - 1 = 3760 + 188 - 1 = 3948 - 1 = 3947 -rev-> 7493 wrong
+    add+1 f(84, 47) = 84 + 47 + 1 = 132 -rev-> 231 wrong
+    add-1 f(84, 47) = 84 + 47 - 1 = 130 -rev-> 031 wrong
+    sub+1 f(84, 47) = 84 - 47 + 1 = 38 -rev-> 83 wrong
+    sub-1 f(84, 47) = 84 - 47 - 1 = 36 -rev-> 63 wrong
+    max mod min f(84, 47) = max(84,47) mod min(84,47) = 84 mod 47 = 37 -rev-> 73 wrong
+    integer division (a/b) f(84, 47) = 84 / 47 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(84, 47) = 84 mod 47 = 37 -rev-> 73 wrong
+    reverse division (b/a) f(84, 47) = 47 / 84 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(84, 47) = 47 mod 84 = 47 -rev-> 74 wrong
+    digit absolute diff f(84, 47) = |8-4| || |4-7| = 43 -rev-> 34 wrong
+    digit add mod10 f(84, 47) = (8+4)%10 || (4+7)%10 = 21 -rev-> 12 wrong
+    digit sub mod10 f(84, 47) = (8-4)%10 || (4-7)%10 = 47 -rev-> 74 wrong
+    cross multiply f(84, 47) = 8*4 + 4*7 = 32 + 28 = 60 -rev-> 06 wrong
+    cross multiply rev f(84, 47) = 8*7 + 4*4 = 56 + 16 = 72 -rev-> 27 wrong
+    digit multiply f(84, 47) = 8*4 || 4*7 = 32 || 28 = 3228 -rev-> 8223 wrong
+    digit multiply rev f(84, 47) = 8*7 || 4*4 = 56 || 16 = 5616 -rev-> 6165 wrong
+    digit sum diff f(84, 47) = (8+4) - (4+7) = 1 -rev-> 1 wrong
+    digit sum sum f(84, 47) = (8+4) + (4+7) = 23 -rev-> 32 wrong
+    digit product diff f(84, 47) = 8*4 - 4*7 = 32 - 28 = 4 -rev-> 4 wrong
+    digit product sum f(84, 47) = 8*4 + 4*7 = 32 + 28 = 60 -rev-> 06 wrong
+    determinant f(84, 47) = 8*7 - 4*4 = 56 - 16 = 40 -rev-> 04 wrong
+    abs determinant f(84, 47) = |8*7 - 4*4| = |56 - 16| = 40 -rev-> 04 wrong
+
+Applying to 27?59:
+  identity
+  addition f(27, 59) = 27 + 59 = 86
+  Result: 【86】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{86}

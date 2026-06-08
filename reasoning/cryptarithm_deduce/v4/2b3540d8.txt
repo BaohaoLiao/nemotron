@@ -1,0 +1,68 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  ((+$@ = ("#
+  ")+(: = {)#
+  ()-'? = ''
+  #@*{: = ?$))
+  #"-(# = {{
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '*':
+    #@*{: = ?$)): forward #@{: mismatch, reverse {:#@ mismatch
+    -> '*' is NOT plain concatenation (an example does not match)
+  operator '+':
+    ((+$@ = ("#: 3 output symbols, not a 4-symbol concatenation
+    ")+(: = {)#: 3 output symbols, not a 4-symbol concatenation
+    -> '+' is NOT plain concatenation (an example does not match)
+  operator '-':
+    ()-'? = '': 2 output symbols, not a 4-symbol concatenation
+    #"-(# = {{: 2 output symbols, not a 4-symbol concatenation
+    -> '-' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+No consistent cipher exists when each 2-symbol group is read most-significant-digit first, so read every group the other way: least-significant-digit first (so the group XY means 10*Y + X, and a result is written with its least-significant digit first).
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '*':
+    #@*{: = ?$)): non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    -> '*' must be one of {mul, lcm, mul_p1, mul_m1}; take the simplest, mul
+    (mul does not reproduce the examples on the digit search below; the first that does is mul_m1.)
+  operator '+':
+    ((+$@ = ("#: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    ")+(: = {)#: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '+' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+  operator '-':
+    ()-'? = '': non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    #"-(# = {{: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '-' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is sub.)
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  ((+$@ = ("# under '+'=add: ( in {3,4,5,6,7,8,9}, $ in {0}, @ in {3,4,5,6,7,8,9}, " in {2,3,4,5,6,7}, # in {1}
+  ")+(: = {)# under '+'=add: " in {2,3,4,5,6,7}, ) in {0,2,3,4,5,6,7,8}, ( in {3,4,5,6,7,8}, : in {9}, { in {0,2,3,4,5}, # in {1}
+  ()-'? = '' under '-'=sub: ( in {4,6,8}, ) in {3,4,5,6,7,8}, ' in {2,3,4,7}, ? in {0,1,2,3,4,5,6}
+  #@*{: = ?$)) under '*'=mul_m1: # in {1}, @ in {7}, { in {3}, : in {9}, ? in {2}, $ in {0}, ) in {6}
+  #"-(# = {{ under '-'=sub: # in {1}, " in {5}, ( in {8}, { in {3}
+  AllDifferent: digits {0,1,2,3,5,6,7,8,9} are already taken, so ' -> {4}
+Every symbol is now pinned to one digit.
+
+Recovered cipher: "=5, #=1, $=0, '=4, (=8, )=6, :=9, ?=2, @=7, {=3
+Operator meanings: '*'=mul_m1, '+'=add, '-'=sub
+
+Step 3 - verify every example under this cipher:
+  ((+$@: 88 + 70 = 158 -> ("# (expected ("#) OK
+  ")+(:: 65 + 98 = 163 -> {)# (expected {)#) OK
+  ()-'?: 68 - 24 = 44 -> '' (expected '') OK
+  #@*{:: 71 * 93 - 1 = 6602 -> ?$)) (expected ?$))) OK
+  #"-(#: 51 - 18 = 33 -> {{ (expected {{) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question (:*?":
+  (:=98, ?"=52, '*'=mul_m1: 98 * 52 - 1 -> encode back to symbols -> ":$".
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{":$"}

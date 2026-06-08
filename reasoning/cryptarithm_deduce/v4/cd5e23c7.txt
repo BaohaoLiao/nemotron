@@ -1,0 +1,78 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  %#}%' = !!
+  {<`]{ = &
+  !)`#] = '#
+  #&|^# = {{#&
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '`':
+    {<`]{ = &: 1 output symbols, not a 4-symbol concatenation
+    !)`#] = '#: 2 output symbols, not a 4-symbol concatenation
+    -> '`' is NOT plain concatenation (an example does not match)
+  operator '|':
+    #&|^# = {{#&: forward #&^# mismatch, reverse ^##& mismatch
+    -> '|' is NOT plain concatenation (an example does not match)
+  operator '}':
+    %#}%' = !!: 2 output symbols, not a 4-symbol concatenation
+    -> '}' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '`':
+    {<`]{ = &: non-negative, 1-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    !)`#] = '#: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '`' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is mod.)
+  operator '|':
+    #&|^# = {{#&: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    -> '|' must be one of {mul, lcm, mul_p1, mul_m1}; take the simplest, mul
+  operator '}':
+    %#}%' = !!: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '}' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  %#}%' = !! under '}'=add: % in {0,1,2,3,4}, # in {1,2,3,4,5,6,7,8,9}, ' in {1,2,3,4,5,6,7,8,9}, ! in {1,3,4,5,6,7,8}
+  {<`]{ = & under '`'=mod: { in {2,3,4,5,6,7,8,9}, < in {0,1,2,3,4,5,6,7,8,9}, ] in {0,1,2,3,4,5,6,7,8}, & in {0,1,2,3,4,5,6,7,8,9}
+  !)`#] = '# under '`'=mod: ! in {3,4,5,6,7,8}, ) in {0,1,2,3,4,5,6,7,8,9}, # in {2,3,4,5,6,7}, ] in {1,2,3,4,5,6,7,8}, ' in {1,2,3}
+  #&|^# = {{#& under '|'=mul: # in {5,6}, & in {0}, ^ in {4,5}, { in {2,3}
+  AllDifferent: digits {0} are already taken, so % -> {1,2,3,4}, ) -> {1,2,3,4,5,6,7,8,9}, < -> {1,2,3,4,5,6,7,8,9}
+Pass 2 -- apply each example, then AllDifferent:
+  %#}%' = !! under '}'=add: % in {3,4}, # in {5,6}, ' in {1,2,3}, ! in {6,8}
+  {<`]{ = & under '`'=mod: { in {2,3}, < in {4,9}, ] in {1}, & in {0}
+  !)`#] = '# under '`'=mod: ! in {8}, ) in {6,7}, # in {5,6}, ] in {1}, ' in {2,3}
+  #&|^# = {{#& under '|'=mul: # in {5,6}, & in {0}, ^ in {4,5}, { in {2,3}  (no new narrowing)
+Pass 3 -- apply each example, then AllDifferent:
+  %#}%' = !! under '}'=add: % in {4}, # in {5,6}, ' in {2,3}, ! in {8}
+  {<`]{ = & under '`'=mod: { in {2,3}, < in {4,9}, ] in {1}, & in {0}  (no new narrowing)
+  !)`#] = '# under '`'=mod: ! in {8}, ) in {6,7}, # in {5,6}, ] in {1}, ' in {2,3}  (no new narrowing)
+  #&|^# = {{#& under '|'=mul: # in {5,6}, & in {0}, ^ in {4,5}, { in {2,3}  (no new narrowing)
+  AllDifferent: digits {0,1,4,8} are already taken, so < -> {9}, ^ -> {5}
+Pass 4 -- apply each example, then AllDifferent:
+  %#}%' = !! under '}'=add: % in {4}, # in {5,6}, ' in {2,3}, ! in {8}  (no new narrowing)
+  {<`]{ = & under '`'=mod: { in {3}, < in {9}, ] in {1}, & in {0}
+  !)`#] = '# under '`'=mod: ! in {8}, ) in {6,7}, # in {5,6}, ] in {1}, ' in {2,3}  (no new narrowing)
+  #&|^# = {{#& under '|'=mul: # in {6}, & in {0}, ^ in {5}, { in {3}
+  AllDifferent: digits {0,1,3,4,5,6,8,9} are already taken, so ' -> {2}, ) -> {7}
+Every symbol is now pinned to one digit.
+
+Recovered cipher: !=8, #=6, %=4, &=0, '=2, )=7, <=9, ]=1, ^=5, {=3
+Operator meanings: '`'=mod, '|'=mul, '}'=add
+
+Step 3 - verify every example under this cipher:
+  %#}%': 46 + 42 = 88 -> !! (expected !!) OK
+  {<`]{: 39 mod 13 = 0 -> & (expected &) OK
+  !)`#]: 87 mod 61 = 26 -> '# (expected '#) OK
+  #&|^#: 60 * 56 = 3360 -> {{#& (expected {{#&) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question <%}{#:
+  <%=94, {#=36, '}'=add: 94 + 36 -> encode back to symbols -> ]{&.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{]{&}

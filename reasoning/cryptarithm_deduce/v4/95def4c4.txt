@@ -1,0 +1,88 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  >?->@ = @
+  `&-|\ = >\
+  \'+@& = '@?
+  >{-'{ = '?
+  `'*`& = !'!&
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '*':
+    `'*`& = !'!&: forward `'`& mismatch, reverse `&`' mismatch
+    -> '*' is NOT plain concatenation (an example does not match)
+  operator '+':
+    \'+@& = '@?: 3 output symbols, not a 4-symbol concatenation
+    -> '+' is NOT plain concatenation (an example does not match)
+  operator '-':
+    >?->@ = @: 1 output symbols, not a 4-symbol concatenation
+    `&-|\ = >\: 2 output symbols, not a 4-symbol concatenation
+    >{-'{ = '?: 2 output symbols, not a 4-symbol concatenation
+    -> '-' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '*':
+    `'*`& = !'!&: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    -> '*' must be one of {mul, lcm, mul_p1, mul_m1}; take the simplest, mul
+  operator '+':
+    \'+@& = '@?: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '+' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is add_p1.)
+  operator '-':
+    >?->@ = @: non-negative, 1-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    `&-|\ = >\: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    >{-'{ = '?: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '-' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is absdiff.)
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  >?->@ = @ under '-'=absdiff: > in {0,1,2,3,4,5,6,7,8,9}, ? in {0,2,4,6,8}, @ in {1,2,3,4,5,6,7,8,9}
+  `&-|\ = >\ under '-'=absdiff: ` in {1,2,3,4,5,6,7,8,9}, & in {0,2,4,6,8}, | in {0,1,2,3,4,5,6,7,8,9}, \ in {1,2,3,4,5,6,7,8,9}, > in {1,2,3,4,5,6,7,8}
+  \'+@& = '@? under '+'=add_p1: \ in {9}, ' in {1}, @ in {2,3,4,5,6,7}, & in {8}, ? in {0}
+  >{-'{ = '? under '-'=absdiff: > in {2}, { in {3,4,5,6,7,8,9}, ' in {1}, ? in {0}
+  `'*`& = !'!& under '*'=mul: ` in {6}, ' in {1}, & in {8}, ! in {4}
+  AllDifferent: digits {0,1,2,4,6,8,9} are already taken, so @ -> {3,5,7}, { -> {3,5,7}, | -> {3,5,7}
+Pass 2 -- apply each example, then AllDifferent:
+  >?->@ = @ under '-'=absdiff: > in {2}, ? in {0}, @ in {3,5,7}  (no new narrowing)
+  `&-|\ = >\ under '-'=absdiff: ` in {6}, & in {8}, | in {3}, \ in {9}, > in {2}
+  \'+@& = '@? under '+'=add_p1: \ in {9}, ' in {1}, @ in {3,5,7}, & in {8}, ? in {0}  (no new narrowing)
+  >{-'{ = '? under '-'=absdiff: > in {2}, { in {3,5,7}, ' in {1}, ? in {0}  (no new narrowing)
+  `'*`& = !'!& under '*'=mul: ` in {6}, ' in {1}, & in {8}, ! in {4}  (no new narrowing)
+  AllDifferent: digits {0,1,2,3,4,6,8,9} are already taken, so @ -> {5,7}, { -> {5,7}
+Pass 3 -- apply each example, then AllDifferent:
+  >?->@ = @ under '-'=absdiff: > in {2}, ? in {0}, @ in {5,7}  (no new narrowing)
+  `&-|\ = >\ under '-'=absdiff: ` in {6}, & in {8}, | in {3}, \ in {9}, > in {2}  (no new narrowing)
+  \'+@& = '@? under '+'=add_p1: \ in {9}, ' in {1}, @ in {5,7}, & in {8}, ? in {0}  (no new narrowing)
+  >{-'{ = '? under '-'=absdiff: > in {2}, { in {5,7}, ' in {1}, ? in {0}  (no new narrowing)
+  `'*`& = !'!& under '*'=mul: ` in {6}, ' in {1}, & in {8}, ! in {4}  (no new narrowing)
+  Examples no longer narrow; @ still allows {5,7}. Guess @ = 5 (a genuine choice -- Step 3 verifies it).
+Pass 4 -- apply each example, then AllDifferent:
+  >?->@ = @ under '-'=absdiff: > in {2}, ? in {0}, @ in {5}  (no new narrowing)
+  `&-|\ = >\ under '-'=absdiff: ` in {6}, & in {8}, | in {3}, \ in {9}, > in {2}  (no new narrowing)
+  \'+@& = '@? under '+'=add_p1: \ in {9}, ' in {1}, @ in {5}, & in {8}, ? in {0}  (no new narrowing)
+  >{-'{ = '? under '-'=absdiff: > in {2}, { in {5,7}, ' in {1}, ? in {0}  (no new narrowing)
+  `'*`& = !'!& under '*'=mul: ` in {6}, ' in {1}, & in {8}, ! in {4}  (no new narrowing)
+  AllDifferent: digits {0,1,2,3,4,5,6,8,9} are already taken, so { -> {7}
+Every symbol is now pinned to one digit.
+
+Recovered cipher: !=4, &=8, '=1, >=2, ?=0, @=5, \=9, `=6, {=7, |=3
+Operator meanings: '*'=mul, '+'=add_p1, '-'=absdiff
+
+Step 3 - verify every example under this cipher:
+  >?->@: |20 - 25| = 5 -> @ (expected @) OK
+  `&-|\: |68 - 39| = 29 -> >\ (expected >\) OK
+  \'+@&: 91 + 58 + 1 = 150 -> '@? (expected '@?) OK
+  >{-'{: |27 - 17| = 10 -> '? (expected '?) OK
+  `'*`&: 61 * 68 = 4148 -> !'!& (expected !'!&) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question ''+&':
+  ''=11, &'=81, '+'=add_p1: 11 + 81 + 1 -> encode back to symbols -> \|.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{\|}

@@ -1,0 +1,47 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [`:@/:] = [`{!!]: AB @ CB = ADEE  (r.len=4, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 [!{<]\] = [||]: ED < FG = HH  (r.len=2, sym=['D', 'E', 'F', 'G', 'H'], |sym|=5)
+fact2 [>]<`/] = [`!]: JF < AC = AE  (r.len=2, sym=['A', 'C', 'E', 'F', 'J'], |sym|=5)
+fact3 [\]@\!] = [!^]`]: GF @ GE = EKFA  (r.len=4, sym=['A', 'E', 'F', 'G', 'K'], |sym|=5)
+query [::<{^]: BB < DK = ?
+
+narrowing operator candidates by result length:
+  '<' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '@' -> {concat, rconcat, mul, mul1, mulm1}
+
+Mul anchor: fact0 [`:@/:] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB @ CB = ADEE -> 11 candidates:
+  R0: 18 * 58 = 1044 -> E=4,C=5,B=8,A=1,D=0
+  R1: 28 * 98 = 2744 -> E=4,C=9,B=8,A=2,D=7  <-- consistent with all facts
+  R2: 78 * 98 = 7644 -> E=4,C=9,B=8,A=7,D=6
+  R3: 16 * 86 + 1 = 1377 -> E=7,C=8,B=6,A=1,D=3
+  R4: 54 * 94 + 1 = 5077 -> E=7,C=9,B=4,A=5,D=0
+  R5: 56 * 96 + 1 = 5377 -> E=7,C=9,B=6,A=5,D=3
+  R6: 67 * 97 + 1 = 6500 -> E=0,C=9,B=7,A=6,D=5
+  R7: 19 * 79 - 1 = 1500 -> E=0,C=7,B=9,A=1,D=5
+  R8: 36 * 96 - 1 = 3455 -> E=5,C=9,B=6,A=3,D=4
+  R9: 37 * 97 - 1 = 3588 -> E=8,C=9,B=7,A=3,D=5
+  R10: 86 * 96 - 1 = 8255 -> E=5,C=9,B=6,A=8,D=2
+
+Candidates are tried in order; R1 is the first that extends to every fact. Propagate it:
+fact0 [`:@/:] = [`{!!]:
+  try mul: 28 * 98 = 2744 -> encodes `{!! = `{!! OK -> accept
+fact1 [!{<]\] = [||]:
+  try add: 47 + 36 = 83 -> encodes :] != || NG
+  try sub: 47 - 36 = 11 -> encodes || = || OK -> accept
+fact2 [>]<`/] = [`!]:
+  operator '<' already fixed = sub
+  try sub: 53 - 29 = 24 -> encodes `! = `! OK -> accept
+fact3 [\]@\!] = [!^]`]:
+  operator '@' already fixed = mul
+  try mul: 63 * 64 = 4032 -> encodes !^]` = !^]` OK -> accept
+
+Recovered cipher: E(!)=4, C(/)=9, B(:)=8, J(>)=5, G(\)=6, F(])=3, K(^)=0, A(`)=2, D({)=7, H(|)=1
+Query ::<{^: BB=88, DK=70, '<' = sub: 88 - 70 = 18.
+Encode 18 back to original symbols -> |:.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{|:}

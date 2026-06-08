@@ -1,0 +1,61 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [<#+{\] = [<#{\]: AB + CD = ABCD  (r.len=4, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [<<*{>] = [{!\^]: AA * CE = CFDG  (r.len=4, sym=['A', 'C', 'D', 'E', 'F', 'G'], |sym|=6)
+fact2 [#>*##] = [}}%%]: BE * BB = HHJJ  (r.len=4, sym=['B', 'E', 'H', 'J'], |sym|=4)
+fact3 [\{+!}] = [\{!}]: DC + FH = DCFH  (r.len=4, sym=['C', 'D', 'F', 'H'], |sym|=4)
+query [%%+}#]: JJ + HB = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+
+Mul anchor: fact1 [<<*{>] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AA * CE = CFDG -> 90 candidates:
+  R0: 66 * 19 = 1254 -> F=2,A=6,E=9,D=5,G=4,C=1
+  R1: 77 * 19 = 1463 -> F=4,A=7,E=9,D=6,G=3,C=1
+  R2: 77 * 28 = 2156 -> F=1,A=7,E=8,D=5,G=6,C=2
+  R3: 88 * 12 = 1056 -> F=0,A=8,E=2,D=5,G=6,C=1
+  R4: 88 * 15 = 1320 -> F=3,A=8,E=5,D=2,G=0,C=1
+  R5: 88 * 17 = 1496 -> F=4,A=8,E=7,D=9,G=6,C=1
+  R6: 88 * 19 = 1672 -> F=6,A=8,E=9,D=7,G=2,C=1
+  R7: 88 * 37 = 3256 -> F=2,A=8,E=7,D=5,G=6,C=3
+  R8: 88 * 47 = 4136 -> F=1,A=8,E=7,D=3,G=6,C=4
+  R9: 88 * 49 = 4312 -> F=3,A=8,E=9,D=1,G=2,C=4
+  R10: 88 * 57 = 5016 -> F=0,A=8,E=7,D=1,G=6,C=5
+  R11: 88 * 69 = 6072 -> F=0,A=8,E=9,D=7,G=2,C=6
+  R12: 99 * 13 = 1287 -> F=2,A=9,E=3,D=8,G=7,C=1
+  R13: 99 * 14 = 1386 -> F=3,A=9,E=4,D=8,G=6,C=1
+  R14: 99 * 16 = 1584 -> F=5,A=9,E=6,D=8,G=4,C=1
+  R15: 99 * 17 = 1683 -> F=6,A=9,E=7,D=8,G=3,C=1
+  R16: 99 * 24 = 2376 -> F=3,A=9,E=4,D=7,G=6,C=2
+  R17: 99 * 26 = 2574 -> F=5,A=9,E=6,D=7,G=4,C=2  <-- consistent with all facts
+  R18: 99 * 32 = 3168 -> F=1,A=9,E=2,D=6,G=8,C=3
+  R19: 99 * 38 = 3762 -> F=7,A=9,E=8,D=6,G=2,C=3
+  R20: 99 * 42 = 4158 -> F=1,A=9,E=2,D=5,G=8,C=4
+  R21: 99 * 43 = 4257 -> F=2,A=9,E=3,D=5,G=7,C=4
+  R22: 99 * 47 = 4653 -> F=6,A=9,E=7,D=5,G=3,C=4
+  R23: 99 * 48 = 4752 -> F=7,A=9,E=8,D=5,G=2,C=4
+  ... 66 more candidates (untried; the search stops at the first that extends to every fact, R17)
+
+Candidates are tried in order; R17 is the first that extends to every fact. Propagate it:
+fact1 [<<*{>] = [{!\^]:
+  try mul: 99 * 26 = 2574 -> encodes {!\^ = {!\^ OK -> accept
+fact0 [<#+{\] = [<#{\]:
+  try mul: 93 * 27 = 2511 -> encodes {!}} != <#{\ NG
+  try concat: concat(93,27) = 9327 -> encodes <#{\ = <#{\ OK -> accept
+fact2 [#>*##] = [}}%%]:
+  operator '*' already fixed = mul
+  try mul: 36 * 33 = 1188 -> encodes }}%% = }}%% OK -> accept
+fact3 [\{+!}] = [\{!}]:
+  operator '+' already fixed = concat
+  try concat: concat(72,51) = 7251 -> encodes \{!} = \{!} OK -> accept
+
+Recovered cipher: F(!)=5, B(#)=3, J(%)=8, A(<)=9, E(>)=6, D(\)=7, G(^)=4, C({)=2, H(})=1
+Query %%+}#: JJ=88, HB=13, '+' = concat: concat(88,13) = 8813.
+Encode 8813 back to original symbols -> %%}#.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{%%}#}

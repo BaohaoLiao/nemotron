@@ -1,0 +1,49 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [:`+}?] = [:`}?]: AB + CD = ABCD  (r.len=4, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 ['#*#}] = [#$?#]: EF * FC = FGDF  (r.len=4, sym=['C', 'D', 'E', 'F', 'G'], |sym|=5)
+fact2 [?#-$`] = [?`]: DF - GB = DB  (r.len=2, sym=['B', 'D', 'F', 'G'], |sym|=4)
+fact3 [}#-(`] = [?#]: CF - HB = DF  (r.len=2, sym=['B', 'C', 'D', 'F', 'H'], |sym|=5)
+query [(?-:(]: HD - AH = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact1 ['#*#}] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern EF * FC = FGDF -> 7 candidates:
+  R0: 82 * 26 = 2132 -> F=2,G=1,E=8,D=3,C=6
+  R1: 85 * 59 = 5015 -> F=5,G=0,E=8,D=1,C=9
+  R2: 94 * 46 = 4324 -> F=4,G=3,E=9,D=2,C=6
+  R3: 95 * 57 = 5415 -> F=5,G=4,E=9,D=1,C=7  <-- consistent with all facts
+  R4: 98 * 86 = 8428 -> F=8,G=4,E=9,D=2,C=6
+  R5: 93 * 34 + 1 = 3163 -> F=3,G=1,E=9,D=6,C=4
+  R6: 97 * 78 + 1 = 7567 -> F=7,G=5,E=9,D=6,C=8
+
+Candidates are tried in order; R3 is the first that extends to every fact. Propagate it:
+fact1 ['#*#}] = [#$?#]:
+  try mul: 95 * 57 = 5415 -> encodes #$?# = #$?# OK -> accept
+fact0 [:`+}?] = [:`}?]:
+  try mul: 20 * 71 = 1420 -> encodes ?$:` != :`}? NG
+  try concat: concat(20,71) = 2071 -> encodes :`}? = :`}? OK -> accept
+fact2 [?#-$`] = [?`]:
+  try add: 15 + 40 = 55 -> encodes ## != ?` NG
+  try sub: 15 - 40 = -25 (length/sign off) NG
+  try rsub: 40 - 15 = 25 -> encodes :# != ?` NG
+  try add1: 15 + 40 + 1 = 56 -> encodes #( != ?` NG
+  try addm1: 15 + 40 - 1 = 54 -> encodes #$ != ?` NG
+  try absdiff: |15 - 40| = 25 -> encodes :# != ?` NG
+  try maxmod: max(15,40) mod min(15,40) = 10 -> encodes ?` = ?` OK -> accept
+fact3 [}#-(`] = [?#]:
+  operator '-' already fixed = maxmod
+  try maxmod: max(75,60) mod min(75,60) = 15 -> encodes ?# = ?# OK -> accept
+
+Recovered cipher: F(#)=5, G($)=4, E(')=9, H(()=6, A(:)=2, D(?)=1, B(`)=0, C(})=7
+Query (?-:(: HD=61, AH=26, '-' = maxmod: max(61,26) mod min(61,26) = 9.
+Encode 9 back to original symbols -> '.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{'}

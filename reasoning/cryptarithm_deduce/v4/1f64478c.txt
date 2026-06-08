@@ -1,0 +1,88 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  $`+{> = `#!
+  `#+>@ = !>
+  #\+@> = \@!
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '+':
+    $`+{> = `#!: 3 output symbols, not a 4-symbol concatenation
+    `#+>@ = !>: 2 output symbols, not a 4-symbol concatenation
+    #\+@> = \@!: 3 output symbols, not a 4-symbol concatenation
+    -> '+' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+No consistent cipher exists when each 2-symbol group is read most-significant-digit first, so read every group the other way: least-significant-digit first (so the group XY means 10*Y + X, and a result is written with its least-significant digit first).
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '+':
+    $`+{> = `#!: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    `#+>@ = !>: non-negative, 2-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    #\+@> = \@!: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '+' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is add_m1.)
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,2,3,4,5,6,7,8,9}, ` in {1,2,3,4,5,6,7,8,9}, { in {0,2,3,4,5,6,7,8,9}, > in {1,2,3,4,5,6,7,8,9}, # in {0,2,3,4,5,6,7,8,9}, ! in {0,1}
+  `#+>@ = !> under '+'=add_m1: ` in {2,3,4,5,6,7,8,9}, # in {0,2,3,4,5,6,7,8}, > in {3,4,5,6,7,8,9}, @ in {0,1,2,3,4,5,6,7,8}, ! in {0,1}
+  #\+@> = \@! under '+'=add_m1: # in {2,3,4,5,6,7,8}, \ in {1,2,3,4,5,6,7,8,9}, @ in {0,2,3,4,5,6,7,8}, > in {3,4,5,6,7,8,9}, ! in {0,1}
+Pass 2 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,2,3,4,5,6,7,8,9}, ` in {2,3,4,5,6,7,8,9}, { in {0,2,3,4,5,6,7,8,9}, > in {3,4,5,6,7,8,9}, # in {2,3,4,5,6,7,8}, ! in {0,1}  (no new narrowing)
+  `#+>@ = !> under '+'=add_m1: ` in {2,3,4,5,7,8,9}, # in {2,3,4,5,6,7,8}, > in {3,4,5,6,7,8,9}, @ in {0,2,3,4,5,6}, ! in {0,1}
+  #\+@> = \@! under '+'=add_m1: # in {2,3,4,5,6,7,8}, \ in {1,2,3,4,5,6,7,8,9}, @ in {0,2,3,4,5,6}, > in {3,4,5,6,7,8,9}, ! in {0,1}  (no new narrowing)
+Pass 3 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,2,3,4,5,6,7,8,9}, ` in {2,3,4,5,7,8,9}, { in {0,2,3,4,5,6,7,8,9}, > in {3,4,5,6,7,8,9}, # in {2,3,4,5,6,7,8}, ! in {0,1}  (no new narrowing)
+  `#+>@ = !> under '+'=add_m1: ` in {2,3,4,5,7,8,9}, # in {2,3,4,5,6,7,8}, > in {3,4,5,6,7,8,9}, @ in {0,2,3,4,5,6}, ! in {0,1}  (no new narrowing)
+  #\+@> = \@! under '+'=add_m1: # in {2,3,4,5,6,7,8}, \ in {1,2,3,4,5,6,7,8,9}, @ in {0,2,3,4,5,6}, > in {3,4,5,6,7,8,9}, ! in {0,1}  (no new narrowing)
+  Examples no longer narrow; ! still allows {0,1}. Guess ! = 1 (a genuine choice -- Step 3 verifies it).
+Pass 4 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,2,3,4,5,6,7,8,9}, ` in {3,4,5,7,8,9}, { in {0,2,3,4,5,6,7,8,9}, > in {3,4,5,6,7,8,9}, # in {2,3,4,5,6,7}, ! in {1}
+  `#+>@ = !> under '+'=add_m1: ` in {3,4,5,7,8,9}, # in {2,3,4,5,6,7}, > in {3,4,5,7,8,9}, @ in {0,2,4,5,6}, ! in {1}
+  #\+@> = \@! under '+'=add_m1: # in {2,3,4,6,7}, \ in {2,3,4,5,6,7,8,9}, @ in {0,2,4,5,6}, > in {4,5,7,8,9}, ! in {1}
+Pass 5 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,2,3,4,5,6,7,8,9}, ` in {3,4,5,7,8,9}, { in {0,2,3,4,5,6,7,8,9}, > in {4,5,7,8,9}, # in {2,3,4,6,7}, ! in {1}  (no new narrowing)
+  `#+>@ = !> under '+'=add_m1: ` in {3,4,5,7,8}, # in {2,3,4,6,7}, > in {4,5,7,8,9}, @ in {0,2,4,5,6}, ! in {1}
+  #\+@> = \@! under '+'=add_m1: # in {2,3,4,6,7}, \ in {2,3,4,5,6,7,8,9}, @ in {0,2,4,5,6}, > in {4,5,7,8,9}, ! in {1}  (no new narrowing)
+Pass 6 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,2,3,4,5,6,7,8,9}, ` in {3,4,5,7,8}, { in {0,2,3,4,5,6,7,8,9}, > in {4,5,7,8,9}, # in {2,3,4,6,7}, ! in {1}  (no new narrowing)
+  `#+>@ = !> under '+'=add_m1: ` in {3,4,5,7,8}, # in {2,3,4,6,7}, > in {4,5,7,8,9}, @ in {0,2,4,5,6}, ! in {1}  (no new narrowing)
+  #\+@> = \@! under '+'=add_m1: # in {2,3,4,6,7}, \ in {2,3,4,5,6,7,8,9}, @ in {0,2,4,5,6}, > in {4,5,7,8,9}, ! in {1}  (no new narrowing)
+  Examples no longer narrow; # still allows {2,3,4,6,7}. Guess # = 2 (a genuine choice -- Step 3 verifies it).
+Pass 7 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,3,4,5,6,8,9}, ` in {3,4,5,7,8}, { in {0,3,4,5,6,8,9}, > in {4,5,7,8,9}, # in {2}, ! in {1}
+  `#+>@ = !> under '+'=add_m1: ` in {3,4,5}, # in {2}, > in {7,8,9}, @ in {4,5,6}, ! in {1}
+  #\+@> = \@! under '+'=add_m1: # in {2}, \ in {5,6,7}, @ in {4,5,6}, > in {9}, ! in {1}
+  AllDifferent: digits {1,2,9} are already taken, so $ -> {0,3,4,5,6,8}, { -> {0,3,4,5,6,8}
+Pass 8 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,4}, ` in {3}, { in {0,4}, > in {9}, # in {2}, ! in {1}
+  `#+>@ = !> under '+'=add_m1: ` in {3}, # in {2}, > in {9}, @ in {6}, ! in {1}
+  #\+@> = \@! under '+'=add_m1: # in {2}, \ in {7}, @ in {6}, > in {9}, ! in {1}
+Pass 9 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0,4}, ` in {3}, { in {0,4}, > in {9}, # in {2}, ! in {1}  (no new narrowing)
+  `#+>@ = !> under '+'=add_m1: ` in {3}, # in {2}, > in {9}, @ in {6}, ! in {1}  (no new narrowing)
+  #\+@> = \@! under '+'=add_m1: # in {2}, \ in {7}, @ in {6}, > in {9}, ! in {1}  (no new narrowing)
+  Examples no longer narrow; $ still allows {0,4}. Guess $ = 0 (a genuine choice -- Step 3 verifies it).
+Pass 10 -- apply each example, then AllDifferent:
+  $`+{> = `#! under '+'=add_m1: $ in {0}, ` in {3}, { in {4}, > in {9}, # in {2}, ! in {1}
+  `#+>@ = !> under '+'=add_m1: ` in {3}, # in {2}, > in {9}, @ in {6}, ! in {1}  (no new narrowing)
+  #\+@> = \@! under '+'=add_m1: # in {2}, \ in {7}, @ in {6}, > in {9}, ! in {1}  (no new narrowing)
+Every symbol is now pinned to one digit.
+
+Recovered cipher: !=1, #=2, $=0, >=9, @=6, \=7, `=3, {=4
+Operator meanings: '+'=add_m1
+
+Step 3 - verify every example under this cipher:
+  $`+{>: 30 + 94 - 1 = 123 -> `#! (expected `#!) OK
+  `#+>@: 23 + 69 - 1 = 91 -> !> (expected !>) OK
+  #\+@>: 72 + 96 - 1 = 167 -> \@! (expected \@!) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question #!+>\:
+  #!=12, >\=79, '+'=add_m1: 12 + 79 - 1 -> encode back to symbols -> $>.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{$>}

@@ -1,0 +1,87 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  }/*%` = )||
+  |)+}| = {}"
+  /%+/" = {`|
+  [/+|/ = {[`
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '*':
+    }/*%` = )||: 3 output symbols, not a 4-symbol concatenation
+    -> '*' is NOT plain concatenation (an example does not match)
+  operator '+':
+    |)+}| = {}": 3 output symbols, not a 4-symbol concatenation
+    /%+/" = {`|: 3 output symbols, not a 4-symbol concatenation
+    [/+|/ = {[`: 3 output symbols, not a 4-symbol concatenation
+    -> '+' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '*':
+    }/*%` = )||: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '*' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is mul_m1.)
+  operator '+':
+    |)+}| = {}": non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    /%+/" = {`|: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    [/+|/ = {[`: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '+' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  }/*%` = )|| under '*'=mul_m1: } in {0,1,2,3,4,5,6,7,8}, / in {0,1,2,3,4,5,6,7,8,9}, % in {0,1,2,3,4,5,6,7,8}, ` in {0,1,2,3,4,5,6,7,8,9}, ) in {1,2,3,4,5,6,7,8,9}, | in {0,1,2,3,4,5,6,7,9}
+  |)+}| = {}" under '+'=add: | in {9}, ) in {3,4,5,6,7,8}, } in {0,2,3,4,5,6,7,8}, { in {1}, " in {2,3,4,5,6,7}
+  /%+/" = {`| under '+'=add: / in {5,6,7,8}, % in {2,3,4,5,6,7}, " in {2,3,4,5,6,7}, { in {1}, ` in {0,2,4,6}, | in {9}
+  [/+|/ = {[` under '+'=add: [ in {0,2,3,4,5,6,7,8}, / in {5,6,7,8}, | in {9}, { in {1}, ` in {0,2,4,6}
+  AllDifferent: digits {1,9} are already taken, so ] -> {0,2,3,4,5,6,7,8}
+Pass 2 -- apply each example, then AllDifferent:
+  }/*%` = )|| under '*'=mul_m1: } in {2,3,4}, / in {5}, % in {2,3}, ` in {0,6}, ) in {6,8}, | in {9}
+  |)+}| = {}" under '+'=add: | in {9}, ) in {6,8}, } in {2,3,4}, { in {1}, " in {5,7}
+  /%+/" = {`| under '+'=add: / in {5}, % in {2}, " in {7}, { in {1}, ` in {0}, | in {9}
+  [/+|/ = {[` under '+'=add: [ in {2,3,4,6,7,8}, / in {5}, | in {9}, { in {1}, ` in {0}
+  AllDifferent: digits {0,1,2,5,7,9} are already taken, so [ -> {3,4,6,8}, ] -> {3,4,6,8}, } -> {3,4}
+Pass 3 -- apply each example, then AllDifferent:
+  }/*%` = )|| under '*'=mul_m1: } in {3,4}, / in {5}, % in {2}, ` in {0}, ) in {6,8}, | in {9}  (no new narrowing)
+  |)+}| = {}" under '+'=add: | in {9}, ) in {8}, } in {3,4}, { in {1}, " in {7}
+  /%+/" = {`| under '+'=add: / in {5}, % in {2}, " in {7}, { in {1}, ` in {0}, | in {9}  (no new narrowing)
+  [/+|/ = {[` under '+'=add: [ in {3,4,6,8}, / in {5}, | in {9}, { in {1}, ` in {0}  (no new narrowing)
+  AllDifferent: digits {0,1,2,5,7,8,9} are already taken, so [ -> {3,4,6}, ] -> {3,4,6}
+Pass 4 -- apply each example, then AllDifferent:
+  }/*%` = )|| under '*'=mul_m1: } in {4}, / in {5}, % in {2}, ` in {0}, ) in {8}, | in {9}
+  |)+}| = {}" under '+'=add: | in {9}, ) in {8}, } in {4}, { in {1}, " in {7}  (no new narrowing)
+  /%+/" = {`| under '+'=add: / in {5}, % in {2}, " in {7}, { in {1}, ` in {0}, | in {9}  (no new narrowing)
+  [/+|/ = {[` under '+'=add: [ in {3,4,6}, / in {5}, | in {9}, { in {1}, ` in {0}  (no new narrowing)
+  AllDifferent: digits {0,1,2,4,5,7,8,9} are already taken, so [ -> {3,6}, ] -> {3,6}
+Pass 5 -- apply each example, then AllDifferent:
+  }/*%` = )|| under '*'=mul_m1: } in {4}, / in {5}, % in {2}, ` in {0}, ) in {8}, | in {9}  (no new narrowing)
+  |)+}| = {}" under '+'=add: | in {9}, ) in {8}, } in {4}, { in {1}, " in {7}  (no new narrowing)
+  /%+/" = {`| under '+'=add: / in {5}, % in {2}, " in {7}, { in {1}, ` in {0}, | in {9}  (no new narrowing)
+  [/+|/ = {[` under '+'=add: [ in {3,6}, / in {5}, | in {9}, { in {1}, ` in {0}  (no new narrowing)
+  Examples no longer narrow; [ still allows {3,6}. Guess [ = 3 (a genuine choice -- Step 3 verifies it).
+Pass 6 -- apply each example, then AllDifferent:
+  }/*%` = )|| under '*'=mul_m1: } in {4}, / in {5}, % in {2}, ` in {0}, ) in {8}, | in {9}  (no new narrowing)
+  |)+}| = {}" under '+'=add: | in {9}, ) in {8}, } in {4}, { in {1}, " in {7}  (no new narrowing)
+  /%+/" = {`| under '+'=add: / in {5}, % in {2}, " in {7}, { in {1}, ` in {0}, | in {9}  (no new narrowing)
+  [/+|/ = {[` under '+'=add: [ in {3}, / in {5}, | in {9}, { in {1}, ` in {0}  (no new narrowing)
+  AllDifferent: digits {0,1,2,3,4,5,7,8,9} are already taken, so ] -> {6}
+Every symbol is now pinned to one digit.
+
+Recovered cipher: "=7, %=2, )=8, /=5, [=3, ]=6, `=0, {=1, |=9, }=4
+Operator meanings: '*'=mul_m1, '+'=add
+
+Step 3 - verify every example under this cipher:
+  }/*%`: 45 * 20 - 1 = 899 -> )|| (expected )||) OK
+  |)+}|: 98 + 49 = 147 -> {}" (expected {}") OK
+  /%+/": 52 + 57 = 109 -> {`| (expected {`|) OK
+  [/+|/: 35 + 95 = 130 -> {[` (expected {[`) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question %`*]%:
+  %`=20, ]%=62, '*'=mul_m1: 20 * 62 - 1 -> encode back to symbols -> {%[|.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{{%[|}

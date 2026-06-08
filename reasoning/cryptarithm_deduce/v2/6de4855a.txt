@@ -1,0 +1,76 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [)!-')] = [{{]: AB - CA = DD  (r.len=2, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 ["^*("] = [|\{]: EF * GE = HJD  (r.len=3, sym=['D', 'E', 'F', 'G', 'H', 'J'], |sym|=6)
+fact2 [((-!!] = [||]: GG - BB = HH  (r.len=2, sym=['B', 'G', 'H'], |sym|=3)
+fact3 [\|+)^] = [{"|]: JH + AF = DEH  (r.len=3, sym=['A', 'D', 'E', 'F', 'H', 'J'], |sym|=6)
+fact4 [!"*|#] = [#!){]: BE * HK = KBAD  (r.len=4, sym=['A', 'B', 'D', 'E', 'H', 'K'], |sym|=6)
+query [)'+'(]: AC + CG = ?
+
+narrowing operator candidates by result length:
+  '*' -> {mul, mul1, mulm1}
+  '+' -> {mul, mul1, mulm1, add1, addm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact4 [!"*|#] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern BE * HK = KBAD -> 37 candidates:
+  R0: 48 * 52 = 2496 -> B=4,E=8,K=2,A=9,D=6,H=5
+  R1: 57 * 63 = 3591 -> B=5,E=7,K=3,A=9,D=1,H=6
+  R2: 68 * 53 = 3604 -> B=6,E=8,K=3,A=0,D=4,H=5
+  R3: 89 * 43 = 3827 -> B=8,E=9,K=3,A=2,D=7,H=4
+  R4: 89 * 54 = 4806 -> B=8,E=9,K=4,A=0,D=6,H=5
+  R5: 92 * 43 = 3956 -> B=9,E=2,K=3,A=5,D=6,H=4
+  R6: 92 * 54 = 4968 -> B=9,E=2,K=4,A=6,D=8,H=5
+  R7: 92 * 65 = 5980 -> B=9,E=2,K=5,A=8,D=0,H=6
+  R8: 38 * 62 + 1 = 2357 -> B=3,E=8,K=2,A=5,D=7,H=6
+  R9: 40 * 62 + 1 = 2481 -> B=4,E=0,K=2,A=8,D=1,H=6
+  R10: 46 * 31 + 1 = 1427 -> B=4,E=6,K=1,A=2,D=7,H=3
+  R11: 47 * 31 + 1 = 1458 -> B=4,E=7,K=1,A=5,D=8,H=3
+  R12: 48 * 52 + 1 = 2497 -> B=4,E=8,K=2,A=9,D=7,H=5
+  R13: 57 * 63 + 1 = 3592 -> B=5,E=7,K=3,A=9,D=2,H=6
+  R14: 70 * 96 + 1 = 6721 -> B=7,E=0,K=6,A=2,D=1,H=9
+  R15: 71 * 53 + 1 = 3764 -> B=7,E=1,K=3,A=6,D=4,H=5
+  R16: 86 * 21 + 1 = 1807 -> B=8,E=6,K=1,A=0,D=7,H=2
+  R17: 89 * 21 + 1 = 1870 -> B=8,E=9,K=1,A=7,D=0,H=2
+  R18: 89 * 54 + 1 = 4807 -> B=8,E=9,K=4,A=0,D=7,H=5
+  R19: 92 * 43 + 1 = 3957 -> B=9,E=2,K=3,A=5,D=7,H=4
+  R20: 92 * 65 + 1 = 5981 -> B=9,E=2,K=5,A=8,D=1,H=6  <-- consistent with all facts
+  R21: 93 * 21 + 1 = 1954 -> B=9,E=3,K=1,A=5,D=4,H=2
+  R22: 94 * 21 + 1 = 1975 -> B=9,E=4,K=1,A=7,D=5,H=2
+  R23: 40 * 62 - 1 = 2479 -> B=4,E=0,K=2,A=7,D=9,H=6
+  ... 13 more candidates (untried; the search stops at the first that extends to every fact, R20)
+
+Candidates are tried in order; R20 is the first that extends to every fact. Propagate it:
+fact4 [!"*|#] = [#!){]:
+  try mul: 92 * 65 = 5980 -> encodes #!)^ != #!){ NG
+  try concat: concat(92,65) = 9265 -> encodes !"|# != #!){ NG
+  try rconcat: concat(65,92) = 6592 -> encodes |#!" != #!){ NG
+  try mul1: 92 * 65 + 1 = 5981 -> encodes #!){ = #!){ OK -> accept
+fact0 [)!-')] = [{{]:
+  try add: 89 + 78 = 167 (length/sign off) NG
+  try sub: 89 - 78 = 11 -> encodes {{ != {{ NG
+  try rsub: 78 - 89 = -11 (length/sign off) NG
+  try add1: 89 + 78 + 1 = 168 (length/sign off) NG
+  try addm1: 89 + 78 - 1 = 166 (length/sign off) NG
+  try absdiff: |89 - 78| = 11 -> encodes {{ = {{ OK -> accept
+fact1 ["^*("] = [|\{]:
+  operator '*' already fixed = mul1
+  try mul1: 20 * 32 + 1 = 641 -> encodes |\{ = |\{ OK -> accept
+fact2 [((-!!] = [||]:
+  operator '-' already fixed = absdiff
+  try absdiff: |33 - 99| = 66 -> encodes || = || OK -> accept
+fact3 [\|+)^] = [{"|]:
+  try mul: 46 * 80 = 3680 (length/sign off) NG
+  try mul1: 46 * 80 + 1 = 3681 (length/sign off) NG
+  try mulm1: 46 * 80 - 1 = 3679 (length/sign off) NG
+  try add1: 46 + 80 + 1 = 127 -> encodes {"' != {"| NG
+  try addm1: 46 + 80 - 1 = 125 -> encodes {"# != {"| NG
+
+Recovered cipher: B(!)=9, E(")=2, K(#)=5, C(')=7, G(()=3, A())=8, J(\)=4, F(^)=0, D({)=1, H(|)=6
+Query )'+'(: AC=87, CG=73, '+' = add: 87 + 73 = 160.
+Encode 160 back to original symbols -> {|^.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{{|^}

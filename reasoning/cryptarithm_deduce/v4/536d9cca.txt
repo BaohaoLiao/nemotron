@@ -1,0 +1,73 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  )|*"< = "]|}
+  ]:-)[ = )}
+  <|*}] = <))[
+  &&-}: = )[
+  <<+<| = ]}}
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '*':
+    )|*"< = "]|}: forward )|"< mismatch, reverse "<)| mismatch
+    <|*}] = <))[: forward <|}] mismatch, reverse }]<| mismatch
+    -> '*' is NOT plain concatenation (an example does not match)
+  operator '+':
+    <<+<| = ]}}: 3 output symbols, not a 4-symbol concatenation
+    -> '+' is NOT plain concatenation (an example does not match)
+  operator '-':
+    ]:-)[ = )}: 2 output symbols, not a 4-symbol concatenation
+    &&-}: = )[: 2 output symbols, not a 4-symbol concatenation
+    -> '-' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+No consistent cipher exists when each 2-symbol group is read most-significant-digit first, so read every group the other way: least-significant-digit first (so the group XY means 10*Y + X, and a result is written with its least-significant digit first).
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '*':
+    )|*"< = "]|}: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    <|*}] = <))[: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    -> '*' must be one of {mul, lcm, mul_p1, mul_m1}; take the simplest, mul
+  operator '+':
+    <<+<| = ]}}: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '+' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+  operator '-':
+    ]:-)[ = )}: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    &&-}: = )[: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '-' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is mod.)
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  )|*"< = "]|} under '*'=mul: ) in {1,2,3,4,6,7,8,9}, | in {3,4,5,6,7,8,9}, " in {0,2,3,5,6,7,9}, < in {2,3,4,6,7,8,9}, ] in {0,1,2,3,4,5,6,7,8,9}, } in {1,2,3,4,5,6,7}
+  ]:-)[ = )} under '-'=mod: ] in {2,4,6,8,9}, : in {3,4,5,6,7,8,9}, ) in {1,2,3,4,6,7,8,9}, [ in {2,3,4,5,6,7,8}, } in {1,2,3,4}
+  <|*}] = <))[ under '*'=mul: < in {2,3,4,7,9}, | in {3,5,7,9}, } in {1}, ] in {4,8}, ) in {3,7,9}, [ in {2,3,4,5}
+  &&-}: = )[ under '-'=mod: & in {8}, } in {1}, : in {5,6}, ) in {7}, [ in {2,3}
+  <<+<| = ]}} under '+'=add: < in {2,4,7}, | in {3,7,9}, ] in {4,8}, } in {1}
+  AllDifferent: digits {1,7,8} are already taken, so " -> {0,2,3,5,6,9}, < -> {2,4}, ] -> {4}, | -> {3,9}
+Pass 2 -- apply each example, then AllDifferent:
+  )|*"< = "]|} under '*'=mul: ) in {7}, | in {9}, " in {0}, < in {2}, ] in {4}, } in {1}
+  ]:-)[ = )} under '-'=mod: ] in {4}, : in {5}, ) in {7}, [ in {3}, } in {1}
+  <|*}] = <))[ under '*'=mul: < in {2}, | in {9}, } in {1}, ] in {4}, ) in {7}, [ in {3}  (no new narrowing)
+  &&-}: = )[ under '-'=mod: & in {8}, } in {1}, : in {5}, ) in {7}, [ in {3}  (no new narrowing)
+  <<+<| = ]}} under '+'=add: < in {2}, | in {9}, ] in {4}, } in {1}  (no new narrowing)
+Every symbol is now pinned to one digit.
+
+Recovered cipher: "=0, &=8, )=7, :=5, <=2, [=3, ]=4, |=9, }=1
+Operator meanings: '*'=mul, '+'=add, '-'=mod
+
+Step 3 - verify every example under this cipher:
+  )|*"<: 97 * 20 = 1940 -> "]|} (expected "]|}) OK
+  ]:-)[: 54 mod 37 = 17 -> )} (expected )}) OK
+  <|*}]: 92 * 41 = 3772 -> <))[ (expected <))[) OK
+  &&-}:: 88 mod 51 = 37 -> )[ (expected )[) OK
+  <<+<|: 22 + 92 = 114 -> ]}} (expected ]}}) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question <|-]<:
+  <|=92, ]<=24, '-'=mod: 92 mod 24 -> encode back to symbols -> "<.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{"<}

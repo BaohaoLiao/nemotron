@@ -1,0 +1,66 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  !%*&! = "!`!
+  `/*'! = ``@&
+  '&*`" = ``)
+  &"-)@ = !!
+  "/+&% = ')<
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '*':
+    !%*&! = "!`!: forward !%&! mismatch, reverse &!!% mismatch
+    `/*'! = ``@&: forward `/'! mismatch, reverse '!`/ mismatch
+    '&*`" = ``): 3 output symbols, not a 4-symbol concatenation
+    -> '*' is NOT plain concatenation (an example does not match)
+  operator '+':
+    "/+&% = ')<: 3 output symbols, not a 4-symbol concatenation
+    -> '+' is NOT plain concatenation (an example does not match)
+  operator '-':
+    &"-)@ = !!: 2 output symbols, not a 4-symbol concatenation
+    -> '-' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+No consistent cipher exists when each 2-symbol group is read most-significant-digit first, so read every group the other way: least-significant-digit first (so the group XY means 10*Y + X, and a result is written with its least-significant digit first).
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '*':
+    !%*&! = "!`!: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    `/*'! = ``@&: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    '&*`" = ``): non-negative, 3-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    -> '*' must be one of {mul, lcm, mul_p1, mul_m1}; take the simplest, mul
+  operator '+':
+    "/+&% = ')<: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '+' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+  operator '-':
+    &"-)@ = !!: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '-' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is rsub.)
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  !%*&! = "!`! under '*'=mul: ! in {3,4,7}, % in {8,9}, & in {3,4,6,8,9}, " in {2,4,7,8}, ` in {0,1,2,3,5}
+  `/*'! = ``@& under '*'=mul: ` in {0,5}, / in {5,6,8}, ' in {2,5,6,7,8}, ! in {4,7}, @ in {0,6,8,9}, & in {3}
+  '&*`" = ``) under '*'=mul: ' in {5}, & in {3}, ` in {0}, " in {2}, ) in {7}
+  &"-)@ = !! under '-'=rsub: & in {3}, " in {2}, ) in {7}, @ in {6}, ! in {4}
+  "/+&% = ')< under '+'=add: " in {2}, / in {8}, & in {3}, % in {9}, ' in {5}, ) in {7}, < in {1}
+Every symbol is now pinned to one digit.
+
+Recovered cipher: !=4, "=2, %=9, &=3, '=5, )=7, /=8, <=1, @=6, `=0
+Operator meanings: '*'=mul, '+'=add, '-'=rsub
+
+Step 3 - verify every example under this cipher:
+  !%*&!: 94 * 43 = 4042 -> "!`! (expected "!`!) OK
+  `/*'!: 80 * 45 = 3600 -> ``@& (expected ``@&) OK
+  '&*`": 35 * 20 = 700 -> ``) (expected ``)) OK
+  &"-)@: 67 - 23 = 44 -> !! (expected !!) OK
+  "/+&%: 82 + 93 = 175 -> ')< (expected ')<) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question ))+@/:
+  ))=77, @/=86, '+'=add: 77 + 86 -> encode back to symbols -> &@<.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{&@<}

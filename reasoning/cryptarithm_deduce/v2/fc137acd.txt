@@ -1,0 +1,46 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [^[+[{] = [^[[{]: AB + BC = ABBC  (r.len=4, sym=['A', 'B', 'C'], |sym|=3)
+fact1 [)<*^<] = [$|))]: DE * AE = FGDD  (r.len=4, sym=['A', 'D', 'E', 'F', 'G'], |sym|=5)
+fact2 [^|-``] = [#^]: AG - HH = JA  (r.len=2, sym=['A', 'G', 'H', 'J'], |sym|=4)
+query [)#*[`]: DJ * BH = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact1 [)<*^<] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern DE * AE = FGDD -> 10 candidates:
+  R0: 48 * 28 = 1344 -> F=1,D=4,E=8,A=2,G=3
+  R1: 76 * 26 + 1 = 1977 -> F=1,D=7,E=6,A=2,G=9
+  R2: 56 * 26 - 1 = 1455 -> F=1,D=5,E=6,A=2,G=4
+  R3: 56 * 76 - 1 = 4255 -> F=4,D=5,E=6,A=7,G=2
+  R4: 90 * 20 - 1 = 1799 -> F=1,D=9,E=0,A=2,G=7  <-- consistent with all facts
+  R5: 90 * 30 - 1 = 2699 -> F=2,D=9,E=0,A=3,G=6
+  R6: 90 * 40 - 1 = 3599 -> F=3,D=9,E=0,A=4,G=5
+  R7: 90 * 60 - 1 = 5399 -> F=5,D=9,E=0,A=6,G=3
+  R8: 90 * 70 - 1 = 6299 -> F=6,D=9,E=0,A=7,G=2
+  R9: 90 * 80 - 1 = 7199 -> F=7,D=9,E=0,A=8,G=1
+
+Candidates are tried in order; R4 is the first that extends to every fact. Propagate it:
+fact1 [)<*^<] = [$|))]:
+  try mul: 90 * 20 = 1800 -> encodes $#<< != $|)) NG
+  try concat: concat(90,20) = 9020 -> encodes )<^< != $|)) NG
+  try rconcat: concat(20,90) = 2090 -> encodes ^<)< != $|)) NG
+  try mul1: 90 * 20 + 1 = 1801 -> encodes $#<$ != $|)) NG
+  try mulm1: 90 * 20 - 1 = 1799 -> encodes $|)) = $|)) OK -> accept
+fact0 [^[+[{] = [^[[{]:
+  try mul: 23 * 34 = 782 (length/sign off) NG
+  try concat: concat(23,34) = 2334 -> encodes ^[[{ = ^[[{ OK -> accept
+fact2 [^|-``] = [#^]:
+  try add: 27 + 55 = 82 -> encodes #^ = #^ OK -> accept
+
+Recovered cipher: J(#)=8, F($)=1, D())=9, E(<)=0, B([)=3, A(^)=2, H(`)=5, C({)=4, G(|)=7
+Query )#*[`: DJ=98, BH=35, '*' = mulm1: 98 * 35 - 1 = 3429.
+Encode 3429 back to original symbols -> [{^).
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{[{^)}

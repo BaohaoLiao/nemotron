@@ -1,0 +1,44 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [^^+\#] = [^^\#]: AA + BC = AABC  (r.len=4, sym=['A', 'B', 'C'], |sym|=3)
+fact1 [%@+$%] = [%@$%]: DE + FD = DEFD  (r.len=4, sym=['D', 'E', 'F'], |sym|=3)
+fact2 [^?+?\] = [^??\]: AG + GB = AGGB  (r.len=4, sym=['A', 'B', 'G'], |sym|=3)
+fact3 ["#-\%] = [-!!]: HC - BD = -JJ  (r.len=2 neg, sym=['B', 'C', 'D', 'H', 'J'], |sym|=5)
+fact4 [$@*@$] = [$!&@]: FE * EF = FJKE  (r.len=4, sym=['E', 'F', 'J', 'K'], |sym|=4)
+query [@"-!?]: EH - JG = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {sub, rsub, negabs}
+
+Mul anchor: fact4 [$@*@$] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern FE * EF = FJKE -> 3 candidates:
+  R0: 17 * 71 = 1207 -> J=2,F=1,K=0,E=7
+  R1: 18 * 81 = 1458 -> J=4,F=1,K=5,E=8  <-- consistent with all facts
+  R2: 19 * 91 = 1729 -> J=7,F=1,K=2,E=9
+
+Candidates are tried in order; R1 is the first that extends to every fact. Propagate it:
+fact4 [$@*@$] = [$!&@]:
+  try mul: 18 * 81 = 1458 -> encodes $!&@ = $!&@ OK -> accept
+fact0 [^^+\#] = [^^\#]:
+  try mul: 0 * 23 = 0 (length/sign off) NG
+  try concat: concat(00,23) = 0023 -> encodes ^^\# = ^^\# OK -> accept
+fact1 [%@+$%] = [%@$%]:
+  operator '+' already fixed = concat
+  try concat: concat(98,19) = 9819 -> encodes %@$% = %@$% OK -> accept
+fact2 [^?+?\] = [^??\]:
+  operator '+' already fixed = concat
+  try concat: concat(06,62) = 0662 -> encodes ^??\ = ^??\ OK -> accept
+fact3 ["#-\%] = [-!!]:
+  try sub: 73 - 29 = 44 (length/sign off) NG
+  try rsub: 29 - 73 = -44 -> encodes -!! = -!! OK -> accept
+
+Recovered cipher: J(!)=4, H(")=7, C(#)=3, F($)=1, D(%)=9, K(&)=5, G(?)=6, E(@)=8, B(\)=2, A(^)=0
+Query @"-!?: EH=87, JG=46, '-' = rsub: 46 - 87 = -41.
+Encode 41 back to original symbols -> -!$.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{-!$}

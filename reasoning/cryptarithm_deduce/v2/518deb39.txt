@@ -1,0 +1,42 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [<'+<"] = [(>]: AB + AC = DE  (r.len=2, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 ["'-$<] = ['<]: CB - FA = BA  (r.len=2, sym=['A', 'B', 'C', 'F'], |sym|=4)
+fact2 [("*(<] = [<<!!]: DC * DA = AAGG  (r.len=4, sym=['A', 'C', 'D', 'G'], |sym|=4)
+fact3 [!$*<>] = [!^\]: GF * AE = GHJ  (r.len=3, sym=['A', 'E', 'F', 'G', 'H', 'J'], |sym|=6)
+query [$$-<>]: FF - AE = ?
+
+narrowing operator candidates by result length:
+  '*' -> {mul, mul1, mulm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact2 [("*(<] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern DC * DA = AAGG -> 2 candidates:
+  R0: 89 * 87 + 1 = 7744 -> G=4,C=9,D=8,A=7
+  R1: 38 * 31 - 1 = 1177 -> G=7,C=8,D=3,A=1  <-- consistent with all facts
+
+Candidates are tried in order; R1 is the first that extends to every fact. Propagate it:
+fact2 [("*(<] = [<<!!]:
+  try mul: 38 * 31 = 1178 -> encodes <<!" != <<!! NG
+  try concat: concat(38,31) = 3831 -> encodes ("(< != <<!! NG
+  try rconcat: concat(31,38) = 3138 -> encodes (<(" != <<!! NG
+  try mul1: 38 * 31 + 1 = 1179 -> encodes <<!\ != <<!! NG
+  try mulm1: 38 * 31 - 1 = 1177 -> encodes <<!! = <<!! OK -> accept
+fact0 [<'+<"] = [(>]:
+  try add: 12 + 18 = 30 -> encodes (> = (> OK -> accept
+fact1 ["'-$<] = ['<]:
+  try add: 82 + 61 = 143 (length/sign off) NG
+  try sub: 82 - 61 = 21 -> encodes '< = '< OK -> accept
+fact3 [!$*<>] = [!^\]:
+  operator '*' already fixed = mulm1
+  try mulm1: 76 * 10 - 1 = 759 -> encodes !^\ = !^\ OK -> accept
+
+Recovered cipher: G(!)=7, C(")=8, F($)=6, B(')=2, D(()=3, A(<)=1, E(>)=0, J(\)=9, H(^)=5
+Query $$-<>: FF=66, AE=10, '-' = sub: 66 - 10 = 56.
+Encode 56 back to original symbols -> ^$.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{^$}

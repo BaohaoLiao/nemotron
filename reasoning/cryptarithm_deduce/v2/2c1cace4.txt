@@ -1,0 +1,43 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [}@-@'] = [@}]: AB - BC = BA  (r.len=2, sym=['A', 'B', 'C'], |sym|=3)
+fact1 ["%*|'] = []''%]: DE * FC = GCCE  (r.len=4, sym=['C', 'D', 'E', 'F', 'G'], |sym|=5)
+fact2 [!|+$$] = [!|$$]: HF + JJ = HFJJ  (r.len=4, sym=['F', 'H', 'J'], |sym|=3)
+query []}-$"]: GA - JD = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact1 ["%*|'] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern DE * FC = GCCE -> 10 candidates:
+  R0: 30 * 85 = 2550 -> D=3,E=0,C=5,G=2,F=8
+  R1: 58 * 46 = 2668 -> D=5,E=8,C=6,G=2,F=4  <-- consistent with all facts
+  R2: 58 * 71 = 4118 -> D=5,E=8,C=1,G=4,F=7
+  R3: 60 * 24 = 1440 -> D=6,E=0,C=4,G=1,F=2
+  R4: 60 * 48 = 2880 -> D=6,E=0,C=8,G=2,F=4
+  R5: 60 * 98 = 5880 -> D=6,E=0,C=8,G=5,F=9
+  R6: 70 * 65 = 4550 -> D=7,E=0,C=5,G=4,F=6
+  R7: 74 * 36 = 2664 -> D=7,E=4,C=6,G=2,F=3
+  R8: 76 * 41 = 3116 -> D=7,E=6,C=1,G=3,F=4
+  R9: 67 * 58 + 1 = 3887 -> D=6,E=7,C=8,G=3,F=5
+
+Candidates are tried in order; R1 is the first that extends to every fact. Propagate it:
+fact1 ["%*|'] = []''%]:
+  try mul: 58 * 46 = 2668 -> encodes ]''% = ]''% OK -> accept
+fact0 [}@-@'] = [@}]:
+  try add: 73 + 36 = 109 (length/sign off) NG
+  try sub: 73 - 36 = 37 -> encodes @} = @} OK -> accept
+fact2 [!|+$$] = [!|$$]:
+  try mul: 4 * 11 = 44 (length/sign off) NG
+  try concat: concat(04,11) = 0411 -> encodes !|$$ = !|$$ OK -> accept
+
+Recovered cipher: H(!)=0, D(")=5, J($)=1, E(%)=8, C(')=6, B(@)=3, G(])=2, F(|)=4, A(})=7
+Query ]}-$": GA=27, JD=15, '-' = sub: 27 - 15 = 12.
+Encode 12 back to original symbols -> $].
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{$]}

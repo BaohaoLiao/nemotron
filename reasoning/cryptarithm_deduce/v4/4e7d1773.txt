@@ -1,0 +1,72 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  ^|+'" = \{:
+  ?:<^\ = $"
+  \^%@: = %|@
+  @^+{^ = ?:"$
+  '?+@? = '|'?
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '%':
+    \^%@: = %|@: output starts with the operator sign, not plain concatenation
+    -> '%' is NOT plain concatenation (an example does not match)
+  operator '+':
+    ^|+'" = \{:: 3 output symbols, not a 4-symbol concatenation
+    @^+{^ = ?:"$: forward @^{^ mismatch, reverse {^@^ mismatch
+    '?+@? = '|'?: forward '?@? mismatch, reverse @?'? mismatch
+    -> '+' is NOT plain concatenation (an example does not match)
+  operator '<':
+    ?:<^\ = $": 2 output symbols, not a 4-symbol concatenation
+    -> '<' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '%':
+    \^%@: = %|@: negative (sign-prefixed), 2-digit result -> still possible {sub_signed, rsub_signed, neg_absdiff}
+    -> '%' must be one of {sub_signed, rsub_signed, neg_absdiff}; take the simplest, sub_signed
+  operator '+':
+    ^|+'" = \{:: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    @^+{^ = ?:"$: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    '?+@? = '|'?: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    -> '+' must be one of {mul, lcm, mul_p1, mul_m1}; take the simplest, mul
+  operator '<':
+    ?:<^\ = $": non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '<' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is add_p1.)
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  ^|+'" = \{: under '+'=mul: ^ in {0,1,2,3,4,5,6,7,8,9}, | in {2,3,4,5,6,7,8,9}, ' in {0,1,2,3,4,5,6,7,8,9}, " in {2,3,4,5,6,7,8,9}, \ in {1,2,3,4,5,6,7,8,9}, { in {0,1,2,3,4,5,6,7,8,9}, : in {0,1,2,3,4,6,7,8}
+  ?:<^\ = $" under '<'=add_p1: ? in {0,1,2,3,4,5,6,7,8}, : in {0,1,2,3,4,6,7,8}, ^ in {0,1,2,3,4,5,6,7,8}, \ in {1,2,3,4,5,6,7,8}, $ in {2,3,4,5,6,7,8,9}, " in {2,3,4,5,6,7,8,9}
+  \^%@: = %|@ under '%'=sub_signed: \ in {1,2,3,4,5,6}, ^ in {1,2,3,4,5,6,7,8}, @ in {3,4,5,6,7,8,9}, : in {0,1,2,3,4,6,7,8}, | in {2,3,4,5,6,7}
+  @^+{^ = ?:"$ under '+'=mul: @ in {3,7,8}, ^ in {3,8}, { in {2,7,8}, ? in {1,6}, : in {0}, " in {5,6}, $ in {4,9}
+  '?+@? = '|'? under '+'=mul: ' in {1}, ? in {6}, @ in {7}, | in {2}
+  AllDifferent: digits {0,1,2,6,7} are already taken, so " -> {5}, \ -> {3,4,5}, { -> {8}
+Pass 2 -- apply each example, then AllDifferent:
+  ^|+'" = \{: under '+'=mul: ^ in {3}, | in {2}, ' in {1}, " in {5}, \ in {4}, { in {8}, : in {0}
+  ?:<^\ = $" under '<'=add_p1: ? in {6}, : in {0}, ^ in {3}, \ in {4}, $ in {9}, " in {5}
+  \^%@: = %|@ under '%'=sub_signed: \ in {4}, ^ in {3}, @ in {7}, : in {0}, | in {2}  (no new narrowing)
+  @^+{^ = ?:"$ under '+'=mul: @ in {7}, ^ in {3}, { in {8}, ? in {6}, : in {0}, " in {5}, $ in {9}  (no new narrowing)
+  '?+@? = '|'? under '+'=mul: ' in {1}, ? in {6}, @ in {7}, | in {2}  (no new narrowing)
+Every symbol is now pinned to one digit.
+
+Recovered cipher: "=5, $=9, '=1, :=0, ?=6, @=7, \=4, ^=3, {=8, |=2
+Operator meanings: '%'=sub_signed, '+'=mul, '<'=add_p1
+
+Step 3 - verify every example under this cipher:
+  ^|+'": 32 * 15 = 480 -> \{: (expected \{:) OK
+  ?:<^\: 60 + 34 + 1 = 95 -> $" (expected $") OK
+  \^%@:: 43 - 70 = -27 -> %|@ (expected %|@) OK
+  @^+{^: 73 * 83 = 6059 -> ?:"$ (expected ?:"$) OK
+  '?+@?: 16 * 76 = 1216 -> '|'? (expected '|'?) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question ^\+$::
+  ^\=34, $:=90, '+'=mul: 34 * 90 -> encode back to symbols -> ^:?:.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{^:?:}

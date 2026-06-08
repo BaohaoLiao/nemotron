@@ -1,0 +1,64 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [\[%&$] = [&}"$]: AB % CD = CEFD  (r.len=4, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [\`|':] = [[[`]: AG | HJ = BBG  (r.len=3, sym=['A', 'B', 'G', 'H', 'J'], |sym|=5)
+fact2 [`\%\&] = [`&'"]: GA % AC = GCHF  (r.len=4, sym=['A', 'C', 'F', 'G', 'H'], |sym|=5)
+fact3 ['/|$}] = [[:$]: HK | DE = BJD  (r.len=3, sym=['B', 'D', 'E', 'H', 'J', 'K'], |sym|=6)
+query [\&|$`]: AC | DG = ?
+
+narrowing operator candidates by result length:
+  '%' -> {concat, rconcat, mul, mul1, mulm1}
+  '|' -> {mul, mul1, mulm1, add1, addm1}
+
+Mul anchor: fact0 [\[%&$] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB % CD = CEFD -> 43 candidates:
+  R0: 69 * 15 = 1035 -> F=3,D=5,C=1,B=9,A=6,E=0
+  R1: 71 * 29 = 2059 -> F=5,D=9,C=2,B=1,A=7,E=0
+  R2: 73 * 15 = 1095 -> F=9,D=5,C=1,B=3,A=7,E=0
+  R3: 81 * 29 = 2349 -> F=4,D=9,C=2,B=1,A=8,E=3
+  R4: 83 * 15 = 1245 -> F=4,D=5,C=1,B=3,A=8,E=2
+  R5: 83 * 25 = 2075 -> F=7,D=5,C=2,B=3,A=8,E=0
+  R6: 86 * 12 = 1032 -> F=3,D=2,C=1,B=6,A=8,E=0
+  R7: 86 * 14 = 1204 -> F=0,D=4,C=1,B=6,A=8,E=2
+  R8: 87 * 15 = 1305 -> F=0,D=5,C=1,B=7,A=8,E=3
+  R9: 87 * 35 = 3045 -> F=4,D=5,C=3,B=7,A=8,E=0
+  R10: 91 * 27 = 2457 -> F=5,D=7,C=2,B=1,A=9,E=4
+  R11: 91 * 28 = 2548 -> F=4,D=8,C=2,B=1,A=9,E=5
+  R12: 91 * 36 = 3276 -> F=7,D=6,C=3,B=1,A=9,E=2
+  R13: 91 * 38 = 3458 -> F=5,D=8,C=3,B=1,A=9,E=4
+  R14: 91 * 48 = 4368 -> F=6,D=8,C=4,B=1,A=9,E=3  <-- consistent with all facts
+  R15: 91 * 58 = 5278 -> F=7,D=8,C=5,B=1,A=9,E=2
+  R16: 93 * 45 = 4185 -> F=8,D=5,C=4,B=3,A=9,E=1
+  R17: 93 * 65 = 6045 -> F=4,D=5,C=6,B=3,A=9,E=0
+  R18: 96 * 18 = 1728 -> F=2,D=8,C=1,B=6,A=9,E=7
+  R19: 96 * 24 = 2304 -> F=0,D=4,C=2,B=6,A=9,E=3
+  R20: 96 * 32 = 3072 -> F=7,D=2,C=3,B=6,A=9,E=0
+  R21: 96 * 42 = 4032 -> F=3,D=2,C=4,B=6,A=9,E=0
+  R22: 96 * 54 = 5184 -> F=8,D=4,C=5,B=6,A=9,E=1
+  R23: 96 * 74 = 7104 -> F=0,D=4,C=7,B=6,A=9,E=1
+  ... 19 more candidates (untried; the search stops at the first that extends to every fact, R14)
+
+Candidates are tried in order; R14 is the first that extends to every fact. Propagate it:
+fact0 [\[%&$] = [&}"$]:
+  try mul: 91 * 48 = 4368 -> encodes &}"$ = &}"$ OK -> accept
+fact1 [\`|':] = [[[`]:
+  try mul: 97 * 20 = 1940 (length/sign off) NG
+  try mul1: 97 * 20 + 1 = 1941 (length/sign off) NG
+  try mulm1: 97 * 20 - 1 = 1939 (length/sign off) NG
+  try add1: 97 + 20 + 1 = 118 -> encodes [[$ != [[` NG
+  try addm1: 97 + 20 - 1 = 116 -> encodes [[" != [[` NG
+fact2 [`\%\&] = [`&'"]:
+  operator '%' already fixed = mul
+  try mul: 79 * 94 = 7426 -> encodes `&'" = `&'" OK -> accept
+fact3 ['/|$}] = [[:$]:
+  operator '|' already fixed = add
+  try add: 25 + 83 = 108 -> encodes [:$ = [:$ OK -> accept
+
+Recovered cipher: F(")=6, D($)=8, C(&)=4, H(')=2, K(/)=5, J(:)=0, B([)=1, A(\)=9, G(`)=7, E(})=3
+Query \&|$`: AC=94, DG=87, '|' = add: 94 + 87 = 181.
+Encode 181 back to original symbols -> [$[.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{[$[}

@@ -1,0 +1,36 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [`$+%/] = [`$%/]: AB + CD = ABCD  (r.len=4, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [!$*"%] = [\\!"]: EB * FC = GGEF  (r.len=4, sym=['B', 'C', 'E', 'F', 'G'], |sym|=5)
+fact2 [%`-\[] = [-`>]: CA - GH = -AJ  (r.len=2 neg, sym=['A', 'C', 'G', 'H', 'J'], |sym|=5)
+query [>$+$>]: JB + BJ = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {sub, rsub, negabs}
+
+Mul anchor: fact1 [!$*"%] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern EB * FC = GGEF -> 3 candidates:
+  R0: 64 * 87 = 5568 -> E=6,F=8,B=4,C=7,G=5  <-- consistent with all facts
+  R1: 93 * 72 + 1 = 6697 -> E=9,F=7,B=3,C=2,G=6
+  R2: 82 * 95 - 1 = 7789 -> E=8,F=9,B=2,C=5,G=7
+
+Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
+fact1 [!$*"%] = [\\!"]:
+  try mul: 64 * 87 = 5568 -> encodes \\!" = \\!" OK -> accept
+fact0 [`$+%/] = [`$%/]:
+  try mul: 14 * 70 = 980 (length/sign off) NG
+  try concat: concat(14,70) = 1470 -> encodes `$%/ = `$%/ OK -> accept
+fact2 [%`-\[] = [-`>]:
+  try sub: 71 - 52 = 19 (length/sign off) NG
+  try rsub: 52 - 71 = -19 -> encodes -`> = -`> OK -> accept
+
+Recovered cipher: E(!)=6, F(")=8, B($)=4, C(%)=7, D(/)=0, J(>)=9, H([)=2, G(\)=5, A(`)=1
+Query >$+$>: JB=94, BJ=49, '+' = concat: concat(94,49) = 9449.
+Encode 9449 back to original symbols -> >$$>.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{>$$>}

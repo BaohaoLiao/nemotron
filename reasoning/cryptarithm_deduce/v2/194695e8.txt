@@ -1,0 +1,58 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [{|*<\] = [{%!|]: AB * CD = AEFB  (r.len=4, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 []|*!]] = [{<|%]: GB * FG = ACBE  (r.len=4, sym=['A', 'B', 'C', 'E', 'F', 'G'], |sym|=6)
+fact2 []$-<%] = [|!]: GH - CE = BF  (r.len=2, sym=['B', 'C', 'E', 'F', 'G', 'H'], |sym|=6)
+query [!\-{<]: FD - AC = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact0 [{|*<\] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB * CD = AEFB -> 43 candidates:
+  R0: 12 * 86 = 1032 -> F=3,E=0,C=8,D=6,A=1,B=2  <-- consistent with all facts
+  R1: 14 * 86 = 1204 -> F=0,E=2,C=8,D=6,A=1,B=4
+  R2: 15 * 69 = 1035 -> F=3,E=0,C=6,D=9,A=1,B=5
+  R3: 15 * 73 = 1095 -> F=9,E=0,C=7,D=3,A=1,B=5
+  R4: 15 * 83 = 1245 -> F=4,E=2,C=8,D=3,A=1,B=5
+  R5: 15 * 87 = 1305 -> F=0,E=3,C=8,D=7,A=1,B=5
+  R6: 18 * 96 = 1728 -> F=2,E=7,C=9,D=6,A=1,B=8
+  R7: 24 * 96 = 2304 -> F=0,E=3,C=9,D=6,A=2,B=4
+  R8: 25 * 83 = 2075 -> F=7,E=0,C=8,D=3,A=2,B=5
+  R9: 27 * 91 = 2457 -> F=5,E=4,C=9,D=1,A=2,B=7
+  R10: 28 * 91 = 2548 -> F=4,E=5,C=9,D=1,A=2,B=8
+  R11: 29 * 71 = 2059 -> F=5,E=0,C=7,D=1,A=2,B=9
+  R12: 29 * 81 = 2349 -> F=4,E=3,C=8,D=1,A=2,B=9
+  R13: 32 * 96 = 3072 -> F=7,E=0,C=9,D=6,A=3,B=2
+  R14: 35 * 87 = 3045 -> F=4,E=0,C=8,D=7,A=3,B=5
+  R15: 36 * 91 = 3276 -> F=7,E=2,C=9,D=1,A=3,B=6
+  R16: 38 * 91 = 3458 -> F=5,E=4,C=9,D=1,A=3,B=8
+  R17: 42 * 96 = 4032 -> F=3,E=0,C=9,D=6,A=4,B=2
+  R18: 45 * 93 = 4185 -> F=8,E=1,C=9,D=3,A=4,B=5
+  R19: 45 * 97 = 4365 -> F=6,E=3,C=9,D=7,A=4,B=5
+  R20: 48 * 91 = 4368 -> F=6,E=3,C=9,D=1,A=4,B=8
+  R21: 54 * 96 = 5184 -> F=8,E=1,C=9,D=6,A=5,B=4
+  R22: 58 * 91 = 5278 -> F=7,E=2,C=9,D=1,A=5,B=8
+  R23: 65 * 93 = 6045 -> F=4,E=0,C=9,D=3,A=6,B=5
+  ... 19 more candidates (untried; the search stops at the first that extends to every fact, R0)
+
+Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
+fact0 [{|*<\] = [{%!|]:
+  try mul: 12 * 86 = 1032 -> encodes {%!| = {%!| OK -> accept
+fact1 []|*!]] = [{<|%]:
+  operator '*' already fixed = mul
+  try mul: 52 * 35 = 1820 -> encodes {<|% = {<|% OK -> accept
+fact2 []$-<%] = [|!]:
+  try add: 57 + 80 = 137 (length/sign off) NG
+  try sub: 57 - 80 = -23 (length/sign off) NG
+  try rsub: 80 - 57 = 23 -> encodes |! = |! OK -> accept
+
+Recovered cipher: F(!)=3, H($)=7, E(%)=0, C(<)=8, D(\)=6, G(])=5, A({)=1, B(|)=2
+Query !\-{<: FD=36, AC=18, '-' = rsub: 18 - 36 = -18.
+Encode 18 back to original symbols -> -{<.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{-{<}

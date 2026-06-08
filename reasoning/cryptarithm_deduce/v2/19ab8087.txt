@@ -1,0 +1,67 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [!)+^\] = []/]: AB + CD = EF  (r.len=2, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [\\*](] = [\\](]: DD * EG = DDEG  (r.len=4, sym=['D', 'E', 'G'], |sym|=3)
+fact2 [(\-]$] = [^^]: GD - EH = CC  (r.len=2, sym=['C', 'D', 'E', 'G', 'H'], |sym|=5)
+query [\/+!^]: DF + AC = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact1 [\\*](] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern DD * EG = DDEG -> 720 candidates:
+  R0: concat(00,12) = 0012 -> G=2,D=0,E=1
+  R1: concat(00,13) = 0013 -> G=3,D=0,E=1
+  R2: concat(00,14) = 0014 -> G=4,D=0,E=1  <-- consistent with all facts
+  R3: concat(00,15) = 0015 -> G=5,D=0,E=1
+  R4: concat(00,16) = 0016 -> G=6,D=0,E=1
+  R5: concat(00,17) = 0017 -> G=7,D=0,E=1
+  R6: concat(00,18) = 0018 -> G=8,D=0,E=1
+  R7: concat(00,19) = 0019 -> G=9,D=0,E=1
+  R8: concat(00,21) = 0021 -> G=1,D=0,E=2
+  R9: concat(00,23) = 0023 -> G=3,D=0,E=2
+  R10: concat(00,24) = 0024 -> G=4,D=0,E=2
+  R11: concat(00,25) = 0025 -> G=5,D=0,E=2
+  R12: concat(00,26) = 0026 -> G=6,D=0,E=2
+  R13: concat(00,27) = 0027 -> G=7,D=0,E=2
+  R14: concat(00,28) = 0028 -> G=8,D=0,E=2
+  R15: concat(00,29) = 0029 -> G=9,D=0,E=2
+  R16: concat(00,31) = 0031 -> G=1,D=0,E=3
+  R17: concat(00,32) = 0032 -> G=2,D=0,E=3
+  R18: concat(00,34) = 0034 -> G=4,D=0,E=3
+  R19: concat(00,35) = 0035 -> G=5,D=0,E=3
+  R20: concat(00,36) = 0036 -> G=6,D=0,E=3
+  R21: concat(00,37) = 0037 -> G=7,D=0,E=3
+  R22: concat(00,38) = 0038 -> G=8,D=0,E=3
+  R23: concat(00,39) = 0039 -> G=9,D=0,E=3
+  ... 696 more candidates (untried; the search stops at the first that extends to every fact, R2)
+
+Candidates are tried in order; R2 is the first that extends to every fact. Propagate it:
+fact1 [\\*](] = [\\](]:
+  try mul: 0 * 14 = 0 (length/sign off) NG
+  try concat: concat(00,14) = 0014 -> encodes \\]( = \\]( OK -> accept
+fact0 [!)+^\] = []/]:
+  try add: 32 + 50 = 82 -> encodes /) != ]/ NG
+  try sub: 32 - 50 = -18 (length/sign off) NG
+  try rsub: 50 - 32 = 18 -> encodes ]/ != ]/ NG
+  try add1: 32 + 50 + 1 = 83 -> encodes /! != ]/ NG
+  try addm1: 32 + 50 - 1 = 81 -> encodes /] != ]/ NG
+  try absdiff: |32 - 50| = 18 -> encodes ]/ != ]/ NG
+  try maxmod: max(32,50) mod min(32,50) = 18 -> encodes ]/ = ]/ OK -> accept
+fact2 [(\-]$] = [^^]:
+  try add: 40 + 16 = 56 -> encodes ^$ != ^^ NG
+  try sub: 40 - 16 = 24 -> encodes )( != ^^ NG
+  try rsub: 16 - 40 = -24 (length/sign off) NG
+  try add1: 40 + 16 + 1 = 57 -> encodes ^? != ^^ NG
+  try addm1: 40 + 16 - 1 = 55 -> encodes ^^ = ^^ OK -> accept
+
+Recovered cipher: A(!)=3, H($)=6, G(()=4, B())=2, F(/)=8, D(\)=0, E(])=1, C(^)=5
+Query \/+!^: DF=8, AC=35, '+' = maxmod: max(8,35) mod min(8,35) = 3.
+Encode 3 back to original symbols -> !.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{!}

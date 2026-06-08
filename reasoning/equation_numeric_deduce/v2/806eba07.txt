@@ -1,0 +1,176 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  72$08 = 35
+  28$47 = 8
+  92*36 = 7281
+  17$14 = 03
+  28:08 = 261
+
+The inputs are 72, 08, 28, 47, 92, 36, 17, 14, 28, 08
+
+The outputs are 35, 8, 7281, 03, 261
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+72$08 -> $
+28$47 -> $
+92*36 -> *
+17$14 -> $
+28:08 -> :
+
+The operators
+$
+*
+:
+
+Looking at the question
+93:48 -> :
+The question operator is found in the examples.
+
+Looking at operator 【:】 [28:08 = 261]:
+  Trying common operations reversed operands [28->82 08->80] and reversed result [expected (82,80)->261]:
+    concatenation f(82, 80) = 82 || 80 = 8280 -rev-> 0828 wrong
+    reverse concatenation f(82, 80) = 80 || 82 = 8082 -rev-> 2808 wrong
+    addition f(82, 80) = 82 + 80 = 162 -rev-> 261 match, correct, actions: reversed operands, reversed result, addition
+    absolute difference f(82, 80) = |82 - 80| = 2 -rev-> 2 wrong
+    negated absolute difference f(82, 80) = -|82 - 80| = -2 -rev-> -2 wrong
+    subtraction (a-b) f(82, 80) = 82 - 80 = 2 -rev-> 2 wrong
+    reverse subtraction (b-a) f(82, 80) = 80 - 82 = -2 -rev-> -2 wrong
+    multiplication f(82, 80) = (80 + 2) * 80 = 80 * 80 + 2 * 80 = 6400 + 160 = 6560 -rev-> 0656 wrong
+  Trying common operations on identity [28 08] [expected (28,08)->261]:
+    concatenation f(28, 08) = 28 || 08 = 2808 wrong
+    reverse concatenation f(28, 08) = 08 || 28 = 0828 wrong
+    addition f(28, 08) = 28 + 08 = 36 wrong
+    absolute difference f(28, 08) = |28 - 08| = 20 wrong
+    negated absolute difference f(28, 08) = -|28 - 08| = -20 wrong
+    subtraction (a-b) f(28, 08) = 28 - 08 = 20 wrong
+    reverse subtraction (b-a) f(28, 08) = 08 - 28 = -20 wrong
+    multiplication f(28, 08) = (20 + 8) * 08 = 20 * 08 + 8 * 08 = 160 + 64 = 224 wrong
+  Trying common operations reversed operands [28->82 08->80] [expected (82,80)->261]:
+    concatenation f(82, 80) = 82 || 80 = 8280 wrong
+    reverse concatenation f(82, 80) = 80 || 82 = 8082 wrong
+    addition f(82, 80) = 82 + 80 = 162 wrong
+    absolute difference f(82, 80) = |82 - 80| = 2 wrong
+    negated absolute difference f(82, 80) = -|82 - 80| = -2 wrong
+    subtraction (a-b) f(82, 80) = 82 - 80 = 2 wrong
+    reverse subtraction (b-a) f(82, 80) = 80 - 82 = -2 wrong
+    multiplication f(82, 80) = (80 + 2) * 80 = 80 * 80 + 2 * 80 = 6400 + 160 = 6560 wrong
+  Trying common operations identity operands [28 08] reversed result [expected (28,08)->261]:
+    concatenation f(28, 08) = 28 || 08 = 2808 -rev-> 8082 wrong
+    reverse concatenation f(28, 08) = 08 || 28 = 0828 -rev-> 8280 wrong
+    addition f(28, 08) = 28 + 08 = 36 -rev-> 63 wrong
+    absolute difference f(28, 08) = |28 - 08| = 20 -rev-> 02 wrong
+    negated absolute difference f(28, 08) = -|28 - 08| = -20 -rev-> -02 wrong
+    subtraction (a-b) f(28, 08) = 28 - 08 = 20 -rev-> 02 wrong
+    reverse subtraction (b-a) f(28, 08) = 08 - 28 = -20 -rev-> -02 wrong
+    multiplication f(28, 08) = (20 + 8) * 08 = 20 * 08 + 8 * 08 = 160 + 64 = 224 -rev-> 422 wrong
+  Trying rare operations reversed operands [28->82 08->80] and reversed result [expected (82,80)->261]:
+    multiply+1 f(82, 80) = (80 + 2) * 80 + 1 = 80 * 80 + 2 * 80 + 1 = 6400 + 160 + 1 = 6560 + 1 = 6561 -rev-> 1656 wrong
+    multiply-1 f(82, 80) = (80 + 2) * 80 - 1 = 80 * 80 + 2 * 80 - 1 = 6400 + 160 - 1 = 6560 - 1 = 6559 -rev-> 9556 wrong
+    add+1 f(82, 80) = 82 + 80 + 1 = 163 -rev-> 361 wrong
+    add-1 f(82, 80) = 82 + 80 - 1 = 161 -rev-> 161 wrong
+    sub+1 f(82, 80) = 82 - 80 + 1 = 3 -rev-> 3 wrong
+    sub-1 f(82, 80) = 82 - 80 - 1 = 1 -rev-> 1 wrong
+    max mod min f(82, 80) = max(82,80) mod min(82,80) = 82 mod 80 = 2 -rev-> 2 wrong
+    integer division (a/b) f(82, 80) = 82 / 80 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(82, 80) = 82 mod 80 = 2 -rev-> 2 wrong
+    reverse division (b/a) f(82, 80) = 80 / 82 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(82, 80) = 80 mod 82 = 80 -rev-> 08 wrong
+    digit absolute diff f(82, 80) = |8-8| || |2-0| = 02 -rev-> 20 wrong
+    digit add mod10 f(82, 80) = (8+8)%10 || (2+0)%10 = 62 -rev-> 26 wrong
+    digit sub mod10 f(82, 80) = (8-8)%10 || (2-0)%10 = 02 -rev-> 20 wrong
+    cross multiply f(82, 80) = 8*8 + 2*0 = 64 + 0 = 64 -rev-> 46 wrong
+    cross multiply rev f(82, 80) = 8*0 + 2*8 = 0 + 16 = 16 -rev-> 61 wrong
+    digit multiply f(82, 80) = 8*8 || 2*0 = 64 || 0 = 640 -rev-> 046 wrong
+    digit multiply rev f(82, 80) = 8*0 || 2*8 = 0 || 16 = 016 -rev-> 610 wrong
+    digit sum diff f(82, 80) = (8+2) - (8+0) = 2 -rev-> 2 wrong
+    digit sum sum f(82, 80) = (8+2) + (8+0) = 18 -rev-> 81 wrong
+    digit product diff f(82, 80) = 8*2 - 8*0 = 16 - 0 = 16 -rev-> 61 wrong
+    digit product sum f(82, 80) = 8*2 + 8*0 = 16 + 0 = 16 -rev-> 61 wrong
+    determinant f(82, 80) = 8*0 - 2*8 = 0 - 16 = -16 -rev-> -61 wrong
+    abs determinant f(82, 80) = |8*0 - 2*8| = |0 - 16| = 16 -rev-> 61 wrong
+  Trying rare operations on identity [28 08] [expected (28,08)->261]:
+    multiply+1 f(28, 08) = (20 + 8) * 08 + 1 = 20 * 08 + 8 * 08 + 1 = 160 + 64 + 1 = 224 + 1 = 225 wrong
+    multiply-1 f(28, 08) = (20 + 8) * 08 - 1 = 20 * 08 + 8 * 08 - 1 = 160 + 64 - 1 = 224 - 1 = 223 wrong
+    add+1 f(28, 08) = 28 + 08 + 1 = 37 wrong
+    add-1 f(28, 08) = 28 + 08 - 1 = 35 wrong
+    sub+1 f(28, 08) = 28 - 08 + 1 = 21 wrong
+    sub-1 f(28, 08) = 28 - 08 - 1 = 19 wrong
+    max mod min f(28, 08) = max(28,08) mod min(28,08) = 28 mod 08 = 4 wrong
+    integer division (a/b) f(28, 08) = 28 / 08 = 3 wrong
+    modulo (a mod b) f(28, 08) = 28 mod 08 = 4 wrong
+    reverse division (b/a) f(28, 08) = 08 / 28 = 0 wrong
+    reverse modulo (b mod a) f(28, 08) = 08 mod 28 = 8 wrong
+    digit absolute diff f(28, 08) = |2-0| || |8-8| = 20 wrong
+    digit add mod10 f(28, 08) = (2+0)%10 || (8+8)%10 = 26 wrong
+    digit sub mod10 f(28, 08) = (2-0)%10 || (8-8)%10 = 20 wrong
+    cross multiply f(28, 08) = 2*0 + 8*8 = 0 + 64 = 64 wrong
+    cross multiply rev f(28, 08) = 2*8 + 8*0 = 16 + 0 = 16 wrong
+    digit multiply f(28, 08) = 2*0 || 8*8 = 0 || 64 = 064 wrong
+    digit multiply rev f(28, 08) = 2*8 || 8*0 = 16 || 0 = 160 wrong
+    digit sum diff f(28, 08) = (2+8) - (0+8) = 2 wrong
+    digit sum sum f(28, 08) = (2+8) + (0+8) = 18 wrong
+    digit product diff f(28, 08) = 2*8 - 0*8 = 16 - 0 = 16 wrong
+    digit product sum f(28, 08) = 2*8 + 0*8 = 16 + 0 = 16 wrong
+    determinant f(28, 08) = 2*8 - 8*0 = 16 - 0 = 16 wrong
+    abs determinant f(28, 08) = |2*8 - 8*0| = |16 - 0| = 16 wrong
+  Trying rare operations reversed operands [28->82 08->80] [expected (82,80)->261]:
+    multiply+1 f(82, 80) = (80 + 2) * 80 + 1 = 80 * 80 + 2 * 80 + 1 = 6400 + 160 + 1 = 6560 + 1 = 6561 wrong
+    multiply-1 f(82, 80) = (80 + 2) * 80 - 1 = 80 * 80 + 2 * 80 - 1 = 6400 + 160 - 1 = 6560 - 1 = 6559 wrong
+    add+1 f(82, 80) = 82 + 80 + 1 = 163 wrong
+    add-1 f(82, 80) = 82 + 80 - 1 = 161 wrong
+    sub+1 f(82, 80) = 82 - 80 + 1 = 3 wrong
+    sub-1 f(82, 80) = 82 - 80 - 1 = 1 wrong
+    max mod min f(82, 80) = max(82,80) mod min(82,80) = 82 mod 80 = 2 wrong
+    integer division (a/b) f(82, 80) = 82 / 80 = 1 wrong
+    modulo (a mod b) f(82, 80) = 82 mod 80 = 2 wrong
+    reverse division (b/a) f(82, 80) = 80 / 82 = 0 wrong
+    reverse modulo (b mod a) f(82, 80) = 80 mod 82 = 80 wrong
+    digit absolute diff f(82, 80) = |8-8| || |2-0| = 02 wrong
+    digit add mod10 f(82, 80) = (8+8)%10 || (2+0)%10 = 62 wrong
+    digit sub mod10 f(82, 80) = (8-8)%10 || (2-0)%10 = 02 wrong
+    cross multiply f(82, 80) = 8*8 + 2*0 = 64 + 0 = 64 wrong
+    cross multiply rev f(82, 80) = 8*0 + 2*8 = 0 + 16 = 16 wrong
+    digit multiply f(82, 80) = 8*8 || 2*0 = 64 || 0 = 640 wrong
+    digit multiply rev f(82, 80) = 8*0 || 2*8 = 0 || 16 = 016 wrong
+    digit sum diff f(82, 80) = (8+2) - (8+0) = 2 wrong
+    digit sum sum f(82, 80) = (8+2) + (8+0) = 18 wrong
+    digit product diff f(82, 80) = 8*2 - 8*0 = 16 - 0 = 16 wrong
+    digit product sum f(82, 80) = 8*2 + 8*0 = 16 + 0 = 16 wrong
+    determinant f(82, 80) = 8*0 - 2*8 = 0 - 16 = -16 wrong
+    abs determinant f(82, 80) = |8*0 - 2*8| = |0 - 16| = 16 wrong
+  Trying rare operations identity operands [28 08] reversed result [expected (28,08)->261]:
+    multiply+1 f(28, 08) = (20 + 8) * 08 + 1 = 20 * 08 + 8 * 08 + 1 = 160 + 64 + 1 = 224 + 1 = 225 -rev-> 522 wrong
+    multiply-1 f(28, 08) = (20 + 8) * 08 - 1 = 20 * 08 + 8 * 08 - 1 = 160 + 64 - 1 = 224 - 1 = 223 -rev-> 322 wrong
+    add+1 f(28, 08) = 28 + 08 + 1 = 37 -rev-> 73 wrong
+    add-1 f(28, 08) = 28 + 08 - 1 = 35 -rev-> 53 wrong
+    sub+1 f(28, 08) = 28 - 08 + 1 = 21 -rev-> 12 wrong
+    sub-1 f(28, 08) = 28 - 08 - 1 = 19 -rev-> 91 wrong
+    max mod min f(28, 08) = max(28,08) mod min(28,08) = 28 mod 08 = 4 -rev-> 4 wrong
+    integer division (a/b) f(28, 08) = 28 / 08 = 3 -rev-> 3 wrong
+    modulo (a mod b) f(28, 08) = 28 mod 08 = 4 -rev-> 4 wrong
+    reverse division (b/a) f(28, 08) = 08 / 28 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(28, 08) = 08 mod 28 = 8 -rev-> 8 wrong
+    digit absolute diff f(28, 08) = |2-0| || |8-8| = 20 -rev-> 02 wrong
+    digit add mod10 f(28, 08) = (2+0)%10 || (8+8)%10 = 26 -rev-> 62 wrong
+    digit sub mod10 f(28, 08) = (2-0)%10 || (8-8)%10 = 20 -rev-> 02 wrong
+    cross multiply f(28, 08) = 2*0 + 8*8 = 0 + 64 = 64 -rev-> 46 wrong
+    cross multiply rev f(28, 08) = 2*8 + 8*0 = 16 + 0 = 16 -rev-> 61 wrong
+    digit multiply f(28, 08) = 2*0 || 8*8 = 0 || 64 = 064 -rev-> 460 wrong
+    digit multiply rev f(28, 08) = 2*8 || 8*0 = 16 || 0 = 160 -rev-> 061 wrong
+    digit sum diff f(28, 08) = (2+8) - (0+8) = 2 -rev-> 2 wrong
+    digit sum sum f(28, 08) = (2+8) + (0+8) = 18 -rev-> 81 wrong
+    digit product diff f(28, 08) = 2*8 - 0*8 = 16 - 0 = 16 -rev-> 61 wrong
+    digit product sum f(28, 08) = 2*8 + 0*8 = 16 + 0 = 16 -rev-> 61 wrong
+    determinant f(28, 08) = 2*8 - 8*0 = 16 - 0 = 16 -rev-> 61 wrong
+    abs determinant f(28, 08) = |2*8 - 8*0| = |16 - 0| = 16 -rev-> 61 wrong
+
+Applying to 93:48:
+  reversed operands [93->39, 48->84] and reversed result
+  addition f(39, 84) = 39 + 84 = 123 -rev-> 321
+  Result: 【321】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{321}

@@ -163,6 +163,18 @@ def parse_args() -> argparse.Namespace:
     g.add_argument("--corpus_dir", default=str(REPO_ROOT / "corpus"))
     g.add_argument("--corpus_index", default=str(REPO_ROOT / "corpus.jsonl"))
     g.add_argument("--segment_name", default="synthetic.jsonl")
+    g.add_argument(
+        "--versions_config",
+        default=str(REPO_ROOT / "versions.json"),
+        help="category->version JSON; trains only on matching corpus entries.",
+    )
+    g.add_argument(
+        "--versions",
+        nargs="*",
+        default=[],
+        metavar="CAT=VER",
+        help="Override training version for specific categories.",
+    )
     g.add_argument("--train_csv", default=str(REPO_ROOT / "train.csv"))
     g.add_argument(
         "--original_problems_only",
@@ -261,12 +273,42 @@ def _load_segment(path: Path) -> tuple[list[int], list[int]]:
     return tokens, mask
 
 
+def _load_version_selection(cfg: argparse.Namespace, log) -> dict[str, str] | None:
+    """Read the per-category version selection for training, or ``None`` to use
+    every entry in the corpus index. Precedence: ``--versions cat=ver`` overrides
+    > ``--versions_config`` file > none. Augmentation entries (version ``raw``)
+    are always kept regardless of selection."""
+    selection: dict[str, str] = {}
+    cfg_path = getattr(cfg, "versions_config", None)
+    if cfg_path:
+        p = Path(cfg_path)
+        if p.is_file():
+            with open(p) as f:
+                selection.update(json.load(f))
+        else:
+            log(f"WARNING: versions_config not found: {p}")
+    for item in getattr(cfg, "versions", []) or []:
+        cat, ver = item.split("=", 1)
+        selection[cat] = ver
+    return selection or None
+
+
 def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
     """Load and pre-tokenize the training corpus into next-token examples."""
     index_path = Path(cfg.corpus_index)
     corpus_dir = Path(cfg.corpus_dir)
     assert index_path.is_file(), f"Corpus index not found: {index_path}"
     assert corpus_dir.is_dir(), f"Corpus dir not found: {corpus_dir}"
+
+    # Segment paths in a version-aware index are stored relative to the repo root
+    # (e.g. "corpus/<category>/<version>/<id>/synthetic.jsonl"); resolve against it.
+    seg_root = index_path.resolve().parent
+    if seg_root.name == "data":
+        seg_root = seg_root.parent
+
+    version_selection = _load_version_selection(cfg, log)
+    if version_selection:
+        log(f"Training version selection: {version_selection}")
 
     index: list[dict] = []
     with open(index_path) as f:
@@ -276,12 +318,31 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
                 index.append(json.loads(line))
 
     examples: list[dict] = []
+    skipped_version = 0
     for rec in index:
         if not rec.get("included", True):
             continue
+        # Per-category version filtering. Entries without a version (legacy) or
+        # the augmentation version "raw" are always kept.
+        rec_version = rec.get("version")
+        rec_category = rec.get("category")
+        if (
+            version_selection is not None
+            and rec_version is not None
+            and rec_version != "raw"
+            and rec_category in version_selection
+            and version_selection[rec_category] != rec_version
+        ):
+            skipped_version += 1
+            continue
         pid = rec["problem_id"]
         segment = rec.get("segment", cfg.segment_name)
-        seg_path = corpus_dir / pid / segment
+        # New-style index stores a repo-root-relative path; old style stored just
+        # the segment filename under corpus_dir/<pid>/.
+        if "/" in segment:
+            seg_path = seg_root / segment
+        else:
+            seg_path = corpus_dir / pid / segment
         if not seg_path.is_file():
             log(f"WARNING: missing segment for {pid}: {seg_path}")
             continue
@@ -300,6 +361,12 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
                 "targets": tokens[1:],
                 "weights": [float(m) for m in mask[1:]],
             }
+        )
+
+    if version_selection and skipped_version:
+        log(
+            f"version selection skipped {skipped_version} corpus entries "
+            f"(non-matching versions)"
         )
 
     if cfg.original_problems_only:

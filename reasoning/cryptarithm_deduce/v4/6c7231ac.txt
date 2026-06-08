@@ -1,0 +1,58 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  $#+$/ = <|#
+  $&+:: = !`#
+  :/+#` = $|#
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '+':
+    $#+$/ = <|#: 3 output symbols, not a 4-symbol concatenation
+    $&+:: = !`#: 3 output symbols, not a 4-symbol concatenation
+    :/+#` = $|#: 3 output symbols, not a 4-symbol concatenation
+    -> '+' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+No consistent cipher exists when each 2-symbol group is read most-significant-digit first, so read every group the other way: least-significant-digit first (so the group XY means 10*Y + X, and a result is written with its least-significant digit first).
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '+':
+    $#+$/ = <|#: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    $&+:: = !`#: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    :/+#` = $|#: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '+' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  $#+$/ = <|# under '+'=add: $ in {2,3,4,6,7,8,9}, # in {0,1}, / in {1,2,3,4,5,6,7,8,9}, < in {2,4,6,8}, | in {0,2,3,4,5,6,7,8,9}
+  $&+:: = !`# under '+'=add: $ in {2,3,4,6,7,8,9}, & in {1,2,3,4,5,6,7,8,9}, : in {1,2,3,4,5,6,7,8}, ! in {0,1,2,3,4,5,6,7,8,9}, ` in {0,2,3,4,5,6,7,8,9}, # in {0,1}
+  :/+#` = $|# under '+'=add: : in {2,3,5,6,7,8}, / in {2,3,4,5,6,7,8,9}, # in {1}, ` in {2,3,4,5,6,7,8,9}, $ in {3,4,6,7,8,9}, | in {0,2,3,4,5,6,7}
+  AllDifferent: digits {1} are already taken, so ! -> {0,2,3,4,5,6,7,8,9}, & -> {2,3,4,5,6,7,8,9}, } -> {0,2,3,4,5,6,7,8,9}
+Pass 2 -- apply each example, then AllDifferent:
+  $#+$/ = <|# under '+'=add: $ in {3,4,6,7}, # in {1}, / in {8,9}, < in {2,4,6,8}, | in {0}
+  $&+:: = !`# under '+'=add: $ in {3,4,6,7}, & in {3,4,5,6,7,8,9}, : in {3,5,6,7,8}, ! in {0,2,3,4,5,7,8,9}, ` in {2,3,4,5,6}, # in {1}
+  :/+#` = $|# under '+'=add: : in {3,5,6}, / in {8}, # in {1}, ` in {2}, $ in {4,6,7}, | in {0}
+  AllDifferent: digits {0,1,2,8} are already taken, so ! -> {3,4,5,7,9}, & -> {3,4,5,6,7,9}, < -> {4,6}, } -> {3,4,5,6,7,9}
+Pass 3 -- apply each example, then AllDifferent:
+  $#+$/ = <|# under '+'=add: $ in {7}, # in {1}, / in {8}, < in {4}, | in {0}
+  $&+:: = !`# under '+'=add: $ in {7}, & in {5}, : in {6}, ! in {3}, ` in {2}, # in {1}
+  :/+#` = $|# under '+'=add: : in {6}, / in {8}, # in {1}, ` in {2}, $ in {7}, | in {0}  (no new narrowing)
+  AllDifferent: digits {0,1,2,3,4,5,6,7,8} are already taken, so } -> {9}
+Every symbol is now pinned to one digit.
+
+Recovered cipher: !=3, #=1, $=7, &=5, /=8, :=6, <=4, `=2, |=0, }=9
+Operator meanings: '+'=add
+
+Step 3 - verify every example under this cipher:
+  $#+$/: 17 + 87 = 104 -> <|# (expected <|#) OK
+  $&+::: 57 + 66 = 123 -> !`# (expected !`#) OK
+  :/+#`: 86 + 21 = 107 -> $|# (expected $|#) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question &}+#}:
+  &}=95, #}=91, '+'=add: 95 + 91 -> encode back to symbols -> :/#.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{:/#}

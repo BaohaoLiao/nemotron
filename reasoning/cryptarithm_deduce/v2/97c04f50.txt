@@ -1,0 +1,67 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [$]+(#] = [$](#]: AB + CD = ABCD  (r.len=4, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [`]-#"] = [&]: EB - DF = G  (r.len=1, sym=['B', 'D', 'E', 'F', 'G'], |sym|=5)
+fact2 [>`*$>] = [$#]#]: HE * AH = ADBD  (r.len=4, sym=['A', 'B', 'D', 'E', 'H'], |sym|=5)
+fact3 [&|+(&] = [&|(&]: GJ + CG = GJCG  (r.len=4, sym=['C', 'G', 'J'], |sym|=3)
+query [`&*]&]: EG * BG = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {mul, concat, rconcat, add, sub, rsub, mul1, mulm1, add1, addm1, absdiff, negabs, maxmod}
+
+Mul anchor: fact2 [>`*$>] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern HE * AH = ADBD -> 15 candidates:
+  R0: 65 * 16 = 1040 -> D=0,A=1,H=6,B=4,E=5
+  R1: 76 * 17 = 1292 -> D=2,A=1,H=7,B=9,E=6
+  R2: 79 * 17 = 1343 -> D=3,A=1,H=7,B=4,E=9
+  R3: 83 * 18 = 1494 -> D=4,A=1,H=8,B=9,E=3
+  R4: 89 * 48 = 4272 -> D=2,A=4,H=8,B=7,E=9
+  R5: 93 * 19 = 1767 -> D=7,A=1,H=9,B=6,E=3
+  R6: 73 * 17 + 1 = 1242 -> D=2,A=1,H=7,B=4,E=3
+  R7: 84 * 28 + 1 = 2353 -> D=3,A=2,H=8,B=5,E=4
+  R8: 94 * 19 + 1 = 1787 -> D=7,A=1,H=9,B=8,E=4
+  R9: 96 * 79 + 1 = 7585 -> D=5,A=7,H=9,B=8,E=6
+  R10: 96 * 89 + 1 = 8545 -> D=5,A=8,H=9,B=4,E=6
+  R11: 84 * 38 - 1 = 3191 -> D=1,A=3,H=8,B=9,E=4
+  R12: 87 * 18 - 1 = 1565 -> D=5,A=1,H=8,B=6,E=7
+  R13: 89 * 58 - 1 = 5161 -> D=1,A=5,H=8,B=6,E=9  <-- consistent with all facts
+  R14: 92 * 19 - 1 = 1747 -> D=7,A=1,H=9,B=4,E=2
+
+Candidates are tried in order; R13 is the first that extends to every fact. Propagate it:
+fact2 [>`*$>] = [$#]#]:
+  try mul: 89 * 58 = 5162 -> encodes $#]" != $#]# NG
+  try concat: concat(89,58) = 8958 -> encodes >`$> != $#]# NG
+  try rconcat: concat(58,89) = 5889 -> encodes $>>` != $#]# NG
+  try mul1: 89 * 58 + 1 = 5163 -> encodes $#]| != $#]# NG
+  try mulm1: 89 * 58 - 1 = 5161 -> encodes $#]# = $#]# OK -> accept
+fact0 [$]+(#] = [$](#]:
+  try mul: 56 * 41 = 2296 -> encodes ""`] != $](# NG
+  try concat: concat(56,41) = 5641 -> encodes $](# = $](# OK -> accept
+fact1 [`]-#"] = [&]:
+  try mul: 96 * 12 = 1152 (length/sign off) NG
+  try concat: concat(96,12) = 9612 (length/sign off) NG
+  try rconcat: concat(12,96) = 1296 (length/sign off) NG
+  try add: 96 + 12 = 108 (length/sign off) NG
+  try sub: 96 - 12 = 84 (length/sign off) NG
+  try rsub: 12 - 96 = -84 (length/sign off) NG
+  try mul1: 96 * 12 + 1 = 1153 (length/sign off) NG
+  try mulm1: 96 * 12 - 1 = 1151 (length/sign off) NG
+  try add1: 96 + 12 + 1 = 109 (length/sign off) NG
+  try addm1: 96 + 12 - 1 = 107 (length/sign off) NG
+  try absdiff: |96 - 12| = 84 (length/sign off) NG
+  try negabs: -|96 - 12| = -84 (length/sign off) NG
+  try maxmod: max(96,12) mod min(96,12) = 0 -> encodes & = & OK -> accept
+fact3 [&|+(&] = [&|(&]:
+  operator '+' already fixed = concat
+  try concat: concat(03,40) = 0340 -> encodes &|(& = &|(& OK -> accept
+
+Recovered cipher: F(")=2, D(#)=1, A($)=5, G(&)=0, C(()=4, H(>)=8, B(])=6, E(`)=9, J(|)=3
+Query `&*]&: EG=90, BG=60, '*' = mulm1: 90 * 60 - 1 = 5399.
+Encode 5399 back to original symbols -> $|``.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{$|``}

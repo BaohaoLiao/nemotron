@@ -1,0 +1,173 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  15-79 = 95
+  94"45 = 4230
+  73"66 = 4818
+  50-90 = 141
+
+The inputs are 15, 79, 94, 45, 73, 66, 50, 90
+
+The outputs are 95, 4230, 4818, 141
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+15-79 -> -
+94"45 -> "
+73"66 -> "
+50-90 -> -
+
+The operators
+-
+"
+
+Looking at the question
+90"65 -> "
+The question operator is found in the examples.
+
+Looking at operator 【"】 [94"45 = 4230, 73"66 = 4818]:
+  Trying common operations reversed operands [94->49 45->54, 73->37 66->66] and reversed result [expected (49,54)->4230, (37,66)->4818]:
+    concatenation f(49, 54) = 49 || 54 = 4954 -rev-> 4594 wrong
+    reverse concatenation f(37, 66) = 66 || 37 = 6637 -rev-> 7366 wrong
+    addition f(49, 54) = 49 + 54 = 103 -rev-> 301 wrong
+    absolute difference f(37, 66) = |37 - 66| = 29 -rev-> 92 wrong
+    negated absolute difference f(49, 54) = -|49 - 54| = -5 -rev-> -5 wrong
+    subtraction (a-b) f(37, 66) = 37 - 66 = -29 -rev-> -92 wrong
+    reverse subtraction (b-a) f(49, 54) = 54 - 49 = 5 -rev-> 5 wrong
+    multiplication f(37, 66) = (30 + 7) * 66 = 30 * 66 + 7 * 66 = 1980 + 462 = 2442 -rev-> 2442 wrong
+  Trying common operations on identity [94 45, 73 66] [expected (94,45)->4230, (73,66)->4818]:
+    concatenation f(94, 45) = 94 || 45 = 9445 wrong
+    reverse concatenation f(73, 66) = 66 || 73 = 6673 wrong
+    addition f(94, 45) = 94 + 45 = 139 wrong
+    absolute difference f(73, 66) = |73 - 66| = 7 wrong
+    negated absolute difference f(94, 45) = -|94 - 45| = -49 wrong
+    subtraction (a-b) f(73, 66) = 73 - 66 = 7 wrong
+    reverse subtraction (b-a) f(94, 45) = 45 - 94 = -49 wrong
+    multiplication f(73, 66) = (70 + 3) * 66 = 70 * 66 + 3 * 66 = 4620 + 198 = 4818 match, f(94,45) -> (90 + 4) * 45 = 90 * 45 + 4 * 45 = 4050 + 180 = 4230 match, correct, actions: multiplication
+  Trying common operations reversed operands [94->49 45->54, 73->37 66->66] [expected (49,54)->4230, (37,66)->4818]:
+    concatenation f(49, 54) = 49 || 54 = 4954 wrong
+    reverse concatenation f(37, 66) = 66 || 37 = 6637 wrong
+    addition f(49, 54) = 49 + 54 = 103 wrong
+    absolute difference f(37, 66) = |37 - 66| = 29 wrong
+    negated absolute difference f(49, 54) = -|49 - 54| = -5 wrong
+    subtraction (a-b) f(37, 66) = 37 - 66 = -29 wrong
+    reverse subtraction (b-a) f(49, 54) = 54 - 49 = 5 wrong
+    multiplication f(37, 66) = (30 + 7) * 66 = 30 * 66 + 7 * 66 = 1980 + 462 = 2442 wrong
+  Trying common operations identity operands [94 45, 73 66] reversed result [expected (94,45)->4230, (73,66)->4818]:
+    concatenation f(94, 45) = 94 || 45 = 9445 -rev-> 5449 wrong
+    reverse concatenation f(73, 66) = 66 || 73 = 6673 -rev-> 3766 wrong
+    addition f(94, 45) = 94 + 45 = 139 -rev-> 931 wrong
+    absolute difference f(73, 66) = |73 - 66| = 7 -rev-> 7 wrong
+    negated absolute difference f(94, 45) = -|94 - 45| = -49 -rev-> -94 wrong
+    subtraction (a-b) f(73, 66) = 73 - 66 = 7 -rev-> 7 wrong
+    reverse subtraction (b-a) f(94, 45) = 45 - 94 = -49 -rev-> -94 wrong
+    multiplication f(73, 66) = (70 + 3) * 66 = 70 * 66 + 3 * 66 = 4620 + 198 = 4818 -rev-> 8184 wrong
+  Trying rare operations reversed operands [94->49 45->54, 73->37 66->66] and reversed result [expected (49,54)->4230, (37,66)->4818]:
+    multiply+1 f(49, 54) = (40 + 9) * 54 + 1 = 40 * 54 + 9 * 54 + 1 = 2160 + 486 + 1 = 2646 + 1 = 2647 -rev-> 7462 wrong
+    multiply-1 f(37, 66) = (30 + 7) * 66 - 1 = 30 * 66 + 7 * 66 - 1 = 1980 + 462 - 1 = 2442 - 1 = 2441 -rev-> 1442 wrong
+    add+1 f(49, 54) = 49 + 54 + 1 = 104 -rev-> 401 wrong
+    add-1 f(37, 66) = 37 + 66 - 1 = 102 -rev-> 201 wrong
+    sub+1 f(49, 54) = 49 - 54 + 1 = -4 -rev-> -4 wrong
+    sub-1 f(37, 66) = 37 - 66 - 1 = -30 -rev-> -03 wrong
+    max mod min f(49, 54) = max(49,54) mod min(49,54) = 54 mod 49 = 5 -rev-> 5 wrong
+    integer division (a/b) f(37, 66) = 37 / 66 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(49, 54) = 49 mod 54 = 49 -rev-> 94 wrong
+    reverse division (b/a) f(37, 66) = 66 / 37 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(49, 54) = 54 mod 49 = 5 -rev-> 5 wrong
+    digit absolute diff f(37, 66) = |3-6| || |7-6| = 31 -rev-> 13 wrong
+    digit add mod10 f(49, 54) = (4+5)%10 || (9+4)%10 = 93 -rev-> 39 wrong
+    digit sub mod10 f(37, 66) = (3-6)%10 || (7-6)%10 = 71 -rev-> 17 wrong
+    cross multiply f(49, 54) = 4*5 + 9*4 = 20 + 36 = 56 -rev-> 65 wrong
+    cross multiply rev f(37, 66) = 3*6 + 7*6 = 18 + 42 = 60 -rev-> 06 wrong
+    digit multiply f(49, 54) = 4*5 || 9*4 = 20 || 36 = 2036 -rev-> 6302 wrong
+    digit multiply rev f(37, 66) = 3*6 || 7*6 = 18 || 42 = 1842 -rev-> 2481 wrong
+    digit sum diff f(49, 54) = (4+9) - (5+4) = 4 -rev-> 4 wrong
+    digit sum sum f(37, 66) = (3+7) + (6+6) = 22 -rev-> 22 wrong
+    digit product diff f(49, 54) = 4*9 - 5*4 = 36 - 20 = 16 -rev-> 61 wrong
+    digit product sum f(37, 66) = 3*7 + 6*6 = 21 + 36 = 57 -rev-> 75 wrong
+    determinant f(49, 54) = 4*4 - 9*5 = 16 - 45 = -29 -rev-> -92 wrong
+    abs determinant f(37, 66) = |3*6 - 7*6| = |18 - 42| = 24 -rev-> 42 wrong
+  Trying rare operations on identity [94 45, 73 66] [expected (94,45)->4230, (73,66)->4818]:
+    multiply+1 f(94, 45) = (90 + 4) * 45 + 1 = 90 * 45 + 4 * 45 + 1 = 4050 + 180 + 1 = 4230 + 1 = 4231 wrong
+    multiply-1 f(73, 66) = (70 + 3) * 66 - 1 = 70 * 66 + 3 * 66 - 1 = 4620 + 198 - 1 = 4818 - 1 = 4817 wrong
+    add+1 f(94, 45) = 94 + 45 + 1 = 140 wrong
+    add-1 f(73, 66) = 73 + 66 - 1 = 138 wrong
+    sub+1 f(94, 45) = 94 - 45 + 1 = 50 wrong
+    sub-1 f(73, 66) = 73 - 66 - 1 = 6 wrong
+    max mod min f(94, 45) = max(94,45) mod min(94,45) = 94 mod 45 = 4 wrong
+    integer division (a/b) f(73, 66) = 73 / 66 = 1 wrong
+    modulo (a mod b) f(94, 45) = 94 mod 45 = 4 wrong
+    reverse division (b/a) f(73, 66) = 66 / 73 = 0 wrong
+    reverse modulo (b mod a) f(94, 45) = 45 mod 94 = 45 wrong
+    digit absolute diff f(73, 66) = |7-6| || |3-6| = 13 wrong
+    digit add mod10 f(94, 45) = (9+4)%10 || (4+5)%10 = 39 wrong
+    digit sub mod10 f(73, 66) = (7-6)%10 || (3-6)%10 = 17 wrong
+    cross multiply f(94, 45) = 9*4 + 4*5 = 36 + 20 = 56 wrong
+    cross multiply rev f(73, 66) = 7*6 + 3*6 = 42 + 18 = 60 wrong
+    digit multiply f(94, 45) = 9*4 || 4*5 = 36 || 20 = 3620 wrong
+    digit multiply rev f(73, 66) = 7*6 || 3*6 = 42 || 18 = 4218 wrong
+    digit sum diff f(94, 45) = (9+4) - (4+5) = 4 wrong
+    digit sum sum f(73, 66) = (7+3) + (6+6) = 22 wrong
+    digit product diff f(94, 45) = 9*4 - 4*5 = 36 - 20 = 16 wrong
+    digit product sum f(73, 66) = 7*3 + 6*6 = 21 + 36 = 57 wrong
+    determinant f(94, 45) = 9*5 - 4*4 = 45 - 16 = 29 wrong
+    abs determinant f(73, 66) = |7*6 - 3*6| = |42 - 18| = 24 wrong
+  Trying rare operations reversed operands [94->49 45->54, 73->37 66->66] [expected (49,54)->4230, (37,66)->4818]:
+    multiply+1 f(49, 54) = (40 + 9) * 54 + 1 = 40 * 54 + 9 * 54 + 1 = 2160 + 486 + 1 = 2646 + 1 = 2647 wrong
+    multiply-1 f(37, 66) = (30 + 7) * 66 - 1 = 30 * 66 + 7 * 66 - 1 = 1980 + 462 - 1 = 2442 - 1 = 2441 wrong
+    add+1 f(49, 54) = 49 + 54 + 1 = 104 wrong
+    add-1 f(37, 66) = 37 + 66 - 1 = 102 wrong
+    sub+1 f(49, 54) = 49 - 54 + 1 = -4 wrong
+    sub-1 f(37, 66) = 37 - 66 - 1 = -30 wrong
+    max mod min f(49, 54) = max(49,54) mod min(49,54) = 54 mod 49 = 5 wrong
+    integer division (a/b) f(37, 66) = 37 / 66 = 0 wrong
+    modulo (a mod b) f(49, 54) = 49 mod 54 = 49 wrong
+    reverse division (b/a) f(37, 66) = 66 / 37 = 1 wrong
+    reverse modulo (b mod a) f(49, 54) = 54 mod 49 = 5 wrong
+    digit absolute diff f(37, 66) = |3-6| || |7-6| = 31 wrong
+    digit add mod10 f(49, 54) = (4+5)%10 || (9+4)%10 = 93 wrong
+    digit sub mod10 f(37, 66) = (3-6)%10 || (7-6)%10 = 71 wrong
+    cross multiply f(49, 54) = 4*5 + 9*4 = 20 + 36 = 56 wrong
+    cross multiply rev f(37, 66) = 3*6 + 7*6 = 18 + 42 = 60 wrong
+    digit multiply f(49, 54) = 4*5 || 9*4 = 20 || 36 = 2036 wrong
+    digit multiply rev f(37, 66) = 3*6 || 7*6 = 18 || 42 = 1842 wrong
+    digit sum diff f(49, 54) = (4+9) - (5+4) = 4 wrong
+    digit sum sum f(37, 66) = (3+7) + (6+6) = 22 wrong
+    digit product diff f(49, 54) = 4*9 - 5*4 = 36 - 20 = 16 wrong
+    digit product sum f(37, 66) = 3*7 + 6*6 = 21 + 36 = 57 wrong
+    determinant f(49, 54) = 4*4 - 9*5 = 16 - 45 = -29 wrong
+    abs determinant f(37, 66) = |3*6 - 7*6| = |18 - 42| = 24 wrong
+  Trying rare operations identity operands [94 45, 73 66] reversed result [expected (94,45)->4230, (73,66)->4818]:
+    multiply+1 f(94, 45) = (90 + 4) * 45 + 1 = 90 * 45 + 4 * 45 + 1 = 4050 + 180 + 1 = 4230 + 1 = 4231 -rev-> 1324 wrong
+    multiply-1 f(73, 66) = (70 + 3) * 66 - 1 = 70 * 66 + 3 * 66 - 1 = 4620 + 198 - 1 = 4818 - 1 = 4817 -rev-> 7184 wrong
+    add+1 f(94, 45) = 94 + 45 + 1 = 140 -rev-> 041 wrong
+    add-1 f(73, 66) = 73 + 66 - 1 = 138 -rev-> 831 wrong
+    sub+1 f(94, 45) = 94 - 45 + 1 = 50 -rev-> 05 wrong
+    sub-1 f(73, 66) = 73 - 66 - 1 = 6 -rev-> 6 wrong
+    max mod min f(94, 45) = max(94,45) mod min(94,45) = 94 mod 45 = 4 -rev-> 4 wrong
+    integer division (a/b) f(73, 66) = 73 / 66 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(94, 45) = 94 mod 45 = 4 -rev-> 4 wrong
+    reverse division (b/a) f(73, 66) = 66 / 73 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(94, 45) = 45 mod 94 = 45 -rev-> 54 wrong
+    digit absolute diff f(73, 66) = |7-6| || |3-6| = 13 -rev-> 31 wrong
+    digit add mod10 f(94, 45) = (9+4)%10 || (4+5)%10 = 39 -rev-> 93 wrong
+    digit sub mod10 f(73, 66) = (7-6)%10 || (3-6)%10 = 17 -rev-> 71 wrong
+    cross multiply f(94, 45) = 9*4 + 4*5 = 36 + 20 = 56 -rev-> 65 wrong
+    cross multiply rev f(73, 66) = 7*6 + 3*6 = 42 + 18 = 60 -rev-> 06 wrong
+    digit multiply f(94, 45) = 9*4 || 4*5 = 36 || 20 = 3620 -rev-> 0263 wrong
+    digit multiply rev f(73, 66) = 7*6 || 3*6 = 42 || 18 = 4218 -rev-> 8124 wrong
+    digit sum diff f(94, 45) = (9+4) - (4+5) = 4 -rev-> 4 wrong
+    digit sum sum f(73, 66) = (7+3) + (6+6) = 22 -rev-> 22 wrong
+    digit product diff f(94, 45) = 9*4 - 4*5 = 36 - 20 = 16 -rev-> 61 wrong
+    digit product sum f(73, 66) = 7*3 + 6*6 = 21 + 36 = 57 -rev-> 75 wrong
+    determinant f(94, 45) = 9*5 - 4*4 = 45 - 16 = 29 -rev-> 92 wrong
+    abs determinant f(73, 66) = |7*6 - 3*6| = |42 - 18| = 24 -rev-> 42 wrong
+
+Applying to 90"65:
+  identity
+  multiplication f(90, 65) = (90 + 0) * 65 = 90 * 65 + 0 * 65 = 5850 + 0 = 5850
+  Result: 【5850】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{5850}

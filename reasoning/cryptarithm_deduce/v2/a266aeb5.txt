@@ -1,0 +1,65 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [?$+((] = [[@]: AB + CC = DE  (r.len=2, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 [@{+@[] = [?[]: EF + ED = AD  (r.len=2, sym=['A', 'D', 'E', 'F'], |sym|=4)
+fact2 [[?*$@] = [}]$?]: DA * BE = GHBA  (r.len=4, sym=['A', 'B', 'D', 'E', 'G', 'H'], |sym|=6)
+fact3 [?(-`{] = [(}]: AC - JF = CG  (r.len=2, sym=['A', 'C', 'F', 'G', 'J'], |sym|=5)
+query [@@-$]]: EE - BH = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact2 [[?*$@] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern DA * BE = GHBA -> 47 candidates:
+  R0: 20 * 68 = 1360 -> B=6,A=0,E=8,D=2,H=3,G=1
+  R1: 20 * 84 = 1680 -> B=8,A=0,E=4,D=2,H=6,G=1
+  R2: 20 * 89 = 1780 -> B=8,A=0,E=9,D=2,H=7,G=1
+  R3: 30 * 62 = 1860 -> B=6,A=0,E=2,D=3,H=8,G=1
+  R4: 30 * 86 = 2580 -> B=8,A=0,E=6,D=3,H=5,G=2
+  R5: 35 * 47 = 1645 -> B=4,A=5,E=7,D=3,H=6,G=1
+  R6: 38 * 46 = 1748 -> B=4,A=8,E=6,D=3,H=7,G=1
+  R7: 40 * 69 = 2760 -> B=6,A=0,E=9,D=4,H=7,G=2
+  R8: 47 * 61 = 2867 -> B=6,A=7,E=1,D=4,H=8,G=2
+  R9: 56 * 71 = 3976 -> B=7,A=6,E=1,D=5,H=9,G=3
+  R10: 60 * 83 = 4980 -> B=8,A=0,E=3,D=6,H=9,G=4
+  R11: 70 * 26 = 1820 -> B=2,A=0,E=6,D=7,H=8,G=1
+  R12: 74 * 26 = 1924 -> B=2,A=4,E=6,D=7,H=9,G=1
+  R13: 80 * 24 = 1920 -> B=2,A=0,E=4,D=8,H=9,G=1
+  R14: 80 * 62 = 4960 -> B=6,A=0,E=2,D=8,H=9,G=4
+  R15: 80 * 67 = 5360 -> B=6,A=0,E=7,D=8,H=3,G=5
+  R16: 83 * 61 = 5063 -> B=6,A=3,E=1,D=8,H=0,G=5  <-- consistent with all facts
+  R17: 85 * 31 = 2635 -> B=3,A=5,E=1,D=8,H=6,G=2
+  R18: 89 * 41 = 3649 -> B=4,A=9,E=1,D=8,H=6,G=3
+  R19: 90 * 64 = 5760 -> B=6,A=0,E=4,D=9,H=7,G=5
+  R20: 90 * 73 = 6570 -> B=7,A=0,E=3,D=9,H=5,G=6
+  R21: 90 * 82 = 7380 -> B=8,A=0,E=2,D=9,H=3,G=7
+  R22: 31 * 80 + 1 = 2481 -> B=8,A=1,E=0,D=3,H=4,G=2
+  R23: 31 * 90 + 1 = 2791 -> B=9,A=1,E=0,D=3,H=7,G=2
+  ... 23 more candidates (untried; the search stops at the first that extends to every fact, R16)
+
+Candidates are tried in order; R16 is the first that extends to every fact. Propagate it:
+fact2 [[?*$@] = [}]$?]:
+  try mul: 83 * 61 = 5063 -> encodes }]$? = }]$? OK -> accept
+fact0 [?$+((] = [[@]:
+  try add: 36 + 44 = 80 -> encodes [] != [@ NG
+  try sub: 36 - 44 = -8 (length/sign off) NG
+  try rsub: 44 - 36 = 8 (length/sign off) NG
+  try add1: 36 + 44 + 1 = 81 -> encodes [@ = [@ OK -> accept
+fact1 [@{+@[] = [?[]:
+  operator '+' already fixed = add1
+  try add1: 19 + 18 + 1 = 38 -> encodes ?[ = ?[ OK -> accept
+fact3 [?(-`{] = [(}]:
+  try add: 34 + 79 = 113 (length/sign off) NG
+  try sub: 34 - 79 = -45 (length/sign off) NG
+  try rsub: 79 - 34 = 45 -> encodes (} = (} OK -> accept
+
+Recovered cipher: B($)=6, C(()=4, A(?)=3, E(@)=1, D([)=8, H(])=0, J(`)=7, F({)=9, G(})=5
+Query @@-$]: EE=11, BH=60, '-' = rsub: 60 - 11 = 49.
+Encode 49 back to original symbols -> ({.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{({}

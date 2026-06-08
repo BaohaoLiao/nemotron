@@ -1,0 +1,59 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [&&":?] = [?%]: AA " BC = CD  (r.len=2, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [:#)/$] = [&&%#]: BE ) FG = AADE  (r.len=4, sym=['A', 'B', 'D', 'E', 'F', 'G'], |sym|=6)
+fact2 [<$"@&] = [?`]: HG " JA = CK  (r.len=2, sym=['A', 'C', 'G', 'H', 'J', 'K'], |sym|=6)
+query [%<"<$]: DH " HG = ?
+
+narrowing operator candidates by result length:
+  '"' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  ')' -> {concat, rconcat, mul, mul1, mulm1}
+
+Mul anchor: fact1 [:#)/$] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern BE ) FG = AADE -> 34 candidates:
+  R0: 20 * 57 = 1140 -> E=0,G=7,D=4,A=1,F=5,B=2
+  R1: 20 * 58 = 1160 -> E=0,G=8,D=6,A=1,F=5,B=2
+  R2: 20 * 59 = 1180 -> E=0,G=9,D=8,A=1,F=5,B=2
+  R3: 30 * 76 = 2280 -> E=0,G=6,D=8,A=2,F=7,B=3  <-- consistent with all facts
+  R4: 37 * 61 = 2257 -> E=7,G=1,D=5,A=2,F=6,B=3
+  R5: 40 * 29 = 1160 -> E=0,G=9,D=6,A=1,F=2,B=4
+  R6: 40 * 57 = 2280 -> E=0,G=7,D=8,A=2,F=5,B=4
+  R7: 52 * 86 = 4472 -> E=2,G=6,D=7,A=4,F=8,B=5
+  R8: 56 * 41 = 2296 -> E=6,G=1,D=9,A=2,F=4,B=5
+  R9: 58 * 76 = 4408 -> E=8,G=6,D=0,A=4,F=7,B=5
+  R10: 60 * 93 = 5580 -> E=0,G=3,D=8,A=5,F=9,B=6
+  R11: 62 * 71 = 4402 -> E=2,G=1,D=0,A=4,F=7,B=6
+  R12: 70 * 48 = 3360 -> E=0,G=8,D=6,A=3,F=4,B=7
+  R13: 70 * 63 = 4410 -> E=0,G=3,D=1,A=4,F=6,B=7
+  R14: 72 * 46 = 3312 -> E=2,G=6,D=1,A=3,F=4,B=7
+  R15: 73 * 61 = 4453 -> E=3,G=1,D=5,A=4,F=6,B=7
+  R16: 73 * 91 = 6643 -> E=3,G=1,D=4,A=6,F=9,B=7
+  R17: 74 * 31 = 2294 -> E=4,G=1,D=9,A=2,F=3,B=7
+  R18: 80 * 42 = 3360 -> E=0,G=2,D=6,A=3,F=4,B=8
+  R19: 80 * 69 = 5520 -> E=0,G=9,D=2,A=5,F=6,B=8
+  R20: 82 * 41 = 3362 -> E=2,G=1,D=6,A=3,F=4,B=8
+  R21: 85 * 91 = 7735 -> E=5,G=1,D=3,A=7,F=9,B=8
+  R22: 87 * 51 = 4437 -> E=7,G=1,D=3,A=4,F=5,B=8
+  R23: 90 * 62 = 5580 -> E=0,G=2,D=8,A=5,F=6,B=9
+  ... 10 more candidates (untried; the search stops at the first that extends to every fact, R3)
+
+Candidates are tried in order; R3 is the first that extends to every fact. Propagate it:
+fact1 [:#)/$] = [&&%#]:
+  try mul: 30 * 76 = 2280 -> encodes &&%# = &&%# OK -> accept
+fact0 [&&":?] = [?%]:
+  try add: 22 + 35 = 57 -> encodes ?/ != ?% NG
+  try sub: 22 - 35 = -13 (length/sign off) NG
+  try rsub: 35 - 22 = 13 -> encodes <: != ?% NG
+  try add1: 22 + 35 + 1 = 58 -> encodes ?% = ?% OK -> accept
+fact2 [<$"@&] = [?`]:
+  operator '"' already fixed = add1
+  try add1: 16 + 42 + 1 = 59 -> encodes ?` = ?` OK -> accept
+
+Recovered cipher: E(#)=0, G($)=6, D(%)=8, A(&)=2, F(/)=7, B(:)=3, H(<)=1, C(?)=5, J(@)=4, K(`)=9
+Query %<"<$: DH=81, HG=16, '"' = add1: 81 + 16 + 1 = 98.
+Encode 98 back to original symbols -> `%.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{`%}

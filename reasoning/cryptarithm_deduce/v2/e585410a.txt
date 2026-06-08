@@ -1,0 +1,51 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 ["@+@!] = ["@@!]: AB + BC = ABBC  (r.len=4, sym=['A', 'B', 'C'], |sym|=3)
+fact1 [/@*:}] = [:$}$]: DB * EF = EGFG  (r.len=4, sym=['B', 'D', 'E', 'F', 'G'], |sym|=5)
+fact2 [$/-]]] = [-)!]: GD - HH = -JC  (r.len=2 neg, sym=['C', 'D', 'G', 'H', 'J'], |sym|=5)
+fact3 [@:-}#] = [-:/]: BE - FK = -ED  (r.len=2 neg, sym=['B', 'D', 'E', 'F', 'K'], |sym|=5)
+query [$"+!@]: GA + CB = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {concat, rconcat, mul, mul1, mulm1}
+  '-' -> {sub, rsub, negabs}
+
+Mul anchor: fact1 [/@*:}] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern DB * EF = EGFG -> 13 candidates:
+  R0: 68 * 19 = 1292 -> G=2,D=6,E=1,B=8,F=9
+  R1: 85 * 12 = 1020 -> G=0,D=8,E=1,B=5,F=2
+  R2: 85 * 24 = 2040 -> G=0,D=8,E=2,B=5,F=4
+  R3: 85 * 36 = 3060 -> G=0,D=8,E=3,B=5,F=6
+  R4: 86 * 29 = 2494 -> G=4,D=8,E=2,B=6,F=9  <-- consistent with all facts
+  R5: 94 * 75 = 7050 -> G=0,D=9,E=7,B=4,F=5
+  R6: 97 * 38 = 3686 -> G=6,D=9,E=3,B=7,F=8
+  R7: 86 * 25 + 1 = 2151 -> G=1,D=8,E=2,B=6,F=5
+  R8: 90 * 35 + 1 = 3151 -> G=1,D=9,E=3,B=0,F=5
+  R9: 63 * 17 - 1 = 1070 -> G=0,D=6,E=1,B=3,F=7
+  R10: 84 * 19 - 1 = 1595 -> G=5,D=8,E=1,B=4,F=9
+  R11: 96 * 14 - 1 = 1343 -> G=3,D=9,E=1,B=6,F=4
+  R12: 97 * 15 - 1 = 1454 -> G=4,D=9,E=1,B=7,F=5
+
+Candidates are tried in order; R4 is the first that extends to every fact. Propagate it:
+fact1 [/@*:}] = [:$}$]:
+  try mul: 86 * 29 = 2494 -> encodes :$}$ = :$}$ OK -> accept
+fact0 ["@+@!] = ["@@!]:
+  try mul: 56 * 67 = 3752 -> encodes )!": != "@@! NG
+  try concat: concat(56,67) = 5667 -> encodes "@@! = "@@! OK -> accept
+fact2 [$/-]]] = [-)!]:
+  try sub: 48 - 11 = 37 (length/sign off) NG
+  try rsub: 11 - 48 = -37 -> encodes -)! != -)! NG
+  try negabs: -|48 - 11| = -37 -> encodes -)! = -)! OK -> accept
+fact3 [@:-}#] = [-:/]:
+  operator '-' already fixed = negabs
+  try negabs: -|62 - 90| = -28 -> encodes -:/ = -:/ OK -> accept
+
+Recovered cipher: C(!)=7, A(")=5, K(#)=0, G($)=4, J())=3, D(/)=8, E(:)=2, B(@)=6, H(])=1, F(})=9
+Query $"+!@: GA=45, CB=76, '+' = concat: concat(45,76) = 4576.
+Encode 4576 back to original symbols -> $"!@.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{$"!@}

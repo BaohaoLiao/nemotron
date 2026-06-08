@@ -1,0 +1,54 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [>:@":] = [{"}%]: AB @ CB = DCEF  (r.len=4, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [/"+]}] = [|>]: GC + HE = JA  (r.len=2, sym=['A', 'C', 'E', 'G', 'H', 'J'], |sym|=6)
+fact2 [}>@/}] = [|#%}]: EA @ GE = JKFE  (r.len=4, sym=['A', 'E', 'F', 'G', 'J', 'K'], |sym|=6)
+fact3 [|/(|]] = [|/|]]: JG ( JH = JGJH  (r.len=4, sym=['G', 'H', 'J'], |sym|=3)
+query [">+>|]: CA + AJ = ?
+
+narrowing operator candidates by result length:
+  '(' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '@' -> {concat, rconcat, mul, mul1, mulm1}
+
+Mul anchor: fact0 [>:@":] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB @ CB = DCEF -> 17 candidates:
+  R0: 27 * 57 = 1539 -> C=5,F=9,B=7,A=2,D=1,E=3
+  R1: 34 * 84 = 2856 -> C=8,F=6,B=4,A=3,D=2,E=5
+  R2: 47 * 27 = 1269 -> C=2,F=9,B=7,A=4,D=1,E=6
+  R3: 54 * 24 = 1296 -> C=2,F=6,B=4,A=5,D=1,E=9
+  R4: 59 * 39 = 2301 -> C=3,F=1,B=9,A=5,D=2,E=0
+  R5: 67 * 87 = 5829 -> C=8,F=9,B=7,A=6,D=5,E=2  <-- consistent with all facts
+  R6: 27 * 57 + 1 = 1540 -> C=5,F=0,B=7,A=2,D=1,E=4
+  R7: 34 * 84 + 1 = 2857 -> C=8,F=7,B=4,A=3,D=2,E=5
+  R8: 45 * 85 + 1 = 3826 -> C=8,F=6,B=5,A=4,D=3,E=2
+  R9: 54 * 24 + 1 = 1297 -> C=2,F=7,B=4,A=5,D=1,E=9
+  R10: 56 * 86 + 1 = 4817 -> C=8,F=7,B=6,A=5,D=4,E=1
+  R11: 67 * 87 + 1 = 5830 -> C=8,F=0,B=7,A=6,D=5,E=3
+  R12: 27 * 57 - 1 = 1538 -> C=5,F=8,B=7,A=2,D=1,E=3
+  R13: 47 * 27 - 1 = 1268 -> C=2,F=8,B=7,A=4,D=1,E=6
+  R14: 53 * 93 - 1 = 4928 -> C=9,F=8,B=3,A=5,D=4,E=2
+  R15: 76 * 46 - 1 = 3495 -> C=4,F=5,B=6,A=7,D=3,E=9
+  R16: 78 * 58 - 1 = 4523 -> C=5,F=3,B=8,A=7,D=4,E=2
+
+Candidates are tried in order; R5 is the first that extends to every fact. Propagate it:
+fact0 [>:@":] = [{"}%]:
+  try mul: 67 * 87 = 5829 -> encodes {"}% = {"}% OK -> accept
+fact1 [/"+]}] = [|>]:
+  try add: 48 + 32 = 80 -> encodes "# != |> NG
+  try sub: 48 - 32 = 16 -> encodes |> = |> OK -> accept
+fact2 [}>@/}] = [|#%}]:
+  operator '@' already fixed = mul
+  try mul: 26 * 42 = 1092 -> encodes |#%} = |#%} OK -> accept
+fact3 [|/(|]] = [|/|]]:
+  try mul: 14 * 13 = 182 (length/sign off) NG
+  try concat: concat(14,13) = 1413 -> encodes |/|] = |/|] OK -> accept
+
+Recovered cipher: C(")=8, K(#)=0, F(%)=9, G(/)=4, B(:)=7, A(>)=6, H(])=3, D({)=5, J(|)=1, E(})=2
+Query ">+>|: CA=86, AJ=61, '+' = sub: 86 - 61 = 25.
+Encode 25 back to original symbols -> }{.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{}{}

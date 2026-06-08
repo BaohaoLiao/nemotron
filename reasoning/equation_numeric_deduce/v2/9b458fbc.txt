@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  84:48 = 4032
+  20@34 = 2034
+  12:85 = 1020
+  42[50 = 8
+
+The inputs are 84, 48, 20, 34, 12, 85, 42, 50
+
+The outputs are 4032, 2034, 1020, 8
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+84:48 -> :
+20@34 -> @
+12:85 -> :
+42[50 -> [
+
+The operators
+:
+@
+[
+
+Looking at the question
+34[73 -> [
+The question operator is found in the examples.
+
+Looking at operator 【[】 [42[50 = 8]:
+  Trying common operations reversed operands [42->24 50->05] and reversed result [expected (24,05)->8]:
+    concatenation f(24, 05) = 24 || 05 = 2405 -rev-> 5042 wrong
+    reverse concatenation f(24, 05) = 05 || 24 = 0524 -rev-> 4250 wrong
+    addition f(24, 05) = 24 + 05 = 29 -rev-> 92 wrong
+    absolute difference f(24, 05) = |24 - 05| = 19 -rev-> 91 wrong
+    negated absolute difference f(24, 05) = -|24 - 05| = -19 -rev-> -91 wrong
+    subtraction (a-b) f(24, 05) = 24 - 05 = 19 -rev-> 91 wrong
+    reverse subtraction (b-a) f(24, 05) = 05 - 24 = -19 -rev-> -91 wrong
+    multiplication f(24, 05) = (20 + 4) * 05 = 20 * 05 + 4 * 05 = 100 + 20 = 120 -rev-> 021 wrong
+  Trying common operations on identity [42 50] [expected (42,50)->8]:
+    concatenation f(42, 50) = 42 || 50 = 4250 wrong
+    reverse concatenation f(42, 50) = 50 || 42 = 5042 wrong
+    addition f(42, 50) = 42 + 50 = 92 wrong
+    absolute difference f(42, 50) = |42 - 50| = 8 match, correct, actions: absolute difference
+    negated absolute difference f(42, 50) = -|42 - 50| = -8 wrong
+    subtraction (a-b) f(42, 50) = 42 - 50 = -8 wrong
+    reverse subtraction (b-a) f(42, 50) = 50 - 42 = 8 match, correct, but skipping
+    multiplication f(42, 50) = (40 + 2) * 50 = 40 * 50 + 2 * 50 = 2000 + 100 = 2100 wrong
+  Trying common operations reversed operands [42->24 50->05] [expected (24,05)->8]:
+    concatenation f(24, 05) = 24 || 05 = 2405 wrong
+    reverse concatenation f(24, 05) = 05 || 24 = 0524 wrong
+    addition f(24, 05) = 24 + 05 = 29 wrong
+    absolute difference f(24, 05) = |24 - 05| = 19 wrong
+    negated absolute difference f(24, 05) = -|24 - 05| = -19 wrong
+    subtraction (a-b) f(24, 05) = 24 - 05 = 19 wrong
+    reverse subtraction (b-a) f(24, 05) = 05 - 24 = -19 wrong
+    multiplication f(24, 05) = (20 + 4) * 05 = 20 * 05 + 4 * 05 = 100 + 20 = 120 wrong
+  Trying common operations identity operands [42 50] reversed result [expected (42,50)->8]:
+    concatenation f(42, 50) = 42 || 50 = 4250 -rev-> 0524 wrong
+    reverse concatenation f(42, 50) = 50 || 42 = 5042 -rev-> 2405 wrong
+    addition f(42, 50) = 42 + 50 = 92 -rev-> 29 wrong
+    absolute difference f(42, 50) = |42 - 50| = 8 -rev-> 8 match, correct, but skipping
+    negated absolute difference f(42, 50) = -|42 - 50| = -8 -rev-> -8 wrong
+    subtraction (a-b) f(42, 50) = 42 - 50 = -8 -rev-> -8 wrong
+    reverse subtraction (b-a) f(42, 50) = 50 - 42 = 8 -rev-> 8 match, correct, but skipping
+    multiplication f(42, 50) = (40 + 2) * 50 = 40 * 50 + 2 * 50 = 2000 + 100 = 2100 -rev-> 0012 wrong
+  Trying rare operations reversed operands [42->24 50->05] and reversed result [expected (24,05)->8]:
+    multiply+1 f(24, 05) = (20 + 4) * 05 + 1 = 20 * 05 + 4 * 05 + 1 = 100 + 20 + 1 = 120 + 1 = 121 -rev-> 121 wrong
+    multiply-1 f(24, 05) = (20 + 4) * 05 - 1 = 20 * 05 + 4 * 05 - 1 = 100 + 20 - 1 = 120 - 1 = 119 -rev-> 911 wrong
+    add+1 f(24, 05) = 24 + 05 + 1 = 30 -rev-> 03 wrong
+    add-1 f(24, 05) = 24 + 05 - 1 = 28 -rev-> 82 wrong
+    sub+1 f(24, 05) = 24 - 05 + 1 = 20 -rev-> 02 wrong
+    sub-1 f(24, 05) = 24 - 05 - 1 = 18 -rev-> 81 wrong
+    max mod min f(24, 05) = max(24,05) mod min(24,05) = 24 mod 05 = 4 -rev-> 4 wrong
+    integer division (a/b) f(24, 05) = 24 / 05 = 4 -rev-> 4 wrong
+    modulo (a mod b) f(24, 05) = 24 mod 05 = 4 -rev-> 4 wrong
+    reverse division (b/a) f(24, 05) = 05 / 24 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(24, 05) = 05 mod 24 = 5 -rev-> 5 wrong
+    digit absolute diff f(24, 05) = |2-0| || |4-5| = 21 -rev-> 12 wrong
+    digit add mod10 f(24, 05) = (2+0)%10 || (4+5)%10 = 29 -rev-> 92 wrong
+    digit sub mod10 f(24, 05) = (2-0)%10 || (4-5)%10 = 29 -rev-> 92 wrong
+    cross multiply f(24, 05) = 2*0 + 4*5 = 0 + 20 = 20 -rev-> 02 wrong
+    cross multiply rev f(24, 05) = 2*5 + 4*0 = 10 + 0 = 10 -rev-> 01 wrong
+    digit multiply f(24, 05) = 2*0 || 4*5 = 0 || 20 = 020 -rev-> 020 wrong
+    digit multiply rev f(24, 05) = 2*5 || 4*0 = 10 || 0 = 100 -rev-> 001 wrong
+    digit sum diff f(24, 05) = (2+4) - (0+5) = 1 -rev-> 1 wrong
+    digit sum sum f(24, 05) = (2+4) + (0+5) = 11 -rev-> 11 wrong
+    digit product diff f(24, 05) = 2*4 - 0*5 = 8 - 0 = 8 -rev-> 8 match, correct, but skipping
+    digit product sum f(24, 05) = 2*4 + 0*5 = 8 + 0 = 8 -rev-> 8 match, correct, but skipping
+    determinant f(24, 05) = 2*5 - 4*0 = 10 - 0 = 10 -rev-> 01 wrong
+    abs determinant f(24, 05) = |2*5 - 4*0| = |10 - 0| = 10 -rev-> 01 wrong
+  Trying rare operations on identity [42 50] [expected (42,50)->8]:
+    multiply+1 f(42, 50) = (40 + 2) * 50 + 1 = 40 * 50 + 2 * 50 + 1 = 2000 + 100 + 1 = 2100 + 1 = 2101 wrong
+    multiply-1 f(42, 50) = (40 + 2) * 50 - 1 = 40 * 50 + 2 * 50 - 1 = 2000 + 100 - 1 = 2100 - 1 = 2099 wrong
+    add+1 f(42, 50) = 42 + 50 + 1 = 93 wrong
+    add-1 f(42, 50) = 42 + 50 - 1 = 91 wrong
+    sub+1 f(42, 50) = 42 - 50 + 1 = -7 wrong
+    sub-1 f(42, 50) = 42 - 50 - 1 = -9 wrong
+    max mod min f(42, 50) = max(42,50) mod min(42,50) = 50 mod 42 = 8 match, correct, but skipping
+    integer division (a/b) f(42, 50) = 42 / 50 = 0 wrong
+    modulo (a mod b) f(42, 50) = 42 mod 50 = 42 wrong
+    reverse division (b/a) f(42, 50) = 50 / 42 = 1 wrong
+    reverse modulo (b mod a) f(42, 50) = 50 mod 42 = 8 match, correct, but skipping
+    digit absolute diff f(42, 50) = |4-5| || |2-0| = 12 wrong
+    digit add mod10 f(42, 50) = (4+5)%10 || (2+0)%10 = 92 wrong
+    digit sub mod10 f(42, 50) = (4-5)%10 || (2-0)%10 = 92 wrong
+    cross multiply f(42, 50) = 4*5 + 2*0 = 20 + 0 = 20 wrong
+    cross multiply rev f(42, 50) = 4*0 + 2*5 = 0 + 10 = 10 wrong
+    digit multiply f(42, 50) = 4*5 || 2*0 = 20 || 0 = 200 wrong
+    digit multiply rev f(42, 50) = 4*0 || 2*5 = 0 || 10 = 010 wrong
+    digit sum diff f(42, 50) = (4+2) - (5+0) = 1 wrong
+    digit sum sum f(42, 50) = (4+2) + (5+0) = 11 wrong
+    digit product diff f(42, 50) = 4*2 - 5*0 = 8 - 0 = 8 match, correct, but skipping
+    digit product sum f(42, 50) = 4*2 + 5*0 = 8 + 0 = 8 match, correct, but skipping
+    determinant f(42, 50) = 4*0 - 2*5 = 0 - 10 = -10 wrong
+    abs determinant f(42, 50) = |4*0 - 2*5| = |0 - 10| = 10 wrong
+  Trying rare operations reversed operands [42->24 50->05] [expected (24,05)->8]:
+    multiply+1 f(24, 05) = (20 + 4) * 05 + 1 = 20 * 05 + 4 * 05 + 1 = 100 + 20 + 1 = 120 + 1 = 121 wrong
+    multiply-1 f(24, 05) = (20 + 4) * 05 - 1 = 20 * 05 + 4 * 05 - 1 = 100 + 20 - 1 = 120 - 1 = 119 wrong
+    add+1 f(24, 05) = 24 + 05 + 1 = 30 wrong
+    add-1 f(24, 05) = 24 + 05 - 1 = 28 wrong
+    sub+1 f(24, 05) = 24 - 05 + 1 = 20 wrong
+    sub-1 f(24, 05) = 24 - 05 - 1 = 18 wrong
+    max mod min f(24, 05) = max(24,05) mod min(24,05) = 24 mod 05 = 4 wrong
+    integer division (a/b) f(24, 05) = 24 / 05 = 4 wrong
+    modulo (a mod b) f(24, 05) = 24 mod 05 = 4 wrong
+    reverse division (b/a) f(24, 05) = 05 / 24 = 0 wrong
+    reverse modulo (b mod a) f(24, 05) = 05 mod 24 = 5 wrong
+    digit absolute diff f(24, 05) = |2-0| || |4-5| = 21 wrong
+    digit add mod10 f(24, 05) = (2+0)%10 || (4+5)%10 = 29 wrong
+    digit sub mod10 f(24, 05) = (2-0)%10 || (4-5)%10 = 29 wrong
+    cross multiply f(24, 05) = 2*0 + 4*5 = 0 + 20 = 20 wrong
+    cross multiply rev f(24, 05) = 2*5 + 4*0 = 10 + 0 = 10 wrong
+    digit multiply f(24, 05) = 2*0 || 4*5 = 0 || 20 = 020 wrong
+    digit multiply rev f(24, 05) = 2*5 || 4*0 = 10 || 0 = 100 wrong
+    digit sum diff f(24, 05) = (2+4) - (0+5) = 1 wrong
+    digit sum sum f(24, 05) = (2+4) + (0+5) = 11 wrong
+    digit product diff f(24, 05) = 2*4 - 0*5 = 8 - 0 = 8 match, correct, but skipping
+    digit product sum f(24, 05) = 2*4 + 0*5 = 8 + 0 = 8 match, correct, but skipping
+    determinant f(24, 05) = 2*5 - 4*0 = 10 - 0 = 10 wrong
+    abs determinant f(24, 05) = |2*5 - 4*0| = |10 - 0| = 10 wrong
+  Trying rare operations identity operands [42 50] reversed result [expected (42,50)->8]:
+    multiply+1 f(42, 50) = (40 + 2) * 50 + 1 = 40 * 50 + 2 * 50 + 1 = 2000 + 100 + 1 = 2100 + 1 = 2101 -rev-> 1012 wrong
+    multiply-1 f(42, 50) = (40 + 2) * 50 - 1 = 40 * 50 + 2 * 50 - 1 = 2000 + 100 - 1 = 2100 - 1 = 2099 -rev-> 9902 wrong
+    add+1 f(42, 50) = 42 + 50 + 1 = 93 -rev-> 39 wrong
+    add-1 f(42, 50) = 42 + 50 - 1 = 91 -rev-> 19 wrong
+    sub+1 f(42, 50) = 42 - 50 + 1 = -7 -rev-> -7 wrong
+    sub-1 f(42, 50) = 42 - 50 - 1 = -9 -rev-> -9 wrong
+    max mod min f(42, 50) = max(42,50) mod min(42,50) = 50 mod 42 = 8 -rev-> 8 match, correct, but skipping
+    integer division (a/b) f(42, 50) = 42 / 50 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(42, 50) = 42 mod 50 = 42 -rev-> 24 wrong
+    reverse division (b/a) f(42, 50) = 50 / 42 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(42, 50) = 50 mod 42 = 8 -rev-> 8 match, correct, but skipping
+    digit absolute diff f(42, 50) = |4-5| || |2-0| = 12 -rev-> 21 wrong
+    digit add mod10 f(42, 50) = (4+5)%10 || (2+0)%10 = 92 -rev-> 29 wrong
+    digit sub mod10 f(42, 50) = (4-5)%10 || (2-0)%10 = 92 -rev-> 29 wrong
+    cross multiply f(42, 50) = 4*5 + 2*0 = 20 + 0 = 20 -rev-> 02 wrong
+    cross multiply rev f(42, 50) = 4*0 + 2*5 = 0 + 10 = 10 -rev-> 01 wrong
+    digit multiply f(42, 50) = 4*5 || 2*0 = 20 || 0 = 200 -rev-> 002 wrong
+    digit multiply rev f(42, 50) = 4*0 || 2*5 = 0 || 10 = 010 -rev-> 010 wrong
+    digit sum diff f(42, 50) = (4+2) - (5+0) = 1 -rev-> 1 wrong
+    digit sum sum f(42, 50) = (4+2) + (5+0) = 11 -rev-> 11 wrong
+    digit product diff f(42, 50) = 4*2 - 5*0 = 8 - 0 = 8 -rev-> 8 match, correct, but skipping
+    digit product sum f(42, 50) = 4*2 + 5*0 = 8 + 0 = 8 -rev-> 8 match, correct, but skipping
+    determinant f(42, 50) = 4*0 - 2*5 = 0 - 10 = -10 -rev-> -01 wrong
+    abs determinant f(42, 50) = |4*0 - 2*5| = |0 - 10| = 10 -rev-> 01 wrong
+
+Applying to 34[73:
+  identity
+  absolute difference f(34, 73) = |34 - 73| = 39
+  Result: 【39】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{39}

@@ -1,0 +1,81 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [}`*{{] = [`#(]: AB * CC = BDE  (r.len=3, sym=['A', 'B', 'C', 'D', 'E'], |sym|=5)
+fact1 [}>+#`] = [(#]: AF + DB = ED  (r.len=2, sym=['A', 'B', 'D', 'E', 'F'], |sym|=5)
+fact2 [|{-(!] = [(]: GC - EH = E  (r.len=1, sym=['C', 'E', 'G', 'H'], |sym|=4)
+fact3 [}{-%(] = [}]: AC - JE = A  (r.len=1, sym=['A', 'C', 'E', 'J'], |sym|=4)
+fact4 [!>-!|] = [!]: HF - HG = H  (r.len=1, sym=['F', 'G', 'H'], |sym|=3)
+query [!|*||]: HG * GG = ?
+
+narrowing operator candidates by result length:
+  '*' -> {mul, mul1, mulm1, add1, addm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {mul, concat, rconcat, add, sub, rsub, mul1, mulm1, add1, addm1, absdiff, negabs, maxmod}
+
+Mul anchor: fact0 [}`*{{] (3-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB * CC = BDE -> 25 candidates:
+  R0: 14 * 33 = 462 -> D=6,E=2,B=4,C=3,A=1
+  R1: 29 * 33 = 957 -> D=5,E=7,B=9,C=3,A=2
+  R2: 29 * 33 + 1 = 958 -> D=5,E=8,B=9,C=3,A=2  <-- consistent with all facts
+  R3: 67 * 11 + 1 = 738 -> D=3,E=8,B=7,C=1,A=6
+  R4: 78 * 11 + 1 = 859 -> D=5,E=9,B=8,C=1,A=7
+  R5: 29 * 33 - 1 = 956 -> D=5,E=6,B=9,C=3,A=2
+  R6: 31 + 77 + 1 = 109 -> D=0,E=9,B=1,C=7,A=3
+  R7: 31 + 88 + 1 = 120 -> D=2,E=0,B=1,C=8,A=3
+  R8: 41 + 66 + 1 = 108 -> D=0,E=8,B=1,C=6,A=4
+  R9: 41 + 88 + 1 = 130 -> D=3,E=0,B=1,C=8,A=4
+  R10: 51 + 77 + 1 = 129 -> D=2,E=9,B=1,C=7,A=5
+  R11: 51 + 88 + 1 = 140 -> D=4,E=0,B=1,C=8,A=5
+  R12: 61 + 77 + 1 = 139 -> D=3,E=9,B=1,C=7,A=6
+  R13: 61 + 88 + 1 = 150 -> D=5,E=0,B=1,C=8,A=6
+  R14: 71 + 33 + 1 = 105 -> D=0,E=5,B=1,C=3,A=7
+  R15: 71 + 66 + 1 = 138 -> D=3,E=8,B=1,C=6,A=7
+  R16: 71 + 88 + 1 = 160 -> D=6,E=0,B=1,C=8,A=7
+  R17: 81 + 22 + 1 = 104 -> D=0,E=4,B=1,C=2,A=8
+  R18: 81 + 44 + 1 = 126 -> D=2,E=6,B=1,C=4,A=8
+  R19: 81 + 55 + 1 = 137 -> D=3,E=7,B=1,C=5,A=8
+  R20: 81 + 77 + 1 = 159 -> D=5,E=9,B=1,C=7,A=8
+  R21: 91 + 33 + 1 = 125 -> D=2,E=5,B=1,C=3,A=9
+  R22: 91 + 44 + 1 = 136 -> D=3,E=6,B=1,C=4,A=9
+  R23: 91 + 55 + 1 = 147 -> D=4,E=7,B=1,C=5,A=9
+  ... 1 more candidates (untried; the search stops at the first that extends to every fact, R2)
+
+Candidates are tried in order; R2 is the first that extends to every fact. Propagate it:
+fact0 [}`*{{] = [`#(]:
+  try mul: 29 * 33 = 957 -> encodes `#> != `#( NG
+  try mul1: 29 * 33 + 1 = 958 -> encodes `#( = `#( OK -> accept
+fact1 [}>+#`] = [(#]:
+  try add: 27 + 59 = 86 -> encodes (! != (# NG
+  try sub: 27 - 59 = -32 (length/sign off) NG
+  try rsub: 59 - 27 = 32 -> encodes {} != (# NG
+  try add1: 27 + 59 + 1 = 87 -> encodes (> != (# NG
+  try addm1: 27 + 59 - 1 = 85 -> encodes (# = (# OK -> accept
+fact2 [|{-(!] = [(]:
+  try mul: 13 * 86 = 1118 (length/sign off) NG
+  try concat: concat(13,86) = 1386 (length/sign off) NG
+  try rconcat: concat(86,13) = 8613 (length/sign off) NG
+  try add: 13 + 86 = 99 (length/sign off) NG
+  try sub: 13 - 86 = -73 (length/sign off) NG
+  try rsub: 86 - 13 = 73 (length/sign off) NG
+  try mul1: 13 * 86 + 1 = 1119 (length/sign off) NG
+  try mulm1: 13 * 86 - 1 = 1117 (length/sign off) NG
+  try add1: 13 + 86 + 1 = 100 (length/sign off) NG
+  try addm1: 13 + 86 - 1 = 98 (length/sign off) NG
+  try absdiff: |13 - 86| = 73 (length/sign off) NG
+  try negabs: -|13 - 86| = -73 (length/sign off) NG
+  try maxmod: max(13,86) mod min(13,86) = 8 -> encodes ( = ( OK -> accept
+fact3 [}{-%(] = [}]:
+  operator '-' already fixed = maxmod
+  try maxmod: max(23,48) mod min(23,48) = 2 -> encodes } = } OK -> accept
+fact4 [!>-!|] = [!]:
+  operator '-' already fixed = maxmod
+  try maxmod: max(67,61) mod min(67,61) = 6 -> encodes ! = ! OK -> accept
+
+Recovered cipher: H(!)=6, D(#)=5, J(%)=4, E(()=8, F(>)=7, B(`)=9, C({)=3, G(|)=1, A(})=2
+Query !|*||: HG=61, GG=11, '*' = mul1: 61 * 11 + 1 = 672.
+Encode 672 back to original symbols -> !>}.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{!>}}

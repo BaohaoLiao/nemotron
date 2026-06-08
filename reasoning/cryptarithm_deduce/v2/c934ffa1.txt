@@ -1,0 +1,33 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 ["#?))] = [#|)"]: AB ? CC = BDCA  (r.len=4, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [#&+\#] = [\!]: BE + FB = FG  (r.len=2, sym=['B', 'E', 'F', 'G'], |sym|=4)
+fact2 [\"@\$] = [&"]: FA @ FH = EA  (r.len=2, sym=['A', 'E', 'F', 'H'], |sym|=4)
+query [#"@"#]: BA @ AB = ?
+
+narrowing operator candidates by result length:
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '?' -> {concat, rconcat, mul, mul1, mulm1}
+  '@' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact0 ["#?))] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB ? CC = BDCA -> 1 candidates:
+  R0: 43 * 88 = 3784 -> A=4,B=3,C=8,D=7  <-- consistent with all facts
+
+Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
+fact0 ["#?))] = [#|)"]:
+  try mul: 43 * 88 = 3784 -> encodes #|)" = #|)" OK -> accept
+fact1 [#&+\#] = [\!]:
+  try add: 32 + 13 = 45 -> encodes "? != \! NG
+  try sub: 32 - 13 = 19 -> encodes \! = \! OK -> accept
+fact2 [\"@\$] = [&"]:
+  try add: 14 + 10 = 24 -> encodes &" = &" OK -> accept
+
+Recovered cipher: G(!)=9, A(")=4, B(#)=3, H($)=0, E(&)=2, C())=8, F(\)=1, D(|)=7
+Query #"@"#: BA=34, AB=43, '@' = add: 34 + 43 = 77.
+Encode 77 back to original symbols -> ||.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{||}

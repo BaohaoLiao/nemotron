@@ -1,0 +1,80 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [''-/>] = [)]: AA - BC = D  (r.len=1, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [/`*:[] = [:[/`]: BE * FG = FGBE  (r.len=4, sym=['B', 'E', 'F', 'G'], |sym|=4)
+fact2 [>:*)$] = [)$>:]: CF * DH = DHCF  (r.len=4, sym=['C', 'D', 'F', 'H'], |sym|=4)
+fact3 [:[*'/] = ['/:[]: FG * AB = ABFG  (r.len=4, sym=['A', 'B', 'F', 'G'], |sym|=4)
+fact4 [`$+<[] = [)<]: EH + JG = DJ  (r.len=2, sym=['D', 'E', 'G', 'H', 'J'], |sym|=5)
+query [[/*[']: GB * GA = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {mul, concat, rconcat, add, sub, rsub, mul1, mulm1, add1, addm1, absdiff, negabs, maxmod}
+
+Mul anchor: fact1 [/`*:[] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern BE * FG = FGBE -> 5040 candidates:
+  R0: concat(23,01) = 2301 -> B=0,F=2,G=3,E=1  <-- consistent with all facts
+  R1: concat(24,01) = 2401 -> B=0,F=2,G=4,E=1
+  R2: concat(25,01) = 2501 -> B=0,F=2,G=5,E=1
+  R3: concat(26,01) = 2601 -> B=0,F=2,G=6,E=1
+  R4: concat(27,01) = 2701 -> B=0,F=2,G=7,E=1
+  R5: concat(28,01) = 2801 -> B=0,F=2,G=8,E=1
+  R6: concat(29,01) = 2901 -> B=0,F=2,G=9,E=1
+  R7: concat(32,01) = 3201 -> B=0,F=3,G=2,E=1
+  R8: concat(34,01) = 3401 -> B=0,F=3,G=4,E=1
+  R9: concat(35,01) = 3501 -> B=0,F=3,G=5,E=1
+  R10: concat(36,01) = 3601 -> B=0,F=3,G=6,E=1
+  R11: concat(37,01) = 3701 -> B=0,F=3,G=7,E=1
+  R12: concat(38,01) = 3801 -> B=0,F=3,G=8,E=1
+  R13: concat(39,01) = 3901 -> B=0,F=3,G=9,E=1
+  R14: concat(42,01) = 4201 -> B=0,F=4,G=2,E=1
+  R15: concat(43,01) = 4301 -> B=0,F=4,G=3,E=1
+  R16: concat(45,01) = 4501 -> B=0,F=4,G=5,E=1
+  R17: concat(46,01) = 4601 -> B=0,F=4,G=6,E=1
+  R18: concat(47,01) = 4701 -> B=0,F=4,G=7,E=1
+  R19: concat(48,01) = 4801 -> B=0,F=4,G=8,E=1
+  R20: concat(49,01) = 4901 -> B=0,F=4,G=9,E=1
+  R21: concat(52,01) = 5201 -> B=0,F=5,G=2,E=1
+  R22: concat(53,01) = 5301 -> B=0,F=5,G=3,E=1
+  R23: concat(54,01) = 5401 -> B=0,F=5,G=4,E=1
+  ... 5016 more candidates (untried; the search stops at the first that extends to every fact, R0)
+
+Candidates are tried in order; R0 is the first that extends to every fact. Propagate it:
+fact1 [/`*:[] = [:[/`]:
+  try mul: 1 * 23 = 23 (length/sign off) NG
+  try concat: concat(01,23) = 0123 -> encodes /`:[ != :[/` NG
+  try rconcat: concat(23,01) = 2301 -> encodes :[/` = :[/` OK -> accept
+fact0 [''-/>] = [)]:
+  try mul: 99 * 5 = 495 (length/sign off) NG
+  try concat: concat(99,05) = 9905 (length/sign off) NG
+  try rconcat: concat(05,99) = 0599 (length/sign off) NG
+  try add: 99 + 5 = 104 (length/sign off) NG
+  try sub: 99 - 5 = 94 (length/sign off) NG
+  try rsub: 5 - 99 = -94 (length/sign off) NG
+  try mul1: 99 * 5 + 1 = 496 (length/sign off) NG
+  try mulm1: 99 * 5 - 1 = 494 (length/sign off) NG
+  try add1: 99 + 5 + 1 = 105 (length/sign off) NG
+  try addm1: 99 + 5 - 1 = 103 (length/sign off) NG
+  try absdiff: |99 - 5| = 94 (length/sign off) NG
+  try negabs: -|99 - 5| = -94 (length/sign off) NG
+  try maxmod: max(99,5) mod min(99,5) = 4 -> encodes ) = ) OK -> accept
+fact2 [>:*)$] = [)$>:]:
+  operator '*' already fixed = rconcat
+  try rconcat: concat(47,52) = 4752 -> encodes )$>: = )$>: OK -> accept
+fact3 [:[*'/] = ['/:[]:
+  operator '*' already fixed = rconcat
+  try rconcat: concat(90,23) = 9023 -> encodes '/:[ = '/:[ OK -> accept
+fact4 [`$+<[] = [)<]:
+  try add: 17 + 63 = 80 -> encodes ?/ != )< NG
+  try sub: 17 - 63 = -46 (length/sign off) NG
+  try rsub: 63 - 17 = 46 -> encodes )< = )< OK -> accept
+
+Recovered cipher: H($)=7, A(')=9, D())=4, B(/)=0, F(:)=2, J(<)=6, C(>)=5, G([)=3, E(`)=1
+Query [/*[': GB=30, GA=39, '*' = rconcat: concat(39,30) = 3930.
+Encode 3930 back to original symbols -> ['[/.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{['[/}

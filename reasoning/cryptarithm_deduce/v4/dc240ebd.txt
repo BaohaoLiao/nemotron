@@ -1,0 +1,57 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  >@-`` = ::``
+  :}-:: = "|<
+  )>-)> = >":>
+  @>-)< = @@)\
+  )|-<" = ":)<
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '-':
+    >@-`` = ::``: forward >@`` mismatch, reverse ``>@ mismatch
+    :}-:: = "|<: 3 output symbols, not a 4-symbol concatenation
+    )>-)> = >":>: forward )>)> mismatch, reverse )>)> mismatch
+    @>-)< = @@)\: forward @>)< mismatch, reverse )<@> mismatch
+    )|-<" = ":)<: forward )|<" mismatch, reverse <")| mismatch
+    -> '-' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '-':
+    >@-`` = ::``: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    :}-:: = "|<: non-negative, 3-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    )>-)> = >":>: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    @>-)< = @@)\: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    )|-<" = ":)<: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    -> '-' must be one of {mul, lcm, mul_p1, mul_m1}; take the simplest, mul
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  >@-`` = ::`` under '-'=mul: > in {2,4,5,6,7,8}, @ in {1,6}, ` in {4,5,6,8}, : in {1,2,3,4}
+  :}-:: = "|< under '-'=mul: : in {2}, } in {3,7,9}, " in {5,6}, | in {0,3,9}, < in {4,6,8}
+  )>-)> = >":> under '-'=mul: ) in {7}, > in {5}, " in {6}, : in {2}
+  @>-)< = @@)\ under '-'=mul: @ in {1}, > in {5}, ) in {7}, < in {8}, \ in {0}
+  )|-<" = ":)< under '-'=mul: ) in {7}, | in {3}, < in {8}, " in {6}, : in {2}
+  AllDifferent: digits {0,1,2,3,5,6,7,8} are already taken, so ` -> {4}, } -> {9}
+Every symbol is now pinned to one digit.
+
+Recovered cipher: "=6, )=7, :=2, <=8, >=5, @=1, \=0, `=4, |=3, }=9
+Operator meanings: '-'=mul
+
+Step 3 - verify every example under this cipher:
+  >@-``: 51 * 44 = 2244 -> ::`` (expected ::``) OK
+  :}-::: 29 * 22 = 638 -> "|< (expected "|<) OK
+  )>-)>: 75 * 75 = 5625 -> >":> (expected >":>) OK
+  @>-)<: 15 * 78 = 1170 -> @@)\ (expected @@)\) OK
+  )|-<": 73 * 86 = 6278 -> ":)< (expected ":)<) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question >|-}|:
+  >|=53, }|=93, '-'=mul: 53 * 93 -> encode back to symbols -> `}:}.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{`}:}}

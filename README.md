@@ -38,6 +38,42 @@ uv run modal run upload_adapter.py
 ```
 
 
+## Solver accuracy by version (all 9500 problems)
+
+Self-consistency accuracy (the solver's own `\boxed{}` answer vs the stored
+answer) for **every** registered solver version, per category. The version used
+for the training corpus is selected per category in
+[`versions.json`](versions.json); each tool (`reasoning.py`, `corpus.py`,
+`train_sft.py`) reads that selection. Run `uv run reasoning.py --all-versions`
+to reproduce.
+
+| Category | n | v1 | v2 | v3 | v4 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| bit_manipulation | 1602 | 85.1% (1364) | 94.6% (1515) | — | — |
+| cipher | 1576 | 100.0% (1576) | — | — | — |
+| cryptarithm_deduce | 659 | 8.2% (54) | 25.0% (165) | 31.3% (206) | **53.0% (349)** |
+| cryptarithm_guess | 164 | 6.7% (11) | 6.7% (11) | 6.7% (11) | 6.7% (11) |
+| equation_numeric_deduce | 596 | 90.6% (540) | 92.8% (553) | — | — |
+| equation_numeric_guess | 136 | 15.4% (21) | 15.4% (21) | — | — |
+| gravity | 1597 | 100.0% (1597) | — | — | — |
+| numeral | 1576 | 100.0% (1576) | — | — | — |
+| unit_conversion | 1594 | 100.0% (1594) | — | — | — |
+
+Solver notes:
+- **bit_manipulation v2** — translation-invariant sliding-window rule with a
+  verify-gated pivot (size-1 → size-2 search ladder, winner never hidden).
+- **cryptarithm v2** — mul-anchor cipher search (winner can be hidden behind a
+  display cap; superseded).
+- **cryptarithm v3** — clean-room forward-checking cipher CSP; one unified
+  verify-gated trace (concat test → cipher + verify → concede). Standard digit
+  order only.
+- **cryptarithm v4** — v3 + little-endian (least-significant-digit-first) reading
+  tried after standard fails, an authoritative injective verify, and fully
+  per-example narration of every check. `cryptarithm_guess` is forward-unsolvable
+  by design (novel query operator, no examples), so all versions sit near 6.7%.
+- **equation_numeric v2** — prefers signed subtraction over absolute difference
+  for demonstrably-signed operators.
+
 ## Solver accuracy (v1 → v2)
 
 Per-category rule-recovery accuracy of the original solvers (v1) versus the

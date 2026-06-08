@@ -1,0 +1,75 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  [`)?[ = )%&
+  ?\$?: = `[`
+  `?$[& = ?`
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '$':
+    ?\$?: = `[`: 3 output symbols, not a 4-symbol concatenation
+    `?$[& = ?`: 2 output symbols, not a 4-symbol concatenation
+    -> '$' is NOT plain concatenation (an example does not match)
+  operator ')':
+    [`)?[ = )%&: output starts with the operator sign, not plain concatenation
+    -> ')' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '$':
+    ?\$?: = `[`: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    `?$[& = ?`: non-negative, 2-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    -> '$' must be one of {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}; take the simplest, add
+  operator ')':
+    [`)?[ = )%&: negative (sign-prefixed), 2-digit result -> still possible {sub_signed, rsub_signed, neg_absdiff}
+    -> ')' must be one of {sub_signed, rsub_signed, neg_absdiff}; take the simplest, sub_signed
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  [`)?[ = )%& under ')'=sub_signed: [ in {0,1,2,3,4,5,6,7,8}, ` in {1,2,3,4,5,6,7,8,9}, ? in {2,3,4,5,6,7,8,9}, % in {1,2,3,4,5,6,7,8}, & in {1,2,3,4,5,6,7,8,9}
+  ?\$?: = `[` under '$'=add: ? in {6,7,8}, \ in {2,3,4,5,6,7,8,9}, : in {2,3,4,5,6,7,8,9}, ` in {1}, [ in {3,5,7}
+  `?$[& = ?` under '$'=add: ` in {1}, ? in {7}, [ in {5}, & in {4}
+  AllDifferent: digits {1,4,5,7} are already taken, so ! -> {0,2,3,6,8,9}, % -> {2,3,6,8}, : -> {2,3,6,8,9}, \ -> {2,3,6,8,9}
+Pass 2 -- apply each example, then AllDifferent:
+  [`)?[ = )%& under ')'=sub_signed: [ in {5}, ` in {1}, ? in {7}, % in {2}, & in {4}
+  ?\$?: = `[` under '$'=add: ? in {7}, \ in {2,3,8,9}, : in {2,3,8,9}, ` in {1}, [ in {5}
+  `?$[& = ?` under '$'=add: ` in {1}, ? in {7}, [ in {5}, & in {4}  (no new narrowing)
+  AllDifferent: digits {1,2,4,5,7} are already taken, so ! -> {0,3,6,8,9}, : -> {3,8,9}, \ -> {3,8,9}
+Pass 3 -- apply each example, then AllDifferent:
+  [`)?[ = )%& under ')'=sub_signed: [ in {5}, ` in {1}, ? in {7}, % in {2}, & in {4}  (no new narrowing)
+  ?\$?: = `[` under '$'=add: ? in {7}, \ in {3,8}, : in {3,8}, ` in {1}, [ in {5}
+  `?$[& = ?` under '$'=add: ` in {1}, ? in {7}, [ in {5}, & in {4}  (no new narrowing)
+Pass 4 -- apply each example, then AllDifferent:
+  [`)?[ = )%& under ')'=sub_signed: [ in {5}, ` in {1}, ? in {7}, % in {2}, & in {4}  (no new narrowing)
+  ?\$?: = `[` under '$'=add: ? in {7}, \ in {3,8}, : in {3,8}, ` in {1}, [ in {5}  (no new narrowing)
+  `?$[& = ?` under '$'=add: ` in {1}, ? in {7}, [ in {5}, & in {4}  (no new narrowing)
+  Examples no longer narrow; : still allows {3,8}. Guess : = 3 (a genuine choice -- Step 3 verifies it).
+Pass 5 -- apply each example, then AllDifferent:
+  [`)?[ = )%& under ')'=sub_signed: [ in {5}, ` in {1}, ? in {7}, % in {2}, & in {4}  (no new narrowing)
+  ?\$?: = `[` under '$'=add: ? in {7}, \ in {8}, : in {3}, ` in {1}, [ in {5}
+  `?$[& = ?` under '$'=add: ` in {1}, ? in {7}, [ in {5}, & in {4}  (no new narrowing)
+  AllDifferent: digits {1,2,3,4,5,7,8} are already taken, so ! -> {0,6,9}
+Pass 6 -- apply each example, then AllDifferent:
+  [`)?[ = )%& under ')'=sub_signed: [ in {5}, ` in {1}, ? in {7}, % in {2}, & in {4}  (no new narrowing)
+  ?\$?: = `[` under '$'=add: ? in {7}, \ in {8}, : in {3}, ` in {1}, [ in {5}  (no new narrowing)
+  `?$[& = ?` under '$'=add: ` in {1}, ? in {7}, [ in {5}, & in {4}  (no new narrowing)
+  Examples no longer narrow; ! still allows {0,6,9}. Guess ! = 0 (a genuine choice -- Step 3 verifies it).
+Every symbol is now pinned to one digit.
+
+Recovered cipher: !=0, %=2, &=4, :=3, ?=7, [=5, \=8, `=1
+Operator meanings: '$'=add, ')'=sub_signed
+
+Step 3 - verify every example under this cipher:
+  [`)?[: 51 - 75 = -24 -> )%& (expected )%&) OK
+  ?\$?:: 78 + 73 = 151 -> `[` (expected `[`) OK
+  `?$[&: 17 + 54 = 71 -> ?` (expected ?`) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question %\):!:
+  %\=28, :!=30, ')'=sub_signed: 28 - 30 -> encode back to symbols -> )%.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{)%}

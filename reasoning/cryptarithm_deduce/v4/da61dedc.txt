@@ -1,0 +1,63 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  &@]}$ = ]@?
+  @@`|{ = |${
+  /?]}} = ]?/
+  %|`$? = /|/$
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator ']':
+    &@]}$ = ]@?: output starts with the operator sign, not plain concatenation
+    /?]}} = ]?/: output starts with the operator sign, not plain concatenation
+    -> ']' is NOT plain concatenation (an example does not match)
+  operator '`':
+    @@`|{ = |${: 3 output symbols, not a 4-symbol concatenation
+    %|`$? = /|/$: forward %|$? mismatch, reverse $?%| mismatch
+    -> '`' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator ']':
+    &@]}$ = ]@?: negative (sign-prefixed), 2-digit result -> still possible {sub_signed, rsub_signed, neg_absdiff}
+    /?]}} = ]?/: negative (sign-prefixed), 2-digit result -> still possible {sub_signed, rsub_signed, neg_absdiff}
+    -> ']' must be one of {sub_signed, rsub_signed, neg_absdiff}; take the simplest, sub_signed
+    (sub_signed does not reproduce the examples on the digit search below; the first that does is neg_absdiff.)
+  operator '`':
+    @@`|{ = |${: non-negative, 3-digit result -> still possible {add, mul, sub_signed, rsub_signed, lcm, add_p1, add_m1, mul_p1, mul_m1}
+    %|`$? = /|/$: non-negative, 4-digit result -> still possible {mul, lcm, mul_p1, mul_m1}
+    -> '`' must be one of {mul, lcm, mul_p1, mul_m1}; take the simplest, mul
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  &@]}$ = ]@? under ']'=neg_absdiff: & in {0,1,2,3,4,5,6,7,8,9}, @ in {1,2,3,4,5,6,7,8}, } in {0,1,2,3,4,5,6,7,8,9}, $ in {0,1,2,3,4,5,6,7,8,9}, ? in {1,2,3,4,5,6,7,8,9}
+  @@`|{ = |${ under '`'=mul: @ in {1}, | in {2,3,4,5,6,7}, { in {2,3,4,5,6,7}, $ in {5,6,7,8,9}
+  /?]}} = ]?/ under ']'=neg_absdiff: / in {1,2,3,4,5,6,7,8}, ? in {1,2,3,4,5,6,7,8}, } in {3,4,5,6,7,8,9}
+  %|`$? = /|/$ under '`'=mul: % in {5}, | in {6}, $ in {8}, ? in {3}, / in {4}
+  AllDifferent: digits {1,3,4,5,6,8} are already taken, so # -> {0,2,7,9}, & -> {0,2,7,9}, { -> {2,7}, } -> {7,9}
+Pass 2 -- apply each example, then AllDifferent:
+  &@]}$ = ]@? under ']'=neg_absdiff: & in {9}, @ in {1}, } in {7}, $ in {8}, ? in {3}
+  @@`|{ = |${ under '`'=mul: @ in {1}, | in {6}, { in {2}, $ in {8}
+  /?]}} = ]?/ under ']'=neg_absdiff: / in {4}, ? in {3}, } in {7}  (no new narrowing)
+  %|`$? = /|/$ under '`'=mul: % in {5}, | in {6}, $ in {8}, ? in {3}, / in {4}  (no new narrowing)
+  AllDifferent: digits {1,2,3,4,5,6,7,8,9} are already taken, so # -> {0}
+Every symbol is now pinned to one digit.
+
+Recovered cipher: #=0, $=8, %=5, &=9, /=4, ?=3, @=1, {=2, |=6, }=7
+Operator meanings: ']'=neg_absdiff, '`'=mul
+
+Step 3 - verify every example under this cipher:
+  &@]}$: -|91 - 78| = -13 -> ]@? (expected ]@?) OK
+  @@`|{: 11 * 62 = 682 -> |${ (expected |${) OK
+  /?]}}: -|43 - 77| = -34 -> ]?/ (expected ]?/) OK
+  %|`$?: 56 * 83 = 4648 -> /|/$ (expected /|/$) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question }}`|#:
+  }}=77, |#=60, '`'=mul: 77 * 60 -> encode back to symbols -> /|{#.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{/|{#}

@@ -1,0 +1,72 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [?$+`$] = [>^{]: AB + CB = DEF  (r.len=3, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [/^*/`] = [/`/^]: GE * GC = GCGE  (r.len=4, sym=['C', 'E', 'G'], |sym|=3)
+fact2 [$`-/\] = [$\]: BC - GH = BH  (r.len=2, sym=['B', 'C', 'G', 'H'], |sym|=4)
+fact3 [&&-!$] = [-$\]: JJ - KB = -BH  (r.len=2 neg, sym=['B', 'H', 'J', 'K'], |sym|=4)
+query [$^+^`]: BE + EC = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {mul, mul1, mulm1, add1, addm1}
+  '-' -> {sub, rsub}
+
+Mul anchor: fact1 [/^*/`] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern GE * GC = GCGE -> 720 candidates:
+  R0: concat(02,01) = 0201 -> G=0,E=1,C=2
+  R1: concat(03,01) = 0301 -> G=0,E=1,C=3
+  R2: concat(04,01) = 0401 -> G=0,E=1,C=4
+  R3: concat(05,01) = 0501 -> G=0,E=1,C=5
+  R4: concat(06,01) = 0601 -> G=0,E=1,C=6
+  R5: concat(07,01) = 0701 -> G=0,E=1,C=7
+  R6: concat(08,01) = 0801 -> G=0,E=1,C=8
+  R7: concat(09,01) = 0901 -> G=0,E=1,C=9
+  R8: concat(01,02) = 0102 -> G=0,E=2,C=1
+  R9: concat(03,02) = 0302 -> G=0,E=2,C=3
+  R10: concat(04,02) = 0402 -> G=0,E=2,C=4
+  R11: concat(05,02) = 0502 -> G=0,E=2,C=5
+  R12: concat(06,02) = 0602 -> G=0,E=2,C=6
+  R13: concat(07,02) = 0702 -> G=0,E=2,C=7
+  R14: concat(08,02) = 0802 -> G=0,E=2,C=8
+  R15: concat(09,02) = 0902 -> G=0,E=2,C=9
+  R16: concat(01,03) = 0103 -> G=0,E=3,C=1
+  R17: concat(02,03) = 0203 -> G=0,E=3,C=2
+  R18: concat(04,03) = 0403 -> G=0,E=3,C=4
+  R19: concat(05,03) = 0503 -> G=0,E=3,C=5
+  R20: concat(06,03) = 0603 -> G=0,E=3,C=6
+  R21: concat(07,03) = 0703 -> G=0,E=3,C=7
+  R22: concat(08,03) = 0803 -> G=0,E=3,C=8
+  R23: concat(09,03) = 0903 -> G=0,E=3,C=9
+  R24: concat(01,04) = 0104 -> G=0,E=4,C=1
+  R25: concat(02,04) = 0204 -> G=0,E=4,C=2
+  R26: concat(03,04) = 0304 -> G=0,E=4,C=3
+  R27: concat(05,04) = 0504 -> G=0,E=4,C=5
+  R28: concat(06,04) = 0604 -> G=0,E=4,C=6  <-- consistent with all facts
+  ... 691 more candidates (untried; the search stops at the first that extends to every fact, R28)
+
+Candidates are tried in order; R28 is the first that extends to every fact. Propagate it:
+fact1 [/^*/`] = [/`/^]:
+  try mul: 4 * 6 = 24 (length/sign off) NG
+  try concat: concat(04,06) = 0406 -> encodes /^/` != /`/^ NG
+  try rconcat: concat(06,04) = 0604 -> encodes /`/^ = /`/^ OK -> accept
+fact0 [?$+`$] = [>^{]:
+  try mul: 85 * 65 = 5525 (length/sign off) NG
+  try mul1: 85 * 65 + 1 = 5526 (length/sign off) NG
+  try mulm1: 85 * 65 - 1 = 5524 (length/sign off) NG
+  try add1: 85 + 65 + 1 = 151 -> encodes >$> != >^{ NG
+  try addm1: 85 + 65 - 1 = 149 -> encodes >^{ = >^{ OK -> accept
+fact2 [$`-/\] = [$\]:
+  try add: 56 + 3 = 59 -> encodes ${ != $\ NG
+  try sub: 56 - 3 = 53 -> encodes $\ = $\ OK -> accept
+fact3 [&&-!$] = [-$\]:
+  operator '-' already fixed = sub
+  try sub: 22 - 75 = -53 -> encodes -$\ = -$\ OK -> accept
+
+Recovered cipher: K(!)=7, B($)=5, J(&)=2, G(/)=0, D(>)=1, A(?)=8, H(\)=3, E(^)=4, C(`)=6, F({)=9
+Query $^+^`: BE=54, EC=46, '+' = addm1: 54 + 46 - 1 = 99.
+Encode 99 back to original symbols -> {{.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{{{}

@@ -1,0 +1,60 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [)`]\@] = [)!$@]: AB ] CD = AEFD  (r.len=4, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [\#|@#] = [)@`]: CG | DG = ADB  (r.len=3, sym=['A', 'B', 'C', 'D', 'G'], |sym|=5)
+fact2 [#{|`!] = [)!!]: GH | BE = AEE  (r.len=3, sym=['A', 'B', 'E', 'G', 'H'], |sym|=5)
+query [@@|@`]: DD | DB = ?
+
+narrowing operator candidates by result length:
+  ']' -> {concat, rconcat, mul, mul1, mulm1}
+  '|' -> {mul, mul1, mulm1, add1, addm1}
+
+Mul anchor: fact0 [)`]\@] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB ] CD = AEFD -> 48 candidates:
+  R0: 14 * 90 = 1260 -> E=2,F=6,A=1,D=0,C=9,B=4
+  R1: 16 * 78 = 1248 -> E=2,F=4,A=1,D=8,C=7,B=6
+  R2: 16 * 92 = 1472 -> E=4,F=7,A=1,D=2,C=9,B=6  <-- consistent with all facts
+  R3: 16 * 94 = 1504 -> E=5,F=0,A=1,D=4,C=9,B=6
+  R4: 17 * 80 = 1360 -> E=3,F=6,A=1,D=0,C=8,B=7
+  R5: 17 * 90 = 1530 -> E=5,F=3,A=1,D=0,C=9,B=7
+  R6: 18 * 70 = 1260 -> E=2,F=6,A=1,D=0,C=7,B=8
+  R7: 18 * 90 = 1620 -> E=6,F=2,A=1,D=0,C=9,B=8
+  R8: 19 * 65 = 1235 -> E=2,F=3,A=1,D=5,C=6,B=9
+  R9: 19 * 75 = 1425 -> E=4,F=2,A=1,D=5,C=7,B=9
+  R10: 19 * 80 = 1520 -> E=5,F=2,A=1,D=0,C=8,B=9
+  R11: 21 * 97 = 2037 -> E=0,F=3,A=2,D=7,C=9,B=1
+  R12: 21 * 98 = 2058 -> E=0,F=5,A=2,D=8,C=9,B=1
+  R13: 23 * 95 = 2185 -> E=1,F=8,A=2,D=5,C=9,B=3
+  R14: 24 * 90 = 2160 -> E=1,F=6,A=2,D=0,C=9,B=4
+  R15: 26 * 90 = 2340 -> E=3,F=4,A=2,D=0,C=9,B=6
+  R16: 26 * 98 = 2548 -> E=5,F=4,A=2,D=8,C=9,B=6
+  R17: 27 * 80 = 2160 -> E=1,F=6,A=2,D=0,C=8,B=7
+  R18: 27 * 90 = 2430 -> E=4,F=3,A=2,D=0,C=9,B=7
+  R19: 29 * 85 = 2465 -> E=4,F=6,A=2,D=5,C=8,B=9
+  R20: 36 * 84 = 3024 -> E=0,F=2,A=3,D=4,C=8,B=6
+  R21: 36 * 90 = 3240 -> E=2,F=4,A=3,D=0,C=9,B=6
+  R22: 36 * 98 = 3528 -> E=5,F=2,A=3,D=8,C=9,B=6
+  R23: 37 * 85 = 3145 -> E=1,F=4,A=3,D=5,C=8,B=7
+  ... 24 more candidates (untried; the search stops at the first that extends to every fact, R2)
+
+Candidates are tried in order; R2 is the first that extends to every fact. Propagate it:
+fact0 [)`]\@] = [)!$@]:
+  try mul: 16 * 92 = 1472 -> encodes )!$@ = )!$@ OK -> accept
+fact1 [\#|@#] = [)@`]:
+  try mul: 98 * 28 = 2744 (length/sign off) NG
+  try mul1: 98 * 28 + 1 = 2745 (length/sign off) NG
+  try mulm1: 98 * 28 - 1 = 2743 (length/sign off) NG
+  try add1: 98 + 28 + 1 = 127 -> encodes )@$ != )@` NG
+  try addm1: 98 + 28 - 1 = 125 -> encodes )@? != )@` NG
+fact2 [#{|`!] = [)!!]:
+  operator '|' already fixed = add
+  try add: 80 + 64 = 144 -> encodes )!! = )!! OK -> accept
+
+Recovered cipher: E(!)=4, G(#)=8, F($)=7, A())=1, D(@)=2, C(\)=9, B(`)=6, H({)=0
+Query @@|@`: DD=22, DB=26, '|' = add: 22 + 26 = 48.
+Encode 48 back to original symbols -> !#.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{!#}

@@ -1,0 +1,59 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 []^*^]] = [$<%/]: AB * BA = CDEF  (r.len=4, sym=['A', 'B', 'C', 'D', 'E', 'F'], |sym|=6)
+fact1 [}/*^^] = [%%//]: GF * BB = EEFF  (r.len=4, sym=['B', 'E', 'F', 'G'], |sym|=4)
+fact2 [?"-"<] = [{$]: HJ - JD = KC  (r.len=2, sym=['C', 'D', 'H', 'J', 'K'], |sym|=5)
+fact3 [""+^}] = [??]: JJ + BG = HH  (r.len=2, sym=['B', 'G', 'H', 'J'], |sym|=4)
+query []/*<]]: AF * DA = ?
+
+narrowing operator candidates by result length:
+  '*' -> {concat, rconcat, mul, mul1, mulm1}
+  '+' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '-' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+
+Mul anchor: fact0 []^*^]] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern AB * BA = CDEF -> 14 candidates:
+  R0: 58 * 85 = 4930 -> C=4,E=3,F=0,D=9,A=5,B=8
+  R1: 67 * 76 = 5092 -> C=5,E=9,F=2,D=0,A=6,B=7
+  R2: 76 * 67 = 5092 -> C=5,E=9,F=2,D=0,A=7,B=6
+  R3: 85 * 58 = 4930 -> C=4,E=3,F=0,D=9,A=8,B=5  <-- consistent with all facts
+  R4: 27 * 72 + 1 = 1945 -> C=1,E=4,F=5,D=9,A=2,B=7
+  R5: 58 * 85 + 1 = 4931 -> C=4,E=3,F=1,D=9,A=5,B=8
+  R6: 67 * 76 + 1 = 5093 -> C=5,E=9,F=3,D=0,A=6,B=7
+  R7: 72 * 27 + 1 = 1945 -> C=1,E=4,F=5,D=9,A=7,B=2
+  R8: 76 * 67 + 1 = 5093 -> C=5,E=9,F=3,D=0,A=7,B=6
+  R9: 85 * 58 + 1 = 4931 -> C=4,E=3,F=1,D=9,A=8,B=5
+  R10: 27 * 72 - 1 = 1943 -> C=1,E=4,F=3,D=9,A=2,B=7
+  R11: 67 * 76 - 1 = 5091 -> C=5,E=9,F=1,D=0,A=6,B=7
+  R12: 72 * 27 - 1 = 1943 -> C=1,E=4,F=3,D=9,A=7,B=2
+  R13: 76 * 67 - 1 = 5091 -> C=5,E=9,F=1,D=0,A=7,B=6
+
+Candidates are tried in order; R3 is the first that extends to every fact. Propagate it:
+fact0 []^*^]] = [$<%/]:
+  try mul: 85 * 58 = 4930 -> encodes $<%/ = $<%/ OK -> accept
+fact1 [}/*^^] = [%%//]:
+  operator '*' already fixed = mul
+  try mul: 60 * 55 = 3300 -> encodes %%// = %%// OK -> accept
+fact2 [?"-"<] = [{$]:
+  try add: 72 + 29 = 101 (length/sign off) NG
+  try sub: 72 - 29 = 43 -> encodes $% != {$ NG
+  try rsub: 29 - 72 = -43 (length/sign off) NG
+  try add1: 72 + 29 + 1 = 102 (length/sign off) NG
+  try addm1: 72 + 29 - 1 = 100 (length/sign off) NG
+  try absdiff: |72 - 29| = 43 -> encodes $% != {$ NG
+  try maxmod: max(72,29) mod min(72,29) = 14 -> encodes {$ = {$ OK -> accept
+fact3 [""+^}] = [??]:
+  try add: 22 + 56 = 78 -> encodes ?] != ?? NG
+  try sub: 22 - 56 = -34 (length/sign off) NG
+  try rsub: 56 - 22 = 34 -> encodes %$ != ?? NG
+  try add1: 22 + 56 + 1 = 79 -> encodes ?< != ?? NG
+  try addm1: 22 + 56 - 1 = 77 -> encodes ?? = ?? OK -> accept
+
+Recovered cipher: J(")=2, C($)=4, E(%)=3, F(/)=0, D(<)=9, H(?)=7, A(])=8, B(^)=5, K({)=1, G(})=6
+Query ]/*<]: AF=80, DA=98, '*' = mul: 80 * 98 = 7840.
+Encode 7840 back to original symbols -> ?]$/.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{?]$/}

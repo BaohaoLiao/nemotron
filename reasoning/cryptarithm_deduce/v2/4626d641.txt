@@ -1,0 +1,61 @@
+We infer the transformation rule from the facts by bounded rule-based trial.
+I will put my final answer inside \boxed{}.
+
+remap (index 2 is the operator):
+fact0 [")[@?] = [?@]: AB [ CD = DC  (r.len=2, sym=['A', 'B', 'C', 'D'], |sym|=4)
+fact1 [$/%&$] = ["@]: EF % GE = AC  (r.len=2, sym=['A', 'C', 'E', 'F', 'G'], |sym|=5)
+fact2 [)>{"!] = [!&/&]: BH { AJ = JGFG  (r.len=4, sym=['A', 'B', 'F', 'G', 'H', 'J'], |sym|=6)
+fact3 [/?[@)] = [@@@]: FD [ CB = CCC  (r.len=3, sym=['B', 'C', 'D', 'F'], |sym|=4)
+query [!/{"?]: JF { AD = ?
+
+narrowing operator candidates by result length:
+  '%' -> {add, add1, addm1, sub, rsub, absdiff, maxmod}
+  '[' -> {add1, addm1}
+  '{' -> {concat, rconcat, mul, mul1, mulm1}
+
+Mul anchor: fact2 [)>{"!] (4-digit result constrains the cipher most tightly).
+Enumerate (operation, operands) consistent with the anchor pattern BH { AJ = JGFG -> 22 candidates:
+  R0: 39 * 72 = 2808 -> J=2,A=7,G=8,B=3,F=0,H=9
+  R1: 58 * 74 = 4292 -> J=4,A=7,G=2,B=5,F=9,H=8
+  R2: 59 * 63 = 3717 -> J=3,A=6,G=7,B=5,F=1,H=9
+  R3: 65 * 32 = 2080 -> J=2,A=3,G=0,B=6,F=8,H=5
+  R4: 78 * 54 = 4212 -> J=4,A=5,G=2,B=7,F=1,H=8
+  R5: 23 * 61 + 1 = 1404 -> J=1,A=6,G=4,B=2,F=0,H=3
+  R6: 30 * 72 + 1 = 2161 -> J=2,A=7,G=1,B=3,F=6,H=0
+  R7: 35 * 62 + 1 = 2171 -> J=2,A=6,G=1,B=3,F=7,H=5
+  R8: 46 * 52 + 1 = 2393 -> J=2,A=5,G=3,B=4,F=9,H=6  <-- consistent with all facts
+  R9: 48 * 73 + 1 = 3505 -> J=3,A=7,G=5,B=4,F=0,H=8
+  R10: 49 * 21 + 1 = 1030 -> J=1,A=2,G=0,B=4,F=3,H=9
+  R11: 60 * 53 + 1 = 3181 -> J=3,A=5,G=1,B=6,F=8,H=0
+  R12: 68 * 75 + 1 = 5101 -> J=5,A=7,G=1,B=6,F=0,H=8
+  R13: 28 * 61 - 1 = 1707 -> J=1,A=6,G=7,B=2,F=0,H=8
+  R14: 57 * 42 - 1 = 2393 -> J=2,A=4,G=3,B=5,F=9,H=7
+  R15: 58 * 31 - 1 = 1797 -> J=1,A=3,G=7,B=5,F=9,H=8
+  R16: 59 * 31 - 1 = 1828 -> J=1,A=3,G=8,B=5,F=2,H=9
+  R17: 70 * 42 - 1 = 2939 -> J=2,A=4,G=9,B=7,F=3,H=0
+  R18: 70 * 85 - 1 = 5949 -> J=5,A=8,G=9,B=7,F=4,H=0
+  R19: 72 * 86 - 1 = 6191 -> J=6,A=8,G=1,B=7,F=9,H=2
+  R20: 76 * 21 - 1 = 1595 -> J=1,A=2,G=5,B=7,F=9,H=6
+  R21: 81 * 54 - 1 = 4373 -> J=4,A=5,G=3,B=8,F=7,H=1
+
+Candidates are tried in order; R8 is the first that extends to every fact. Propagate it:
+fact2 [)>{"!] = [!&/&]:
+  try mul: 46 * 52 = 2392 -> encodes !&/! != !&/& NG
+  try concat: concat(46,52) = 4652 -> encodes )>"! != !&/& NG
+  try rconcat: concat(52,46) = 5246 -> encodes "!)> != !&/& NG
+  try mul1: 46 * 52 + 1 = 2393 -> encodes !&/& = !&/& OK -> accept
+fact0 [")[@?] = [?@]:
+  try add: 54 + 17 = 71 -> encodes ?@ = ?@ OK -> accept
+fact1 [$/%&$] = ["@]:
+  try add: 89 + 38 = 127 (length/sign off) NG
+  try sub: 89 - 38 = 51 -> encodes "@ = "@ OK -> accept
+fact3 [/?[@)] = [@@@]:
+  operator '[' already fixed = add
+  try add: 97 + 14 = 111 -> encodes @@@ = @@@ OK -> accept
+
+Recovered cipher: J(!)=2, A(")=5, E($)=8, G(&)=3, B())=4, F(/)=9, H(>)=6, D(?)=7, C(@)=1
+Query !/{"?: JF=29, AD=57, '{' = mul1: 29 * 57 + 1 = 1654.
+Encode 1654 back to original symbols -> @>").
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{@>")}

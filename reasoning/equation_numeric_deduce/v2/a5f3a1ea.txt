@@ -1,0 +1,174 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  17-38 = 21
+  31*72 = 053
+  46-29 = 82
+  46+28 = 641
+
+The inputs are 17, 38, 31, 72, 46, 29, 46, 28
+
+The outputs are 21, 053, 82, 641
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+17-38 -> -
+31*72 -> *
+46-29 -> -
+46+28 -> +
+
+The operators
+-
+*
++
+
+Looking at the question
+52+11 -> +
+The question operator is found in the examples.
+
+Looking at operator 【+】 [46+28 = 641]:
+  Trying common operations reversed operands [46->64 28->82] and reversed result [expected (64,82)->641]:
+    concatenation f(64, 82) = 64 || 82 = 6482 -rev-> 2846 wrong
+    reverse concatenation f(64, 82) = 82 || 64 = 8264 -rev-> 4628 wrong
+    addition f(64, 82) = 64 + 82 = 146 -rev-> 641 match, correct, actions: reversed operands, reversed result, addition
+    absolute difference f(64, 82) = |64 - 82| = 18 -rev-> 81 wrong
+    negated absolute difference f(64, 82) = -|64 - 82| = -18 -rev-> -81 wrong
+    subtraction (a-b) f(64, 82) = 64 - 82 = -18 -rev-> -81 wrong
+    reverse subtraction (b-a) f(64, 82) = 82 - 64 = 18 -rev-> 81 wrong
+    multiplication f(64, 82) = (60 + 4) * 82 = 60 * 82 + 4 * 82 = 4920 + 328 = 5248 -rev-> 8425 wrong
+  Trying common operations on identity [46 28] [expected (46,28)->641]:
+    concatenation f(46, 28) = 46 || 28 = 4628 wrong
+    reverse concatenation f(46, 28) = 28 || 46 = 2846 wrong
+    addition f(46, 28) = 46 + 28 = 74 wrong
+    absolute difference f(46, 28) = |46 - 28| = 18 wrong
+    negated absolute difference f(46, 28) = -|46 - 28| = -18 wrong
+    subtraction (a-b) f(46, 28) = 46 - 28 = 18 wrong
+    reverse subtraction (b-a) f(46, 28) = 28 - 46 = -18 wrong
+    multiplication f(46, 28) = (40 + 6) * 28 = 40 * 28 + 6 * 28 = 1120 + 168 = 1288 wrong
+  Trying common operations reversed operands [46->64 28->82] [expected (64,82)->641]:
+    concatenation f(64, 82) = 64 || 82 = 6482 wrong
+    reverse concatenation f(64, 82) = 82 || 64 = 8264 wrong
+    addition f(64, 82) = 64 + 82 = 146 wrong
+    absolute difference f(64, 82) = |64 - 82| = 18 wrong
+    negated absolute difference f(64, 82) = -|64 - 82| = -18 wrong
+    subtraction (a-b) f(64, 82) = 64 - 82 = -18 wrong
+    reverse subtraction (b-a) f(64, 82) = 82 - 64 = 18 wrong
+    multiplication f(64, 82) = (60 + 4) * 82 = 60 * 82 + 4 * 82 = 4920 + 328 = 5248 wrong
+  Trying common operations identity operands [46 28] reversed result [expected (46,28)->641]:
+    concatenation f(46, 28) = 46 || 28 = 4628 -rev-> 8264 wrong
+    reverse concatenation f(46, 28) = 28 || 46 = 2846 -rev-> 6482 wrong
+    addition f(46, 28) = 46 + 28 = 74 -rev-> 47 wrong
+    absolute difference f(46, 28) = |46 - 28| = 18 -rev-> 81 wrong
+    negated absolute difference f(46, 28) = -|46 - 28| = -18 -rev-> -81 wrong
+    subtraction (a-b) f(46, 28) = 46 - 28 = 18 -rev-> 81 wrong
+    reverse subtraction (b-a) f(46, 28) = 28 - 46 = -18 -rev-> -81 wrong
+    multiplication f(46, 28) = (40 + 6) * 28 = 40 * 28 + 6 * 28 = 1120 + 168 = 1288 -rev-> 8821 wrong
+  Trying rare operations reversed operands [46->64 28->82] and reversed result [expected (64,82)->641]:
+    multiply+1 f(64, 82) = (60 + 4) * 82 + 1 = 60 * 82 + 4 * 82 + 1 = 4920 + 328 + 1 = 5248 + 1 = 5249 -rev-> 9425 wrong
+    multiply-1 f(64, 82) = (60 + 4) * 82 - 1 = 60 * 82 + 4 * 82 - 1 = 4920 + 328 - 1 = 5248 - 1 = 5247 -rev-> 7425 wrong
+    add+1 f(64, 82) = 64 + 82 + 1 = 147 -rev-> 741 wrong
+    add-1 f(64, 82) = 64 + 82 - 1 = 145 -rev-> 541 wrong
+    sub+1 f(64, 82) = 64 - 82 + 1 = -17 -rev-> -71 wrong
+    sub-1 f(64, 82) = 64 - 82 - 1 = -19 -rev-> -91 wrong
+    max mod min f(64, 82) = max(64,82) mod min(64,82) = 82 mod 64 = 18 -rev-> 81 wrong
+    integer division (a/b) f(64, 82) = 64 / 82 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(64, 82) = 64 mod 82 = 64 -rev-> 46 wrong
+    reverse division (b/a) f(64, 82) = 82 / 64 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(64, 82) = 82 mod 64 = 18 -rev-> 81 wrong
+    digit absolute diff f(64, 82) = |6-8| || |4-2| = 22 -rev-> 22 wrong
+    digit add mod10 f(64, 82) = (6+8)%10 || (4+2)%10 = 46 -rev-> 64 wrong
+    digit sub mod10 f(64, 82) = (6-8)%10 || (4-2)%10 = 82 -rev-> 28 wrong
+    cross multiply f(64, 82) = 6*8 + 4*2 = 48 + 8 = 56 -rev-> 65 wrong
+    cross multiply rev f(64, 82) = 6*2 + 4*8 = 12 + 32 = 44 -rev-> 44 wrong
+    digit multiply f(64, 82) = 6*8 || 4*2 = 48 || 8 = 488 -rev-> 884 wrong
+    digit multiply rev f(64, 82) = 6*2 || 4*8 = 12 || 32 = 1232 -rev-> 2321 wrong
+    digit sum diff f(64, 82) = (6+4) - (8+2) = 0 -rev-> 0 wrong
+    digit sum sum f(64, 82) = (6+4) + (8+2) = 20 -rev-> 02 wrong
+    digit product diff f(64, 82) = 6*4 - 8*2 = 24 - 16 = 8 -rev-> 8 wrong
+    digit product sum f(64, 82) = 6*4 + 8*2 = 24 + 16 = 40 -rev-> 04 wrong
+    determinant f(64, 82) = 6*2 - 4*8 = 12 - 32 = -20 -rev-> -02 wrong
+    abs determinant f(64, 82) = |6*2 - 4*8| = |12 - 32| = 20 -rev-> 02 wrong
+  Trying rare operations on identity [46 28] [expected (46,28)->641]:
+    multiply+1 f(46, 28) = (40 + 6) * 28 + 1 = 40 * 28 + 6 * 28 + 1 = 1120 + 168 + 1 = 1288 + 1 = 1289 wrong
+    multiply-1 f(46, 28) = (40 + 6) * 28 - 1 = 40 * 28 + 6 * 28 - 1 = 1120 + 168 - 1 = 1288 - 1 = 1287 wrong
+    add+1 f(46, 28) = 46 + 28 + 1 = 75 wrong
+    add-1 f(46, 28) = 46 + 28 - 1 = 73 wrong
+    sub+1 f(46, 28) = 46 - 28 + 1 = 19 wrong
+    sub-1 f(46, 28) = 46 - 28 - 1 = 17 wrong
+    max mod min f(46, 28) = max(46,28) mod min(46,28) = 46 mod 28 = 18 wrong
+    integer division (a/b) f(46, 28) = 46 / 28 = 1 wrong
+    modulo (a mod b) f(46, 28) = 46 mod 28 = 18 wrong
+    reverse division (b/a) f(46, 28) = 28 / 46 = 0 wrong
+    reverse modulo (b mod a) f(46, 28) = 28 mod 46 = 28 wrong
+    digit absolute diff f(46, 28) = |4-2| || |6-8| = 22 wrong
+    digit add mod10 f(46, 28) = (4+2)%10 || (6+8)%10 = 64 wrong
+    digit sub mod10 f(46, 28) = (4-2)%10 || (6-8)%10 = 28 wrong
+    cross multiply f(46, 28) = 4*2 + 6*8 = 8 + 48 = 56 wrong
+    cross multiply rev f(46, 28) = 4*8 + 6*2 = 32 + 12 = 44 wrong
+    digit multiply f(46, 28) = 4*2 || 6*8 = 8 || 48 = 848 wrong
+    digit multiply rev f(46, 28) = 4*8 || 6*2 = 32 || 12 = 3212 wrong
+    digit sum diff f(46, 28) = (4+6) - (2+8) = 0 wrong
+    digit sum sum f(46, 28) = (4+6) + (2+8) = 20 wrong
+    digit product diff f(46, 28) = 4*6 - 2*8 = 24 - 16 = 8 wrong
+    digit product sum f(46, 28) = 4*6 + 2*8 = 24 + 16 = 40 wrong
+    determinant f(46, 28) = 4*8 - 6*2 = 32 - 12 = 20 wrong
+    abs determinant f(46, 28) = |4*8 - 6*2| = |32 - 12| = 20 wrong
+  Trying rare operations reversed operands [46->64 28->82] [expected (64,82)->641]:
+    multiply+1 f(64, 82) = (60 + 4) * 82 + 1 = 60 * 82 + 4 * 82 + 1 = 4920 + 328 + 1 = 5248 + 1 = 5249 wrong
+    multiply-1 f(64, 82) = (60 + 4) * 82 - 1 = 60 * 82 + 4 * 82 - 1 = 4920 + 328 - 1 = 5248 - 1 = 5247 wrong
+    add+1 f(64, 82) = 64 + 82 + 1 = 147 wrong
+    add-1 f(64, 82) = 64 + 82 - 1 = 145 wrong
+    sub+1 f(64, 82) = 64 - 82 + 1 = -17 wrong
+    sub-1 f(64, 82) = 64 - 82 - 1 = -19 wrong
+    max mod min f(64, 82) = max(64,82) mod min(64,82) = 82 mod 64 = 18 wrong
+    integer division (a/b) f(64, 82) = 64 / 82 = 0 wrong
+    modulo (a mod b) f(64, 82) = 64 mod 82 = 64 wrong
+    reverse division (b/a) f(64, 82) = 82 / 64 = 1 wrong
+    reverse modulo (b mod a) f(64, 82) = 82 mod 64 = 18 wrong
+    digit absolute diff f(64, 82) = |6-8| || |4-2| = 22 wrong
+    digit add mod10 f(64, 82) = (6+8)%10 || (4+2)%10 = 46 wrong
+    digit sub mod10 f(64, 82) = (6-8)%10 || (4-2)%10 = 82 wrong
+    cross multiply f(64, 82) = 6*8 + 4*2 = 48 + 8 = 56 wrong
+    cross multiply rev f(64, 82) = 6*2 + 4*8 = 12 + 32 = 44 wrong
+    digit multiply f(64, 82) = 6*8 || 4*2 = 48 || 8 = 488 wrong
+    digit multiply rev f(64, 82) = 6*2 || 4*8 = 12 || 32 = 1232 wrong
+    digit sum diff f(64, 82) = (6+4) - (8+2) = 0 wrong
+    digit sum sum f(64, 82) = (6+4) + (8+2) = 20 wrong
+    digit product diff f(64, 82) = 6*4 - 8*2 = 24 - 16 = 8 wrong
+    digit product sum f(64, 82) = 6*4 + 8*2 = 24 + 16 = 40 wrong
+    determinant f(64, 82) = 6*2 - 4*8 = 12 - 32 = -20 wrong
+    abs determinant f(64, 82) = |6*2 - 4*8| = |12 - 32| = 20 wrong
+  Trying rare operations identity operands [46 28] reversed result [expected (46,28)->641]:
+    multiply+1 f(46, 28) = (40 + 6) * 28 + 1 = 40 * 28 + 6 * 28 + 1 = 1120 + 168 + 1 = 1288 + 1 = 1289 -rev-> 9821 wrong
+    multiply-1 f(46, 28) = (40 + 6) * 28 - 1 = 40 * 28 + 6 * 28 - 1 = 1120 + 168 - 1 = 1288 - 1 = 1287 -rev-> 7821 wrong
+    add+1 f(46, 28) = 46 + 28 + 1 = 75 -rev-> 57 wrong
+    add-1 f(46, 28) = 46 + 28 - 1 = 73 -rev-> 37 wrong
+    sub+1 f(46, 28) = 46 - 28 + 1 = 19 -rev-> 91 wrong
+    sub-1 f(46, 28) = 46 - 28 - 1 = 17 -rev-> 71 wrong
+    max mod min f(46, 28) = max(46,28) mod min(46,28) = 46 mod 28 = 18 -rev-> 81 wrong
+    integer division (a/b) f(46, 28) = 46 / 28 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(46, 28) = 46 mod 28 = 18 -rev-> 81 wrong
+    reverse division (b/a) f(46, 28) = 28 / 46 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(46, 28) = 28 mod 46 = 28 -rev-> 82 wrong
+    digit absolute diff f(46, 28) = |4-2| || |6-8| = 22 -rev-> 22 wrong
+    digit add mod10 f(46, 28) = (4+2)%10 || (6+8)%10 = 64 -rev-> 46 wrong
+    digit sub mod10 f(46, 28) = (4-2)%10 || (6-8)%10 = 28 -rev-> 82 wrong
+    cross multiply f(46, 28) = 4*2 + 6*8 = 8 + 48 = 56 -rev-> 65 wrong
+    cross multiply rev f(46, 28) = 4*8 + 6*2 = 32 + 12 = 44 -rev-> 44 wrong
+    digit multiply f(46, 28) = 4*2 || 6*8 = 8 || 48 = 848 -rev-> 848 wrong
+    digit multiply rev f(46, 28) = 4*8 || 6*2 = 32 || 12 = 3212 -rev-> 2123 wrong
+    digit sum diff f(46, 28) = (4+6) - (2+8) = 0 -rev-> 0 wrong
+    digit sum sum f(46, 28) = (4+6) + (2+8) = 20 -rev-> 02 wrong
+    digit product diff f(46, 28) = 4*6 - 2*8 = 24 - 16 = 8 -rev-> 8 wrong
+    digit product sum f(46, 28) = 4*6 + 2*8 = 24 + 16 = 40 -rev-> 04 wrong
+    determinant f(46, 28) = 4*8 - 6*2 = 32 - 12 = 20 -rev-> 02 wrong
+    abs determinant f(46, 28) = |4*8 - 6*2| = |32 - 12| = 20 -rev-> 02 wrong
+
+Applying to 52+11:
+  reversed operands [52->25, 11->11] and reversed result
+  addition f(25, 11) = 25 + 11 = 36 -rev-> 63
+  Result: 【63】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{63}

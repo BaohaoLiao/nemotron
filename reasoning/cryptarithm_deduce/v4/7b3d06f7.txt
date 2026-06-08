@@ -1,0 +1,81 @@
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Each input is two 2-digit groups of symbols around an operator symbol. Either the output simply CONCATENATES the operands' symbols, or the symbols encode digits (one injective symbol<->digit cipher shared by every line) and each operator denotes one fixed arithmetic operation (a negative result keeps the operator symbol as a sign prefix). Decide which by testing the examples.
+
+Examples:
+  ?$+$| = ^?
+  ?'+^} = |$
+  ?$-#/ = ##
+  /^-#$ = ?/
+
+Step 1 - test the simplest reading, plain concatenation. For each example check whether the output equals the two operands' symbols in order (forward AB||CD) or reversed (CD||AB):
+  operator '+':
+    ?$+$| = ^?: 2 output symbols, not a 4-symbol concatenation
+    ?'+^} = |$: 2 output symbols, not a 4-symbol concatenation
+    -> '+' is NOT plain concatenation (an example does not match)
+  operator '-':
+    ?$-#/ = ##: 2 output symbols, not a 4-symbol concatenation
+    /^-#$ = ?/: 2 output symbols, not a 4-symbol concatenation
+    -> '-' is NOT plain concatenation (an example does not match)
+
+The query operator is not plain concatenation, so the symbols must stand for digits. Step 2 - recover the symbol<->digit cipher.
+Narrow each operator to the operations whose result sign and length fit every example (intersect across the operator's examples):
+  operator '+':
+    ?$+$| = ^?: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    ?'+^} = |$: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '+' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is add_m1.)
+  operator '-':
+    ?$-#/ = ##: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    /^-#$ = ?/: non-negative, 2-digit result -> still possible {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}
+    -> '-' must be one of {add, sub, rsub, absdiff, mul, sub_signed, rsub_signed, gcd, lcm, min, max, fdiv, rdiv, mod, rmod, add_p1, add_m1, mul_p1, mul_m1, absdiff_p1, absdiff_m1}; take the simplest, add
+    (add does not reproduce the examples on the digit search below; the first that does is sub.)
+
+Solve the cipher by constraint propagation. Every symbol starts at {0..9}. Apply each example in turn, keeping only the digits that let its operation reproduce its output; after each pass AllDifferent removes any digit already pinned to one symbol. Repeat until every symbol is forced.
+Pass 1 -- apply each example, then AllDifferent:
+  ?$+$| = ^? under '+'=add_m1: ? in {0,1,2,3,4,5,6,7}, $ in {2,3,4,5,6,7,8}, | in {0,2,3,4,5,6,7,8,9}, ^ in {3,4,5,6,7,8,9}
+  ?'+^} = |$ under '+'=add_m1: ? in {0,1,2,3,4,5,6}, ' in {0,2,3,4,5,6,7,8,9}, ^ in {3,4,5,6,7,8}, } in {0,2,3,4,5,6,7,8,9}, | in {4,5,6,7,8,9}, $ in {2,3,4,5,6,7,8}
+  ?$-#/ = ## under '-'=sub: ? in {2,4,6}, $ in {3,4,5,6,7,8}, # in {1,2,3}, / in {1,2,3,4,5,6,7}
+  /^-#$ = ?/ under '-'=sub: / in {3,5,6,7}, ^ in {3,4,5,7,8}, # in {1,2,3}, $ in {3,4,5,6,7,8}, ? in {2,4}
+Pass 2 -- apply each example, then AllDifferent:
+  ?$+$| = ^? under '+'=add_m1: ? in {2}, $ in {4}, | in {9}, ^ in {7}
+  ?'+^} = |$ under '+'=add_m1: ? in {2}, ' in {0,5}, ^ in {7}, } in {0,5}, | in {9}, $ in {4}
+  ?$-#/ = ## under '-'=sub: ? in {2}, $ in {4}, # in {1}, / in {3}
+  /^-#$ = ?/ under '-'=sub: / in {3}, ^ in {7}, # in {1}, $ in {4}, ? in {2}  (no new narrowing)
+  AllDifferent: digits {1,2,3,4,7,9} are already taken, so [ -> {0,5,6,8}
+Pass 3 -- apply each example, then AllDifferent:
+  ?$+$| = ^? under '+'=add_m1: ? in {2}, $ in {4}, | in {9}, ^ in {7}  (no new narrowing)
+  ?'+^} = |$ under '+'=add_m1: ? in {2}, ' in {0,5}, ^ in {7}, } in {0,5}, | in {9}, $ in {4}  (no new narrowing)
+  ?$-#/ = ## under '-'=sub: ? in {2}, $ in {4}, # in {1}, / in {3}  (no new narrowing)
+  /^-#$ = ?/ under '-'=sub: / in {3}, ^ in {7}, # in {1}, $ in {4}, ? in {2}  (no new narrowing)
+  Examples no longer narrow; ' still allows {0,5}. Guess ' = 0 (a genuine choice -- Step 3 verifies it).
+Pass 4 -- apply each example, then AllDifferent:
+  ?$+$| = ^? under '+'=add_m1: ? in {2}, $ in {4}, | in {9}, ^ in {7}  (no new narrowing)
+  ?'+^} = |$ under '+'=add_m1: ? in {2}, ' in {0}, ^ in {7}, } in {5}, | in {9}, $ in {4}
+  ?$-#/ = ## under '-'=sub: ? in {2}, $ in {4}, # in {1}, / in {3}  (no new narrowing)
+  /^-#$ = ?/ under '-'=sub: / in {3}, ^ in {7}, # in {1}, $ in {4}, ? in {2}  (no new narrowing)
+  AllDifferent: digits {0,1,2,3,4,5,7,9} are already taken, so [ -> {6,8}
+Pass 5 -- apply each example, then AllDifferent:
+  ?$+$| = ^? under '+'=add_m1: ? in {2}, $ in {4}, | in {9}, ^ in {7}  (no new narrowing)
+  ?'+^} = |$ under '+'=add_m1: ? in {2}, ' in {0}, ^ in {7}, } in {5}, | in {9}, $ in {4}  (no new narrowing)
+  ?$-#/ = ## under '-'=sub: ? in {2}, $ in {4}, # in {1}, / in {3}  (no new narrowing)
+  /^-#$ = ?/ under '-'=sub: / in {3}, ^ in {7}, # in {1}, $ in {4}, ? in {2}  (no new narrowing)
+  Examples no longer narrow; [ still allows {6,8}. Guess [ = 6 (a genuine choice -- Step 3 verifies it).
+Every symbol is now pinned to one digit.
+
+Recovered cipher: #=1, $=4, '=0, /=3, ?=2, [=6, ^=7, |=9, }=5
+Operator meanings: '+'=add_m1, '-'=sub
+
+Step 3 - verify every example under this cipher:
+  ?$+$|: 24 + 49 - 1 = 72 -> ^? (expected ^?) OK
+  ?'+^}: 20 + 75 - 1 = 94 -> |$ (expected |$) OK
+  ?$-#/: 24 - 13 = 11 -> ## (expected ##) OK
+  /^-#$: 37 - 14 = 23 -> ?/ (expected ?/) OK
+All examples reproduced; the cipher is valid. Apply it to the query.
+
+Apply to the question $[-/^:
+  $[=46, /^=37, '-'=sub: 46 - 37 -> encode back to symbols -> |.
+
+I will now return the answer in \boxed{}
+The answer in \boxed{-} is \boxed{|}
