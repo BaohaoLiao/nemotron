@@ -9,7 +9,8 @@
 # Data:
 #   - index : data/corpus.jsonl   (test_500 already marked included=False)
 #   - tokens: <repo>/corpus/<category>/<version>/<id>/synthetic.jsonl
-#   - csv   : data/train_9000.csv  (used only when --original_problems_only)
+#   - csv   : <repo>/train.csv     (used only when --original_problems_only;
+#             override with TRAIN_CSV=/path/to.csv ./run_train.sh)
 #
 # Solver version per category (the corpus is built --all-versions, so every
 # version is present; training picks one version per category):
@@ -31,9 +32,9 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-CORPUS_INDEX="${REPO_ROOT}/data/corpus.jsonl"
+CORPUS_INDEX="${CORPUS_INDEX:-${REPO_ROOT}/data/corpus.jsonl}"
 CORPUS_DIR="${REPO_ROOT}/corpus"
-TRAIN_CSV="${REPO_ROOT}/data/train_9000.csv"
+TRAIN_CSV="${TRAIN_CSV:-${REPO_ROOT}/train.csv}"
 OUTPUT_DIR="${SCRIPT_DIR}/output/weights"
 
 # Per-category solver version selection (see reasoners/versions.py).

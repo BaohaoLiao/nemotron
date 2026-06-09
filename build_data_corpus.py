@@ -5,6 +5,11 @@ Rule (verified against the committed data/corpus.jsonl):
     data/corpus.jsonl == root corpus.jsonl, with included=False for exactly the
     problem_ids listed in data/test_500.csv, included=True otherwise.
 
+Also writes data/corpus_all.jsonl: the same rows with included=True for *every*
+entry (no holdout), for runs that intentionally train on the test_500 problems
+too. Use the normal data/corpus.jsonl for any run whose results must stay
+comparable to eval; corpus_all.jsonl leaks the test set by design.
+
 The eval/train split depends on this holdout marking, so we assert the excluded
 set equals the test_500 id set before writing.
 """
@@ -18,6 +23,7 @@ from pathlib import Path
 BASE = Path(__file__).parent
 ROOT_CORPUS = BASE / "corpus.jsonl"
 DATA_CORPUS = BASE / "data" / "corpus.jsonl"
+DATA_CORPUS_ALL = BASE / "data" / "corpus_all.jsonl"
 TEST_CSV = BASE / "data" / "test_500.csv"
 
 
@@ -62,6 +68,13 @@ def main() -> None:
     print(f"root corpus.jsonl entries : {len(rows)}")
     print(f"data/corpus.jsonl written : included={incl} excluded={exc}")
     print(f"excluded == test_500 set  : {excluded == test_ids}")
+
+    # No-holdout variant: every entry included (trains on test_500 too).
+    with open(DATA_CORPUS_ALL, "w") as f:
+        for r in rows:
+            json.dump({**r, "included": True}, f)
+            f.write("\n")
+    print(f"data/corpus_all.jsonl     : included={len(rows)} excluded=0 (no holdout)")
 
 
 if __name__ == "__main__":
