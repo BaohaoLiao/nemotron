@@ -192,6 +192,18 @@ def parse_args() -> argparse.Namespace:
         help="Keep only problem_ids present in --train_csv.",
     )
     g.add_argument(
+        "--aug_sample",
+        "--aug-sample",
+        type=int,
+        default=-1,
+        metavar="N",
+        help="Cap how many augmentation (version='raw') examples to train on, "
+        "stratified across the augmentation categories proportionally to their "
+        "sizes. N<0 (default) keeps all augmentations; N=0 uses none. Only "
+        "augmentation examples are sampled -- reasoning examples are untouched. "
+        "Selection is deterministic given --seed.",
+    )
+    g.add_argument(
         "--shuffle_dataset",
         action=argparse.BooleanOptionalAction,
         default=False,
@@ -302,6 +314,39 @@ def _load_version_selection(cfg: argparse.Namespace, log) -> dict[str, str] | No
     return selection or None
 
 
+def _stratified_sample(items: list[dict], n: int, key, seed: int) -> list[dict]:
+    """Proportional-allocation stratified sample of ``n`` items.
+
+    Groups ``items`` by ``key(item)`` and allocates ``n`` across the groups in
+    proportion to each group's size (largest-remainder rounding so the parts sum
+    to exactly ``n``), then randomly draws that many from each group with a
+    ``random.Random(seed)`` for reproducibility. Returns all items when
+    ``n >= len(items)``.
+    """
+    if n >= len(items):
+        return list(items)
+    groups: dict = {}
+    for it in items:
+        groups.setdefault(key(it), []).append(it)
+    total = len(items)
+    quotas: dict = {}
+    remainders: dict = {}
+    for k, grp in groups.items():
+        exact = n * len(grp) / total
+        quotas[k] = int(exact)  # floor
+        remainders[k] = exact - quotas[k]
+    # Hand the leftover (from flooring) to the largest remainders; ties broken by
+    # group key so the allocation is deterministic.
+    leftover = n - sum(quotas.values())
+    for k in sorted(groups, key=lambda k: (-remainders[k], str(k)))[:leftover]:
+        quotas[k] += 1
+    rng = random.Random(seed)
+    selected: list[dict] = []
+    for k, grp in groups.items():
+        selected.extend(rng.sample(grp, min(quotas[k], len(grp))))
+    return selected
+
+
 def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
     """Load and pre-tokenize the training corpus into next-token examples."""
     index_path = Path(cfg.corpus_index)
@@ -376,6 +421,8 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
         examples.append(
             {
                 "problem_id": pid,
+                "category": rec_category,
+                "version": rec_version,
                 "tokens": tokens[:-1],
                 "targets": tokens[1:],
                 "weights": [float(m) for m in mask[1:]],
@@ -405,6 +452,28 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
             f"original_problems_only=True: filtered {before} -> {len(examples)} "
             f"examples using {len(original_ids)} ids from {cfg.train_csv}"
         )
+
+    # Stratified cap on augmentation (version="raw") examples. Reasoning examples
+    # are never sampled; only augmentations are thinned, proportionally across
+    # their categories, so a small --aug_sample still covers every aug category.
+    if cfg.aug_sample >= 0:
+        aug = [e for e in examples if e.get("version") == "raw"]
+        if len(aug) > cfg.aug_sample:
+            from collections import Counter
+
+            selected = _stratified_sample(
+                aug, cfg.aug_sample, key=lambda e: e["category"], seed=cfg.seed
+            )
+            keep = {id(e) for e in selected}
+            examples = [
+                e for e in examples if e.get("version") != "raw" or id(e) in keep
+            ]
+            picked = Counter(e["category"] for e in selected)
+            breakdown = ", ".join(f"{c}={picked[c]}" for c in sorted(picked))
+            log(
+                f"aug_sample={cfg.aug_sample}: kept {len(selected)}/{len(aug)} "
+                f"augmentation examples (stratified: {breakdown})"
+            )
 
     total_unmasked = sum(sum(e["weights"]) for e in examples)
     total_tokens = sum(len(e["tokens"]) for e in examples)
