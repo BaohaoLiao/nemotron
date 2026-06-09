@@ -447,10 +447,19 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
         with open(cfg.train_csv) as f:
             original_ids = {row["id"] for row in csv.DictReader(f)}
         before = len(examples)
-        examples = [e for e in examples if e["problem_id"] in original_ids]
+        # Keep augmentation (version="raw") examples regardless -- their ids are
+        # never in train_csv, so otherwise this would drop all of them before
+        # --aug_sample can subsample them. Only reasoning examples are restricted
+        # to the original problem ids.
+        examples = [
+            e
+            for e in examples
+            if e.get("version") == "raw" or e["problem_id"] in original_ids
+        ]
         log(
             f"original_problems_only=True: filtered {before} -> {len(examples)} "
-            f"examples using {len(original_ids)} ids from {cfg.train_csv}"
+            f"examples using {len(original_ids)} ids from {cfg.train_csv} "
+            f"(augmentation examples exempt)"
         )
 
     # Stratified cap on augmentation (version="raw") examples. Reasoning examples
