@@ -100,7 +100,16 @@ def parse_args() -> argparse.Namespace:
             "out_proj",
             "lm_head",
         ],
-        help="LoRA target modules.",
+        help="LoRA target modules. The Mamba mixer's `out_proj` is included by "
+        "default. With the NemotronH fused training kernel "
+        "(`mamba_split_conv1d_scan_combined`), out_proj is applied *inside* the "
+        "kernel from the raw base weight (`outproj_weight=self.out_proj.weight`), "
+        "so its LoRA wrapper would never be called and lora_B would stay exactly "
+        "0 (a dead adapter) -- regardless of gradient checkpointing. Whenever "
+        "`out_proj` is targeted, the build auto-sets `use_mem_eff_path=False` on "
+        "the Mamba mixers so out_proj runs as a real module (keeps the fast conv "
+        "+ SSD scan kernels, only un-fuses the final projection). Drop `out_proj` "
+        "to skip the un-fuse and its small per-layer overhead.",
     )
     g.add_argument(
         "--in_proj_only",
@@ -560,6 +569,25 @@ def build_model(cfg: argparse.Namespace, device: torch.device, log):
     assert nemotron_mod is not None, "Could not find modeling_nemotron_h module"
     nemotron_mod.is_fast_path_available = True  # type: ignore[attr-defined]
     log("Patched is_fast_path_available = True")
+
+    # ── Un-fuse out_proj when its LoRA is requested ──────────────────
+    # The fused training kernel `mamba_split_conv1d_scan_combined` applies
+    # out_proj internally from the raw base weight (outproj_weight=...weight),
+    # bypassing the PEFT LoRA wrapper -> out_proj.lora_B never gets a gradient
+    # and stays 0. Setting use_mem_eff_path=False routes the mixer through the
+    # branch that calls `self.out_proj(scan_output)` as a real module (still
+    # using the fast conv1d + chunk-scan kernels), so its LoRA trains.
+    if "out_proj" in cfg.target_modules:
+        n_unfused = 0
+        for _m in model.modules():
+            if hasattr(_m, "use_mem_eff_path") and hasattr(_m, "out_proj"):
+                _m.use_mem_eff_path = False
+                n_unfused += 1
+        log(
+            f"out_proj in target_modules: set use_mem_eff_path=False on "
+            f"{n_unfused} Mamba mixers so out_proj LoRA receives gradients "
+            f"(fast conv + scan kernels retained, only final projection un-fused)"
+        )
 
     # ── Manually add lm_head LoRA (Unsloth drops it for MoE) ─────────
     # Only when lm_head is requested in --target_modules.
