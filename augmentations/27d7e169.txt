@@ -1,0 +1,191 @@
+[category]
+equation_numeric_deduce
+[prompt]
+In Alice's Wonderland, a secret set of transformation rules is applied to equations. Below are a few examples:
+02+94 = 9402
+82-66 = -83
+04*03 = 0021
+97-87 = -1
+06+39 = 3906
+Now, determine the result for: 61*04
+[completion]
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  02+94 = 9402
+  82-66 = -83
+  04*03 = 0021
+  97-87 = -1
+  06+39 = 3906
+
+The inputs are 02, 94, 82, 66, 04, 03, 97, 87, 06, 39
+
+The outputs are 9402, -83, 0021, -1, 3906
+Some outputs have the operator symbol as prefix 【-】.
+We now consider the outputs to be 9402, -83, 0021, -1, 3906
+We will add back the operator prefix if our answer is negative.
+
+Looking at the input of the examples
+02+94 -> +
+82-66 -> -
+04*03 -> *
+97-87 -> -
+06+39 -> +
+
+The operators
++
+-
+*
+
+Looking at the question
+61*04 -> *
+The question operator is found in the examples.
+
+Looking at operator 【*】 [04*03 = 0021]:
+  Trying common operations reversed operands [04->40 03->30] and reversed result [expected (40,30)->0021]:
+    concatenation f(40, 30) = 40 || 30 = 4030 -rev-> 0304 wrong
+    reverse concatenation f(40, 30) = 30 || 40 = 3040 -rev-> 0403 wrong
+    addition f(40, 30) = 40 + 30 = 70 -rev-> 07 wrong
+    absolute difference f(40, 30) = |40 - 30| = 10 -rev-> 01 wrong
+    negated absolute difference f(40, 30) = -|40 - 30| = -10 -rev-> -01 wrong
+    subtraction (a-b) f(40, 30) = 40 - 30 = 10 -rev-> 01 wrong
+    reverse subtraction (b-a) f(40, 30) = 30 - 40 = -10 -rev-> -01 wrong
+    multiplication f(40, 30) = (40 + 0) * 30 = 40 * 30 + 0 * 30 = 1200 + 0 = 1200 -rev-> 0021 match, correct, actions: reversed operands, reversed result, multiplication
+  Trying common operations on identity [04 03] [expected (04,03)->0021]:
+    concatenation f(04, 03) = 04 || 03 = 0403 wrong
+    reverse concatenation f(04, 03) = 03 || 04 = 0304 wrong
+    addition f(04, 03) = 04 + 03 = 7 wrong
+    absolute difference f(04, 03) = |04 - 03| = 1 wrong
+    negated absolute difference f(04, 03) = -|04 - 03| = -1 wrong
+    subtraction (a-b) f(04, 03) = 04 - 03 = 1 wrong
+    reverse subtraction (b-a) f(04, 03) = 03 - 04 = -1 wrong
+    multiplication f(04, 03) = (0 + 4) * 03 = 0 * 03 + 4 * 03 = 0 + 12 = 12 wrong
+  Trying common operations reversed operands [04->40 03->30] [expected (40,30)->0021]:
+    concatenation f(40, 30) = 40 || 30 = 4030 wrong
+    reverse concatenation f(40, 30) = 30 || 40 = 3040 wrong
+    addition f(40, 30) = 40 + 30 = 70 wrong
+    absolute difference f(40, 30) = |40 - 30| = 10 wrong
+    negated absolute difference f(40, 30) = -|40 - 30| = -10 wrong
+    subtraction (a-b) f(40, 30) = 40 - 30 = 10 wrong
+    reverse subtraction (b-a) f(40, 30) = 30 - 40 = -10 wrong
+    multiplication f(40, 30) = (40 + 0) * 30 = 40 * 30 + 0 * 30 = 1200 + 0 = 1200 wrong
+  Trying common operations identity operands [04 03] reversed result [expected (04,03)->0021]:
+    concatenation f(04, 03) = 04 || 03 = 0403 -rev-> 3040 wrong
+    reverse concatenation f(04, 03) = 03 || 04 = 0304 -rev-> 4030 wrong
+    addition f(04, 03) = 04 + 03 = 7 -rev-> 7 wrong
+    absolute difference f(04, 03) = |04 - 03| = 1 -rev-> 1 wrong
+    negated absolute difference f(04, 03) = -|04 - 03| = -1 -rev-> -1 wrong
+    subtraction (a-b) f(04, 03) = 04 - 03 = 1 -rev-> 1 wrong
+    reverse subtraction (b-a) f(04, 03) = 03 - 04 = -1 -rev-> -1 wrong
+    multiplication f(04, 03) = (0 + 4) * 03 = 0 * 03 + 4 * 03 = 0 + 12 = 12 -rev-> 21 wrong
+  Trying rare operations reversed operands [04->40 03->30] and reversed result [expected (40,30)->0021]:
+    multiply+1 f(40, 30) = (40 + 0) * 30 + 1 = 40 * 30 + 0 * 30 + 1 = 1200 + 0 + 1 = 1200 + 1 = 1201 -rev-> 1021 wrong
+    multiply-1 f(40, 30) = (40 + 0) * 30 - 1 = 40 * 30 + 0 * 30 - 1 = 1200 + 0 - 1 = 1200 - 1 = 1199 -rev-> 9911 wrong
+    add+1 f(40, 30) = 40 + 30 + 1 = 71 -rev-> 17 wrong
+    add-1 f(40, 30) = 40 + 30 - 1 = 69 -rev-> 96 wrong
+    sub+1 f(40, 30) = 40 - 30 + 1 = 11 -rev-> 11 wrong
+    sub-1 f(40, 30) = 40 - 30 - 1 = 9 -rev-> 9 wrong
+    max mod min f(40, 30) = max(40,30) mod min(40,30) = 40 mod 30 = 10 -rev-> 01 wrong
+    integer division (a/b) f(40, 30) = 40 / 30 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(40, 30) = 40 mod 30 = 10 -rev-> 01 wrong
+    reverse division (b/a) f(40, 30) = 30 / 40 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(40, 30) = 30 mod 40 = 30 -rev-> 03 wrong
+    digit absolute diff f(40, 30) = |4-3| || |0-0| = 10 -rev-> 01 wrong
+    digit add mod10 f(40, 30) = (4+3)%10 || (0+0)%10 = 70 -rev-> 07 wrong
+    digit sub mod10 f(40, 30) = (4-3)%10 || (0-0)%10 = 10 -rev-> 01 wrong
+    cross multiply f(40, 30) = 4*3 + 0*0 = 12 + 0 = 12 -rev-> 21 wrong
+    cross multiply rev f(40, 30) = 4*0 + 0*3 = 0 + 0 = 0 -rev-> 0 wrong
+    digit multiply f(40, 30) = 4*3 || 0*0 = 12 || 0 = 120 -rev-> 021 wrong
+    digit multiply rev f(40, 30) = 4*0 || 0*3 = 0 || 0 = 00 -rev-> 00 wrong
+    digit sum diff f(40, 30) = (4+0) - (3+0) = 1 -rev-> 1 wrong
+    digit sum sum f(40, 30) = (4+0) + (3+0) = 7 -rev-> 7 wrong
+    digit product diff f(40, 30) = 4*0 - 3*0 = 0 - 0 = 0 -rev-> 0 wrong
+    digit product sum f(40, 30) = 4*0 + 3*0 = 0 + 0 = 0 -rev-> 0 wrong
+    determinant f(40, 30) = 4*0 - 0*3 = 0 - 0 = 0 -rev-> 0 wrong
+    abs determinant f(40, 30) = |4*0 - 0*3| = |0 - 0| = 0 -rev-> 0 wrong
+  Trying rare operations on identity [04 03] [expected (04,03)->0021]:
+    multiply+1 f(04, 03) = (0 + 4) * 03 + 1 = 0 * 03 + 4 * 03 + 1 = 0 + 12 + 1 = 12 + 1 = 13 wrong
+    multiply-1 f(04, 03) = (0 + 4) * 03 - 1 = 0 * 03 + 4 * 03 - 1 = 0 + 12 - 1 = 12 - 1 = 11 wrong
+    add+1 f(04, 03) = 04 + 03 + 1 = 8 wrong
+    add-1 f(04, 03) = 04 + 03 - 1 = 6 wrong
+    sub+1 f(04, 03) = 04 - 03 + 1 = 2 wrong
+    sub-1 f(04, 03) = 04 - 03 - 1 = 0 wrong
+    max mod min f(04, 03) = max(04,03) mod min(04,03) = 04 mod 03 = 1 wrong
+    integer division (a/b) f(04, 03) = 04 / 03 = 1 wrong
+    modulo (a mod b) f(04, 03) = 04 mod 03 = 1 wrong
+    reverse division (b/a) f(04, 03) = 03 / 04 = 0 wrong
+    reverse modulo (b mod a) f(04, 03) = 03 mod 04 = 3 wrong
+    digit absolute diff f(04, 03) = |0-0| || |4-3| = 01 wrong
+    digit add mod10 f(04, 03) = (0+0)%10 || (4+3)%10 = 07 wrong
+    digit sub mod10 f(04, 03) = (0-0)%10 || (4-3)%10 = 01 wrong
+    cross multiply f(04, 03) = 0*0 + 4*3 = 0 + 12 = 12 wrong
+    cross multiply rev f(04, 03) = 0*3 + 4*0 = 0 + 0 = 0 wrong
+    digit multiply f(04, 03) = 0*0 || 4*3 = 0 || 12 = 012 wrong
+    digit multiply rev f(04, 03) = 0*3 || 4*0 = 0 || 0 = 00 wrong
+    digit sum diff f(04, 03) = (0+4) - (0+3) = 1 wrong
+    digit sum sum f(04, 03) = (0+4) + (0+3) = 7 wrong
+    digit product diff f(04, 03) = 0*4 - 0*3 = 0 - 0 = 0 wrong
+    digit product sum f(04, 03) = 0*4 + 0*3 = 0 + 0 = 0 wrong
+    determinant f(04, 03) = 0*3 - 4*0 = 0 - 0 = 0 wrong
+    abs determinant f(04, 03) = |0*3 - 4*0| = |0 - 0| = 0 wrong
+  Trying rare operations reversed operands [04->40 03->30] [expected (40,30)->0021]:
+    multiply+1 f(40, 30) = (40 + 0) * 30 + 1 = 40 * 30 + 0 * 30 + 1 = 1200 + 0 + 1 = 1200 + 1 = 1201 wrong
+    multiply-1 f(40, 30) = (40 + 0) * 30 - 1 = 40 * 30 + 0 * 30 - 1 = 1200 + 0 - 1 = 1200 - 1 = 1199 wrong
+    add+1 f(40, 30) = 40 + 30 + 1 = 71 wrong
+    add-1 f(40, 30) = 40 + 30 - 1 = 69 wrong
+    sub+1 f(40, 30) = 40 - 30 + 1 = 11 wrong
+    sub-1 f(40, 30) = 40 - 30 - 1 = 9 wrong
+    max mod min f(40, 30) = max(40,30) mod min(40,30) = 40 mod 30 = 10 wrong
+    integer division (a/b) f(40, 30) = 40 / 30 = 1 wrong
+    modulo (a mod b) f(40, 30) = 40 mod 30 = 10 wrong
+    reverse division (b/a) f(40, 30) = 30 / 40 = 0 wrong
+    reverse modulo (b mod a) f(40, 30) = 30 mod 40 = 30 wrong
+    digit absolute diff f(40, 30) = |4-3| || |0-0| = 10 wrong
+    digit add mod10 f(40, 30) = (4+3)%10 || (0+0)%10 = 70 wrong
+    digit sub mod10 f(40, 30) = (4-3)%10 || (0-0)%10 = 10 wrong
+    cross multiply f(40, 30) = 4*3 + 0*0 = 12 + 0 = 12 wrong
+    cross multiply rev f(40, 30) = 4*0 + 0*3 = 0 + 0 = 0 wrong
+    digit multiply f(40, 30) = 4*3 || 0*0 = 12 || 0 = 120 wrong
+    digit multiply rev f(40, 30) = 4*0 || 0*3 = 0 || 0 = 00 wrong
+    digit sum diff f(40, 30) = (4+0) - (3+0) = 1 wrong
+    digit sum sum f(40, 30) = (4+0) + (3+0) = 7 wrong
+    digit product diff f(40, 30) = 4*0 - 3*0 = 0 - 0 = 0 wrong
+    digit product sum f(40, 30) = 4*0 + 3*0 = 0 + 0 = 0 wrong
+    determinant f(40, 30) = 4*0 - 0*3 = 0 - 0 = 0 wrong
+    abs determinant f(40, 30) = |4*0 - 0*3| = |0 - 0| = 0 wrong
+  Trying rare operations identity operands [04 03] reversed result [expected (04,03)->0021]:
+    multiply+1 f(04, 03) = (0 + 4) * 03 + 1 = 0 * 03 + 4 * 03 + 1 = 0 + 12 + 1 = 12 + 1 = 13 -rev-> 31 wrong
+    multiply-1 f(04, 03) = (0 + 4) * 03 - 1 = 0 * 03 + 4 * 03 - 1 = 0 + 12 - 1 = 12 - 1 = 11 -rev-> 11 wrong
+    add+1 f(04, 03) = 04 + 03 + 1 = 8 -rev-> 8 wrong
+    add-1 f(04, 03) = 04 + 03 - 1 = 6 -rev-> 6 wrong
+    sub+1 f(04, 03) = 04 - 03 + 1 = 2 -rev-> 2 wrong
+    sub-1 f(04, 03) = 04 - 03 - 1 = 0 -rev-> 0 wrong
+    max mod min f(04, 03) = max(04,03) mod min(04,03) = 04 mod 03 = 1 -rev-> 1 wrong
+    integer division (a/b) f(04, 03) = 04 / 03 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(04, 03) = 04 mod 03 = 1 -rev-> 1 wrong
+    reverse division (b/a) f(04, 03) = 03 / 04 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(04, 03) = 03 mod 04 = 3 -rev-> 3 wrong
+    digit absolute diff f(04, 03) = |0-0| || |4-3| = 01 -rev-> 10 wrong
+    digit add mod10 f(04, 03) = (0+0)%10 || (4+3)%10 = 07 -rev-> 70 wrong
+    digit sub mod10 f(04, 03) = (0-0)%10 || (4-3)%10 = 01 -rev-> 10 wrong
+    cross multiply f(04, 03) = 0*0 + 4*3 = 0 + 12 = 12 -rev-> 21 wrong
+    cross multiply rev f(04, 03) = 0*3 + 4*0 = 0 + 0 = 0 -rev-> 0 wrong
+    digit multiply f(04, 03) = 0*0 || 4*3 = 0 || 12 = 012 -rev-> 210 wrong
+    digit multiply rev f(04, 03) = 0*3 || 4*0 = 0 || 0 = 00 -rev-> 00 wrong
+    digit sum diff f(04, 03) = (0+4) - (0+3) = 1 -rev-> 1 wrong
+    digit sum sum f(04, 03) = (0+4) + (0+3) = 7 -rev-> 7 wrong
+    digit product diff f(04, 03) = 0*4 - 0*3 = 0 - 0 = 0 -rev-> 0 wrong
+    digit product sum f(04, 03) = 0*4 + 0*3 = 0 + 0 = 0 -rev-> 0 wrong
+    determinant f(04, 03) = 0*3 - 4*0 = 0 - 0 = 0 -rev-> 0 wrong
+    abs determinant f(04, 03) = |0*3 - 4*0| = |0 - 0| = 0 -rev-> 0 wrong
+
+Applying to 61*04:
+  reversed operands [61->16, 04->40] and reversed result
+  multiplication f(16, 40) = (10 + 6) * 40 = 10 * 40 + 6 * 40 = 400 + 240 = 640 -rev-> 046
+  Result: 【046】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{046}
+[correct]
+true

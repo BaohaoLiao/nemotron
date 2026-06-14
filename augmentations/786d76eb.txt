@@ -1,0 +1,189 @@
+[category]
+equation_numeric_deduce
+[prompt]
+In Alice's Wonderland, a secret set of transformation rules is applied to equations. Below are a few examples:
+92*36 = 7281
+17$14 = 03
+28:08 = 261
+28$47 = 8
+93:48 = 321
+Now, determine the result for: 72$08
+[completion]
+We need to infer the transformation rule from the examples.
+I will put my final answer inside \boxed{}.
+
+Examples:
+  92*36 = 7281
+  17$14 = 03
+  28:08 = 261
+  28$47 = 8
+  93:48 = 321
+
+The inputs are 92, 36, 17, 14, 28, 08, 28, 47, 93, 48
+
+The outputs are 7281, 03, 261, 8, 321
+No outputs have a symbol prefix or suffix.
+
+Looking at the input of the examples
+92*36 -> *
+17$14 -> $
+28:08 -> :
+28$47 -> $
+93:48 -> :
+
+The operators
+*
+$
+:
+
+Looking at the question
+72$08 -> $
+The question operator is found in the examples.
+
+Looking at operator 【$】 [17$14 = 03, 28$47 = 8]:
+  Trying common operations reversed operands [17->71 14->41, 28->82 47->74] and reversed result [expected (71,41)->03, (82,74)->8]:
+    concatenation f(71, 41) = 71 || 41 = 7141 -rev-> 1417 wrong
+    reverse concatenation f(82, 74) = 74 || 82 = 7482 -rev-> 2847 wrong
+    addition f(71, 41) = 71 + 41 = 112 -rev-> 211 wrong
+    absolute difference f(82, 74) = |82 - 74| = 8 -rev-> 8 match, f(71,41) -> |71 - 41| = 30 -rev-> 03 match, correct, actions: reversed operands, reversed result, absolute difference
+    negated absolute difference f(71, 41) = -|71 - 41| = -30 -rev-> -03 wrong
+    subtraction (a-b) f(82, 74) = 82 - 74 = 8 -rev-> 8 match, f(71,41) -> 71 - 41 = 30 -rev-> 03 match, correct, but skipping
+    reverse subtraction (b-a) f(71, 41) = 41 - 71 = -30 -rev-> -03 wrong
+    multiplication f(82, 74) = (80 + 2) * 74 = 80 * 74 + 2 * 74 = 5920 + 148 = 6068 -rev-> 8606 wrong
+  Trying common operations on identity [17 14, 28 47] [expected (17,14)->03, (28,47)->8]:
+    concatenation f(17, 14) = 17 || 14 = 1714 wrong
+    reverse concatenation f(28, 47) = 47 || 28 = 4728 wrong
+    addition f(17, 14) = 17 + 14 = 31 wrong
+    absolute difference f(28, 47) = |28 - 47| = 19 wrong
+    negated absolute difference f(17, 14) = -|17 - 14| = -3 wrong
+    subtraction (a-b) f(28, 47) = 28 - 47 = -19 wrong
+    reverse subtraction (b-a) f(17, 14) = 14 - 17 = -3 wrong
+    multiplication f(28, 47) = (20 + 8) * 47 = 20 * 47 + 8 * 47 = 940 + 376 = 1316 wrong
+  Trying common operations reversed operands [17->71 14->41, 28->82 47->74] [expected (71,41)->03, (82,74)->8]:
+    concatenation f(71, 41) = 71 || 41 = 7141 wrong
+    reverse concatenation f(82, 74) = 74 || 82 = 7482 wrong
+    addition f(71, 41) = 71 + 41 = 112 wrong
+    absolute difference f(82, 74) = |82 - 74| = 8 match, f(71,41) -> |71 - 41| = 30 wrong
+    negated absolute difference f(71, 41) = -|71 - 41| = -30 wrong
+    subtraction (a-b) f(82, 74) = 82 - 74 = 8 match, f(71,41) -> 71 - 41 = 30 wrong
+    reverse subtraction (b-a) f(71, 41) = 41 - 71 = -30 wrong
+    multiplication f(82, 74) = (80 + 2) * 74 = 80 * 74 + 2 * 74 = 5920 + 148 = 6068 wrong
+  Trying common operations identity operands [17 14, 28 47] reversed result [expected (17,14)->03, (28,47)->8]:
+    concatenation f(17, 14) = 17 || 14 = 1714 -rev-> 4171 wrong
+    reverse concatenation f(28, 47) = 47 || 28 = 4728 -rev-> 8274 wrong
+    addition f(17, 14) = 17 + 14 = 31 -rev-> 13 wrong
+    absolute difference f(28, 47) = |28 - 47| = 19 -rev-> 91 wrong
+    negated absolute difference f(17, 14) = -|17 - 14| = -3 -rev-> -3 wrong
+    subtraction (a-b) f(28, 47) = 28 - 47 = -19 -rev-> -91 wrong
+    reverse subtraction (b-a) f(17, 14) = 14 - 17 = -3 -rev-> -3 wrong
+    multiplication f(28, 47) = (20 + 8) * 47 = 20 * 47 + 8 * 47 = 940 + 376 = 1316 -rev-> 6131 wrong
+  Trying rare operations reversed operands [17->71 14->41, 28->82 47->74] and reversed result [expected (71,41)->03, (82,74)->8]:
+    multiply+1 f(71, 41) = (70 + 1) * 41 + 1 = 70 * 41 + 1 * 41 + 1 = 2870 + 41 + 1 = 2911 + 1 = 2912 -rev-> 2192 wrong
+    multiply-1 f(82, 74) = (80 + 2) * 74 - 1 = 80 * 74 + 2 * 74 - 1 = 5920 + 148 - 1 = 6068 - 1 = 6067 -rev-> 7606 wrong
+    add+1 f(71, 41) = 71 + 41 + 1 = 113 -rev-> 311 wrong
+    add-1 f(82, 74) = 82 + 74 - 1 = 155 -rev-> 551 wrong
+    sub+1 f(71, 41) = 71 - 41 + 1 = 31 -rev-> 13 wrong
+    sub-1 f(82, 74) = 82 - 74 - 1 = 7 -rev-> 7 wrong
+    max mod min f(71, 41) = max(71,41) mod min(71,41) = 71 mod 41 = 30 -rev-> 03 match, f(82,74) -> max(82,74) mod min(82,74) = 82 mod 74 = 8 -rev-> 8 match, correct, but skipping
+    integer division (a/b) f(82, 74) = 82 / 74 = 1 -rev-> 1 wrong
+    modulo (a mod b) f(71, 41) = 71 mod 41 = 30 -rev-> 03 match, f(82,74) -> 82 mod 74 = 8 -rev-> 8 match, correct, but skipping
+    reverse division (b/a) f(82, 74) = 74 / 82 = 0 -rev-> 0 wrong
+    reverse modulo (b mod a) f(71, 41) = 41 mod 71 = 41 -rev-> 14 wrong
+    digit absolute diff f(82, 74) = |8-7| || |2-4| = 12 -rev-> 21 wrong
+    digit add mod10 f(71, 41) = (7+4)%10 || (1+1)%10 = 12 -rev-> 21 wrong
+    digit sub mod10 f(82, 74) = (8-7)%10 || (2-4)%10 = 18 -rev-> 81 wrong
+    cross multiply f(71, 41) = 7*4 + 1*1 = 28 + 1 = 29 -rev-> 92 wrong
+    cross multiply rev f(82, 74) = 8*4 + 2*7 = 32 + 14 = 46 -rev-> 64 wrong
+    digit multiply f(71, 41) = 7*4 || 1*1 = 28 || 1 = 281 -rev-> 182 wrong
+    digit multiply rev f(82, 74) = 8*4 || 2*7 = 32 || 14 = 3214 -rev-> 4123 wrong
+    digit sum diff f(71, 41) = (7+1) - (4+1) = 3 -rev-> 3 wrong
+    digit sum sum f(82, 74) = (8+2) + (7+4) = 21 -rev-> 12 wrong
+    digit product diff f(71, 41) = 7*1 - 4*1 = 7 - 4 = 3 -rev-> 3 wrong
+    digit product sum f(82, 74) = 8*2 + 7*4 = 16 + 28 = 44 -rev-> 44 wrong
+    determinant f(71, 41) = 7*1 - 1*4 = 7 - 4 = 3 -rev-> 3 wrong
+    abs determinant f(82, 74) = |8*4 - 2*7| = |32 - 14| = 18 -rev-> 81 wrong
+  Trying rare operations on identity [17 14, 28 47] [expected (17,14)->03, (28,47)->8]:
+    multiply+1 f(17, 14) = (10 + 7) * 14 + 1 = 10 * 14 + 7 * 14 + 1 = 140 + 98 + 1 = 238 + 1 = 239 wrong
+    multiply-1 f(28, 47) = (20 + 8) * 47 - 1 = 20 * 47 + 8 * 47 - 1 = 940 + 376 - 1 = 1316 - 1 = 1315 wrong
+    add+1 f(17, 14) = 17 + 14 + 1 = 32 wrong
+    add-1 f(28, 47) = 28 + 47 - 1 = 74 wrong
+    sub+1 f(17, 14) = 17 - 14 + 1 = 4 wrong
+    sub-1 f(28, 47) = 28 - 47 - 1 = -20 wrong
+    max mod min f(17, 14) = max(17,14) mod min(17,14) = 17 mod 14 = 3 wrong
+    integer division (a/b) f(28, 47) = 28 / 47 = 0 wrong
+    modulo (a mod b) f(17, 14) = 17 mod 14 = 3 wrong
+    reverse division (b/a) f(28, 47) = 47 / 28 = 1 wrong
+    reverse modulo (b mod a) f(17, 14) = 14 mod 17 = 14 wrong
+    digit absolute diff f(28, 47) = |2-4| || |8-7| = 21 wrong
+    digit add mod10 f(17, 14) = (1+1)%10 || (7+4)%10 = 21 wrong
+    digit sub mod10 f(28, 47) = (2-4)%10 || (8-7)%10 = 81 wrong
+    cross multiply f(17, 14) = 1*1 + 7*4 = 1 + 28 = 29 wrong
+    cross multiply rev f(28, 47) = 2*7 + 8*4 = 14 + 32 = 46 wrong
+    digit multiply f(17, 14) = 1*1 || 7*4 = 1 || 28 = 128 wrong
+    digit multiply rev f(28, 47) = 2*7 || 8*4 = 14 || 32 = 1432 wrong
+    digit sum diff f(17, 14) = (1+7) - (1+4) = 3 wrong
+    digit sum sum f(28, 47) = (2+8) + (4+7) = 21 wrong
+    digit product diff f(17, 14) = 1*7 - 1*4 = 7 - 4 = 3 wrong
+    digit product sum f(28, 47) = 2*8 + 4*7 = 16 + 28 = 44 wrong
+    determinant f(17, 14) = 1*4 - 7*1 = 4 - 7 = -3 wrong
+    abs determinant f(28, 47) = |2*7 - 8*4| = |14 - 32| = 18 wrong
+  Trying rare operations reversed operands [17->71 14->41, 28->82 47->74] [expected (71,41)->03, (82,74)->8]:
+    multiply+1 f(71, 41) = (70 + 1) * 41 + 1 = 70 * 41 + 1 * 41 + 1 = 2870 + 41 + 1 = 2911 + 1 = 2912 wrong
+    multiply-1 f(82, 74) = (80 + 2) * 74 - 1 = 80 * 74 + 2 * 74 - 1 = 5920 + 148 - 1 = 6068 - 1 = 6067 wrong
+    add+1 f(71, 41) = 71 + 41 + 1 = 113 wrong
+    add-1 f(82, 74) = 82 + 74 - 1 = 155 wrong
+    sub+1 f(71, 41) = 71 - 41 + 1 = 31 wrong
+    sub-1 f(82, 74) = 82 - 74 - 1 = 7 wrong
+    max mod min f(71, 41) = max(71,41) mod min(71,41) = 71 mod 41 = 30 wrong
+    integer division (a/b) f(82, 74) = 82 / 74 = 1 wrong
+    modulo (a mod b) f(71, 41) = 71 mod 41 = 30 wrong
+    reverse division (b/a) f(82, 74) = 74 / 82 = 0 wrong
+    reverse modulo (b mod a) f(71, 41) = 41 mod 71 = 41 wrong
+    digit absolute diff f(82, 74) = |8-7| || |2-4| = 12 wrong
+    digit add mod10 f(71, 41) = (7+4)%10 || (1+1)%10 = 12 wrong
+    digit sub mod10 f(82, 74) = (8-7)%10 || (2-4)%10 = 18 wrong
+    cross multiply f(71, 41) = 7*4 + 1*1 = 28 + 1 = 29 wrong
+    cross multiply rev f(82, 74) = 8*4 + 2*7 = 32 + 14 = 46 wrong
+    digit multiply f(71, 41) = 7*4 || 1*1 = 28 || 1 = 281 wrong
+    digit multiply rev f(82, 74) = 8*4 || 2*7 = 32 || 14 = 3214 wrong
+    digit sum diff f(71, 41) = (7+1) - (4+1) = 3 wrong
+    digit sum sum f(82, 74) = (8+2) + (7+4) = 21 wrong
+    digit product diff f(71, 41) = 7*1 - 4*1 = 7 - 4 = 3 wrong
+    digit product sum f(82, 74) = 8*2 + 7*4 = 16 + 28 = 44 wrong
+    determinant f(71, 41) = 7*1 - 1*4 = 7 - 4 = 3 wrong
+    abs determinant f(82, 74) = |8*4 - 2*7| = |32 - 14| = 18 wrong
+  Trying rare operations identity operands [17 14, 28 47] reversed result [expected (17,14)->03, (28,47)->8]:
+    multiply+1 f(17, 14) = (10 + 7) * 14 + 1 = 10 * 14 + 7 * 14 + 1 = 140 + 98 + 1 = 238 + 1 = 239 -rev-> 932 wrong
+    multiply-1 f(28, 47) = (20 + 8) * 47 - 1 = 20 * 47 + 8 * 47 - 1 = 940 + 376 - 1 = 1316 - 1 = 1315 -rev-> 5131 wrong
+    add+1 f(17, 14) = 17 + 14 + 1 = 32 -rev-> 23 wrong
+    add-1 f(28, 47) = 28 + 47 - 1 = 74 -rev-> 47 wrong
+    sub+1 f(17, 14) = 17 - 14 + 1 = 4 -rev-> 4 wrong
+    sub-1 f(28, 47) = 28 - 47 - 1 = -20 -rev-> -02 wrong
+    max mod min f(17, 14) = max(17,14) mod min(17,14) = 17 mod 14 = 3 -rev-> 3 wrong
+    integer division (a/b) f(28, 47) = 28 / 47 = 0 -rev-> 0 wrong
+    modulo (a mod b) f(17, 14) = 17 mod 14 = 3 -rev-> 3 wrong
+    reverse division (b/a) f(28, 47) = 47 / 28 = 1 -rev-> 1 wrong
+    reverse modulo (b mod a) f(17, 14) = 14 mod 17 = 14 -rev-> 41 wrong
+    digit absolute diff f(28, 47) = |2-4| || |8-7| = 21 -rev-> 12 wrong
+    digit add mod10 f(17, 14) = (1+1)%10 || (7+4)%10 = 21 -rev-> 12 wrong
+    digit sub mod10 f(28, 47) = (2-4)%10 || (8-7)%10 = 81 -rev-> 18 wrong
+    cross multiply f(17, 14) = 1*1 + 7*4 = 1 + 28 = 29 -rev-> 92 wrong
+    cross multiply rev f(28, 47) = 2*7 + 8*4 = 14 + 32 = 46 -rev-> 64 wrong
+    digit multiply f(17, 14) = 1*1 || 7*4 = 1 || 28 = 128 -rev-> 821 wrong
+    digit multiply rev f(28, 47) = 2*7 || 8*4 = 14 || 32 = 1432 -rev-> 2341 wrong
+    digit sum diff f(17, 14) = (1+7) - (1+4) = 3 -rev-> 3 wrong
+    digit sum sum f(28, 47) = (2+8) + (4+7) = 21 -rev-> 12 wrong
+    digit product diff f(17, 14) = 1*7 - 1*4 = 7 - 4 = 3 -rev-> 3 wrong
+    digit product sum f(28, 47) = 2*8 + 4*7 = 16 + 28 = 44 -rev-> 44 wrong
+    determinant f(17, 14) = 1*4 - 7*1 = 4 - 7 = -3 -rev-> -3 wrong
+    abs determinant f(28, 47) = |2*7 - 8*4| = |14 - 32| = 18 -rev-> 81 wrong
+
+Applying to 72$08:
+  reversed operands [72->27, 08->80] and reversed result
+  absolute difference f(27, 80) = |27 - 80| = 53 -rev-> 35
+  Result: 【35】
+
+I will now return the answer in \boxed{}
+The answer in \boxed{–} is \boxed{35}
+[correct]
+true

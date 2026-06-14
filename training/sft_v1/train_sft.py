@@ -213,6 +213,31 @@ def parse_args() -> argparse.Namespace:
         "Selection is deterministic given --seed.",
     )
     g.add_argument(
+        "--aug_categories",
+        "--aug-categories",
+        nargs="*",
+        default=None,
+        metavar="CAT",
+        help="Whitelist of augmentation (version='raw') categories to keep. When "
+        "given, raw entries whose category is NOT listed are dropped (reasoning "
+        "entries are untouched). Use this to train on only the rotation "
+        "augmentations (which carry real category names like 'bit_manipulation', "
+        "'cryptarithm_deduce') and exclude the synthetic string-drills "
+        "('matching', 'concatenation', 'splitting', 'spelling', 'lstrip'). "
+        "Default (unset) keeps every augmentation category.",
+    )
+    g.add_argument(
+        "--aug_include_wrong",
+        "--aug-include-wrong",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Include rotation augmentations whose solver answer was wrong "
+        "(corpus field aug_correct=False). Default False trains only on "
+        "answer-correct augmentations. Set True for the 'correct + wrong' "
+        "ablation. Reasoning entries and string-drills are aug_correct=True and "
+        "always kept.",
+    )
+    g.add_argument(
         "--shuffle_dataset",
         action=argparse.BooleanOptionalAction,
         default=False,
@@ -432,6 +457,7 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
                 "problem_id": pid,
                 "category": rec_category,
                 "version": rec_version,
+                "aug_correct": rec.get("aug_correct", True),
                 "tokens": tokens[:-1],
                 "targets": tokens[1:],
                 "weights": [float(m) for m in mask[1:]],
@@ -470,6 +496,34 @@ def load_examples(cfg: argparse.Namespace, log) -> list[dict]:
             f"examples using {len(original_ids)} ids from {cfg.train_csv} "
             f"(augmentation examples exempt)"
         )
+
+    # Whitelist of augmentation categories. Drops raw entries whose category is
+    # not listed (reasoning entries untouched) -- e.g. to keep only the rotation
+    # augmentations and exclude the synthetic string-drills.
+    if cfg.aug_categories is not None:
+        allowed = set(cfg.aug_categories)
+        before = len(examples)
+        examples = [
+            e
+            for e in examples
+            if e.get("version") != "raw" or e.get("category") in allowed
+        ]
+        log(
+            f"aug_categories={sorted(allowed)}: filtered {before} -> "
+            f"{len(examples)} examples (kept only listed augmentation categories)"
+        )
+
+    # Correct-vs-correct+wrong ablation. Wrong-answer rotation augmentations have
+    # aug_correct=False; drop them unless --aug_include_wrong. Reasoning entries
+    # and string-drills are aug_correct=True and unaffected.
+    if not cfg.aug_include_wrong:
+        before = len(examples)
+        examples = [e for e in examples if e.get("aug_correct", True)]
+        if before != len(examples):
+            log(
+                f"aug_include_wrong=False: dropped {before - len(examples)} "
+                f"wrong-answer augmentation examples"
+            )
 
     # Stratified cap on augmentation (version="raw") examples. Reasoning examples
     # are never sampled; only augmentations are thinned, proportionally across

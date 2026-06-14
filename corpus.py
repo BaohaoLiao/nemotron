@@ -99,6 +99,11 @@ class CorpusEntry:
     unmasked_token_count: int
     answer: str
     included: bool = False
+    # For augmentation (version="raw") entries: whether the solver's boxed
+    # answer was correct. Always True for reasoning entries and string-drills;
+    # False marks a wrong-answer rotation (used by the correct-vs-correct+wrong
+    # training ablation).
+    aug_correct: bool = True
 
     @property
     def token_count(self) -> int:
@@ -115,6 +120,7 @@ class CorpusEntry:
             "token_count": self.token_count,
             "answer": self.answer,
             "included": self.included,
+            "aug_correct": self.aug_correct,
         }
 
 
@@ -296,31 +302,60 @@ def main() -> None:
         for key in sorted(oversize):
             print(f"  {key}: {oversize[key]}")
 
-    # Process augmentations/*.txt (no reasoning, no \boxed{})
+    # Process augmentations/*.txt
     if AUGMENTATIONS_DIR.exists():
+        aug_oversize = 0
         for aug_path in sorted(AUGMENTATIONS_DIR.glob("*.txt")):
             text = aug_path.read_text()
             # Parse [category], [prompt], and [completion] sections
             category = text.split("[category]\n", 1)[1].split("\n[prompt]\n", 1)[0]
             prompt_text = text.split("[prompt]\n", 1)[1].split("\n[completion]\n", 1)[0]
-            completion = text.split("\n[completion]\n", 1)[1].rstrip("\n")
+            rest = text.split("\n[completion]\n", 1)[1]
+            # Optional trailing [correct] marker (rotation augmentations tag
+            # whether the solver's answer was correct). Absent => correct=True
+            # (string-drills and legacy files have no marker).
+            aug_correct = True
+            if "\n[correct]\n" in rest:
+                completion, correct_part = rest.split("\n[correct]\n", 1)
+                aug_correct = correct_part.strip().lower() != "false"
+            else:
+                completion = rest
+            completion = completion.rstrip("\n")
 
             problem_id = aug_path.stem
 
-            completion_text = f"{completion}\n</think><|im_end|>"
+            # Reasoning-style augmentations (e.g. rotation) carry a full trace
+            # ending in \boxed{...}; wrap them exactly like reasoning entries
+            # (prompt suffix + boxed re-appended after </think>) so the model
+            # sees the same format as real problems. Plain string-drill
+            # augmentations have no boxed answer and keep the direct wrapping.
+            boxed = re.findall(r"\\boxed\{([^}]*)\}", completion)
+            if boxed:
+                answer = boxed[-1]
+                completion_text = f"{completion}\n</think>\n\\boxed{{{answer}}}<|im_end|>"
+                prompt_ids = tokenize_prompt(prompt_text, chat_tokenizer)
+            else:
+                answer = completion
+                completion_text = f"{completion}\n</think><|im_end|>"
+                prompt_ids = tokenize_prompt(prompt_text, chat_tokenizer, suffix="")
+
             completion_ids = tokenizer.encode(
                 completion_text, add_special_tokens=False
             ).ids
 
-            prompt_ids = tokenize_prompt(prompt_text, chat_tokenizer, suffix="")
-
             all_tokens = prompt_ids + completion_ids
             mask = [0] * len(prompt_ids) + [1] * len(completion_ids)
 
-            assert len(all_tokens) <= TOKEN_LIMIT, (
-                f"augmented entry {problem_id} exceeds token limit: "
-                f"{len(all_tokens)} > {TOKEN_LIMIT}"
-            )
+            if len(all_tokens) > TOKEN_LIMIT:
+                if boxed:
+                    # Skip over-limit reasoning-style augmentations so their
+                    # boxed answer is never truncated (mirrors the reasoning path).
+                    aug_oversize += 1
+                    continue
+                raise AssertionError(
+                    f"augmented entry {problem_id} exceeds token limit: "
+                    f"{len(all_tokens)} > {TOKEN_LIMIT}"
+                )
 
             unmasked_count = sum(mask)
             masked_count = len(mask) - unmasked_count
@@ -334,8 +369,9 @@ def main() -> None:
                 mask=mask,
                 masked_token_count=masked_count,
                 unmasked_token_count=unmasked_count,
-                answer=completion,
+                answer=answer,
                 included=True,
+                aug_correct=aug_correct,
             )
 
             segments = build_segments(all_tokens, mask)
@@ -347,6 +383,12 @@ def main() -> None:
                     sf.write("\n")
 
             entries.append(entry)
+
+        if aug_oversize:
+            print(
+                f"Skipped {aug_oversize} over-limit reasoning-style augmentations "
+                f"(> {TOKEN_LIMIT} tokens) to avoid truncating the boxed answer"
+            )
 
     entries.sort(key=lambda e: (e.category, e.version, e.problem_id))
 

@@ -43,6 +43,17 @@ VERSIONS_CONFIG="${VERSIONS_CONFIG:-${REPO_ROOT}/versions.json}"
 #   VERSIONS="bit_manipulation=v2 cryptarithm_deduce=v1").
 VERSIONS="${VERSIONS:-}"
 
+# Augmentation controls (version='raw' entries). Both optional.
+#   AUG_SAMPLE=N      cap total augmentation examples (stratified); -1 = all, 0 = none.
+#   AUG_CATEGORIES="bit_manipulation cryptarithm_deduce ..."  keep only these
+#                    augmentation categories (e.g. the rotation augmentations,
+#                    excluding the synthetic string-drills).
+AUG_SAMPLE="${AUG_SAMPLE:-}"
+AUG_CATEGORIES="${AUG_CATEGORIES:-}"
+#   AUG_INCLUDE_WRONG=1  also train on wrong-answer rotation augmentations
+#                       (the 'correct + wrong' ablation); default correct-only.
+AUG_INCLUDE_WRONG="${AUG_INCLUDE_WRONG:-}"
+
 # ── Hyperparameters (override via env) ───────────────────────────────
 NUM_GPUS="${NUM_GPUS:-1}"
 NUM_EPOCHS="${NUM_EPOCHS:-1}"
@@ -77,6 +88,22 @@ COMMON_ARGS=(
 if [[ -n "${VERSIONS}" ]]; then
   # shellcheck disable=SC2206  -- intentional word-splitting of CAT=VER pairs.
   COMMON_ARGS+=( --versions ${VERSIONS} )
+fi
+
+# Cap total augmentation examples when provided.
+if [[ -n "${AUG_SAMPLE}" ]]; then
+  COMMON_ARGS+=( --aug_sample "${AUG_SAMPLE}" )
+fi
+
+# Restrict to specific augmentation categories when provided.
+if [[ -n "${AUG_CATEGORIES}" ]]; then
+  # shellcheck disable=SC2206  -- intentional word-splitting of category names.
+  COMMON_ARGS+=( --aug_categories ${AUG_CATEGORIES} )
+fi
+
+# Include wrong-answer rotation augmentations when requested.
+if [[ -n "${AUG_INCLUDE_WRONG}" ]]; then
+  COMMON_ARGS+=( --aug_include_wrong )
 fi
 
 cd "${SCRIPT_DIR}"
